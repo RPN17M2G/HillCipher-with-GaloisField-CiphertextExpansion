@@ -1,93 +1,103 @@
 # Galois Field Hill Cipher
 
 
+## Overview 
 
-## Getting started
+An implimentation of the Hill cipher extended by the use of Galois fields as described by Rodney Cooper in 1980.
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+Based on internet search and the article "An interesting example at the intersection
+of Matrix Mathematics and Cryptography" by Tony Patti.
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+I strongly recommand reading the article, here is the link for the article in glassblower: [An interesting example at the intersection of Matrix Mathematics and Cryptography, by Tony Patti](https://www.glassblower.info/crypto/an-interesting-example-at-the-intersection-of-matrix-mathematics-and-cryptography-April-23-2024.pdf)
 
-## Add your files
+### The Original Hill Cipher
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+The Hill cipher is based on linear algebra.
+It utilizes invertible matrixes to encrypt blocks of known length - it is a polygraphic substitution cipher.
 
-```
-cd existing_repo
-git remote add origin https://gitlab.com/omer.gindi5/galois-field-hill-cipher.git
-git branch -M main
-git push -uf origin main
-```
+#### The Encryption Process
 
-## Integrate with your tools
+Each vector of blocks(of size n) is multiplied with an invertible matrix(of size n x n). 
+Afterwards, we calculate the result mod the maximum value for a block(2^n if the block is binary).
 
-- [ ] [Set up project integrations](https://gitlab.com/omer.gindi5/galois-field-hill-cipher/-/settings/integrations)
+#### The Decyription Process
 
-## Collaborate with your team
+Each ciphertext vector is multiplied with the inverse of the encryption matrix. 
+Afterwards, we calculate the result mod the maximum value for a block.
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+#### Security
 
-## Test and Deploy
+#### KPA Vulnerable
 
-Use the built-in continuous integration in GitLab.
+The original Hill cipher is linear, which exposes it to KPA. With enought plaintext-ciphertext pairs.
+An advesery can create a series of equations to find the encryption matrix.
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+#### Diffusion
 
-***
+As we showed in the previous part, a matrix multipication is vulnerable to KPA attacks.
+But it allows us, when paired with a non-linear operation, to diffuse the ciphertexts - With a small change to the plaintext we would get a big change in the ciphertext when using matrix multipication.
 
-# Editing this README
+#### Key Space Size
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+Let *n* be the matrix dimentation, and *K* be the number of possible block's values.
+There are about K^(n^2) matrices - Including not usable matrices like non-inversible matrices.
+Which results in best case scenerio key space of *Log2(K^(n^2))*
 
-## Suggestions for a good README
+### Mathematical Background 
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+##### Galois Field
 
-## Name
-Choose a self-explaining name for your project.
+aka finite field. It's a field that contains a finite number of elements.
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+##### Matrix Multipication With Vector
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+Results in a matrix which each element in each row is multipied by the vector at the position of the coulmn.
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+Example:
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+[2 3 4]   [3]   [2*3 3*5 4*7]   [6 15 28 ]
+[6 8 9] * [5] = [6*3 8*5 9*7] = [18 40 63]
+[4 5 2]   [7]   [4*3 5*5 2*7]   [12 25 14]
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+### Implementation
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+#### Chosen Galois Field
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+The chosen field is GF(16,777,619)
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+##### Requirements
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+- Prime Number for defined modulo P, and exactly P number of elements.
+- log2(P) < 32: That's for fitting the blocks inside an integer(32bit).
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+#### Encryption Matrix must be Inversible 
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+The matrix must be inversible. Meaning, it's determinant must have a gcd of 1 with the modulo base.
 
-## License
-For open source projects, say how it is licensed.
+#### Random Bits Addition
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+Adding random bits inside the plaintext before encryption to remove lineary connection.
+
+#### Digit to ASCII Mapping
+
+For each digit we choose 6 different letters in the alphabet so it would be tougher to spot patterns in the ciphertext.
+
+###### The Mapping:
+
+- 0 : [b, M, Z, t, F, d]
+- 1 : [w, A, i, Y, f, n]
+- 2 : [h, p, G, k, s, D]
+- 3 : [l, c, V, x, j, r]
+- 4 : [q, L, U, e, y, P]
+- 5 : [o, K, z, T, S, g]
+- 6 : [J, W, v, a, R, H]
+- 7 : [X, N, m, C, B, I]
+- 8 : [Y, b, P, e, O, w]
+- 9 : [F, d, V, u, Z, L]
+
+### Thanks and Credit
+
+Written by Omer Gindi.
+
+A lot of thanks for Tony Patti for exposing me to the article and answering my many questions
+about the world of applied cryptography.
