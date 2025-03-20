@@ -53,13 +53,35 @@ aka finite field. It's a field that contains a finite number of elements.
 
 Results in a matrix which each element in each row is multipied by the vector at the position of the coulmn.
 
-*`*Example:**
+**Example:**
 
-[2 3 4]   [3]   [2*3 3*5 4*7]   [6 15 28 ]
+*Encryption Matrix*:
+| C1 | C2 | C3 |
+|---|---|---|
+| 2 | 3 | 4 |
+| 6 | 8 | 9 |
+| 4 | 5 | 2 |
 
-[6 8 9] * [5] = [6*3 8*5 9*7] = [18 40 63]
+*Plaintext Vector*:
+| C1 |
+|---|
+| 3 |
+| 5 |
+| 7 |
 
-[4 5 2]   [7]   [4*3 5*5 2*7]   [12 25 14]
+Multiplication A * B:
+| C1 | C2 | C3 |
+|---|---|---|
+| 2*3 | 3*5 | 4*7 |
+| 6*3 | 8*5 | 9*7 |
+| 4*3 | 5*5 | 2*7 |
+
+Result:
+| C1 |
+|---|
+| 49 |
+| 121 |
+| 51 |
 
 ### Implementation
 
@@ -86,16 +108,18 @@ For each digit we choose 6 different letters in the alphabet so it would be toug
 
 ###### The Mapping:
 
-- 0 : [b, M, Z, t, F, d]
-- 1 : [w, A, i, Y, f, n]
-- 2 : [h, p, G, k, s, D]
-- 3 : [l, c, V, x, j, r]
-- 4 : [q, L, U, e, y, P]
-- 5 : [o, K, z, T, S, g]
-- 6 : [J, W, v, a, R, H]
-- 7 : [X, N, m, C, B, I]
-- 8 : [Y, b, P, e, O, w]
-- 9 : [F, d, V, u, Z, L]
+| Digit | Letters                      |
+|-------|------------------------------|
+| 0     | b, M, Z, t, F, d             |
+| 1     | w, A, i, Y, f, n             |
+| 2     | h, p, G, k, s, D             |
+| 3     | l, c, V, x, j, r             |
+| 4     | q, L, U, e, y, P             |
+| 5     | o, K, z, T, S, g             |
+| 6     | J, W, v, a, R, H             |
+| 7     | X, N, m, C, B, I             |
+| 8     | Y, b, P, e, O, w             |
+| 9     | F, d, V, u, Z, L             |
 
 ### Thanks and Credit
 
