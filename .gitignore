@@ -11,6 +11,10 @@
 *.obj
 *.elf
 
+*.sln
+*.vcxproj
+*.vcxproj.filters
+
 # Linker output
 *.ilk
 *.map
