@@ -10,7 +10,7 @@ STATUS_CODE generate_encryption_matrix(uint32_t*** out_matrix, uint32_t dimentat
         goto cleanup;
     }
 
-    *out_matrix = (decltype(*out_matrix))malloc(dimentation * sizeof(decltype(*out_matrix));
+    *out_matrix = (uint32_t**)malloc(dimentation * sizeof(uint32_t*);
     if (*out_matrix == NULL)
     {
         return_code = STATUS_CODE::STATUS_CODE_ERROR_MEMORY_ALLOCATION;
@@ -20,7 +20,7 @@ STATUS_CODE generate_encryption_matrix(uint32_t*** out_matrix, uint32_t dimentat
     // Generate random numbers mod prime_field to fill the matrix
     for (uint32_t row = 0; row < dimentation; ++row)
     {
-		(*out_matrix)[row] = (decltype((*out_matrix)[row]))malloc(dimentation * sizeof(decltype((*out_matrix)[row]));
+		(*out_matrix)[row] = (uint32_t*)malloc(dimentation * sizeof(uint32_t);
 		if ((*out_matrix)[row] == NULL)
 		{
 			return_code = STATUS_CODE::STATUS_CODE_ERROR_MEMORY_ALLOCATION;
@@ -29,7 +29,7 @@ STATUS_CODE generate_encryption_matrix(uint32_t*** out_matrix, uint32_t dimentat
 		for (uint32_t column = 0; column < dimentation; ++column)
 		{
 			// Generating a cryptography secure random number using sodium.
-			uint32_t secure_random_value = static_cast<uint32_t>(randombytes_uniform(prime_field)); // randombytes_uniform returns a number between 0 and prime_field - 1
+			uint32_t secure_random_value = (uint32_t)(randombytes_uniform(prime_field)); // randombytes_uniform returns a number between 0 and prime_field - 1
 			(*out_matrix)[row][column] = secure_random_value;
 		}
     }

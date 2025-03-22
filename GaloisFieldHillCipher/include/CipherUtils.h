@@ -1,2 +1,3 @@
 #pragma once
 
+#define DEFAULT_PRIME_GALOIS_FIELD 16777619
