@@ -8,7 +8,11 @@
 #define IS_ODD(number) (number % 2 != 0)
 
 STATUS_CODE matrix_determinant(const uint32_t** matrix, uint32_t dimentaion, int64_t* out_determinant);
+
+// TODO : check implementation and maybe use GauessJordan instead.Moreover, can't use uint, use int
 STATUS_CODE square_matrix_inverse(const uint32_t** matrix, uint32_t dimentaion, uint32_t prime_field, uint32_t*** out_inverse_matrix);
+
+// TODO : Implement
 STATUS_CODE matrix_multipication_with_vector(const uint32_t** matrix, const uint32_t* vector, uint32_t dimentaion, uint32_t prime_field, uint32_t** out_vector);
 
 STATUS_CODE free_matrix(uint32_t** matrix, const uint32_t dimentaion);
