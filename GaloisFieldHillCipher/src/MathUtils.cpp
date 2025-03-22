@@ -64,12 +64,12 @@ cleanup:
 	}
 	return return_code;
 }
-
 STATUS_CODE square_matrix_inverse(const uint32_t** matrix, uint32_t dimentaion, uint32_t prime_field, uint32_t*** out_inverse_matrix)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 	int64_t determinant = 0;
 	bool is_invertible = false;
+	uint32_t** adjugate_matrix = NULL;
 
 	return_code = is_matrix_invertible(matrix, dimentaion, prime_field, &is_invertible);
 	if (STATUS_FAILED(return_code))
@@ -90,7 +90,7 @@ STATUS_CODE square_matrix_inverse(const uint32_t** matrix, uint32_t dimentaion, 
 	}
 
 	// Calculate the adjugate matrix
-	uint32_t** adjugate_matrix = (uint32_t**)malloc(dimentaion * sizeof(uint32_t*));
+	adjugate_matrix = (uint32_t**)malloc(dimentaion * sizeof(uint32_t*));
 	if (adjugate_matrix == NULL)
 	{
 		return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
@@ -107,7 +107,84 @@ STATUS_CODE square_matrix_inverse(const uint32_t** matrix, uint32_t dimentaion, 
 		}
 	}
 
+	for (uint32_t row = 0; row < dimentaion; ++row)
+	{
+		for (uint32_t column = 0; column < dimentaion; ++column)
+		{
+			uint32_t** minor_matrix = NULL;
+			return_code = build_minor_matrix(matrix, dimentaion, row, column, &minor_matrix);
+			if (STATUS_FAILED(return_code))
+			{
+				goto cleanup;
+			}
+			int64_t minor_matrix_determinant = 0;
+			return_code = matrix_determinant(minor_matrix, dimentaion - 1, &minor_matrix_determinant);
+			if (STATUS_FAILED(return_code))
+			{
+				goto cleanup;
+			}
+
+			if (IS_ODD(row + column)) // If the sum of the row and column is odd, the cofactor is negative
+			{
+				minor_matrix_determinant *= -1;
+			}
+
+			adjugate_matrix[column][row] = minor_matrix_determinant;
+
+			(void)free_matrix(minor_matrix, dimentaion - 1);
+			minor_matrix = NULL;
+		}
+	}
+
+	// Calculate the inverse matrix
+	*out_inverse_matrix = (uint32_t**)malloc(dimentaion * sizeof(uint32_t*));
+	if (*out_inverse_matrix == NULL)
+	{
+		return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
+		goto cleanup;
+	}
+
+	for (uint32_t row = 0; row < dimentaion; ++row)
+	{
+		(*out_inverse_matrix)[row] = (uint32_t*)malloc(dimentaion * sizeof(uint32_t));
+		if ((*out_inverse_matrix)[row] == NULL)
+		{
+			return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
+			goto cleanup;
+		}
+	}
+
+	for (uint32_t row = 0; row < dimentaion; ++row)
+	{
+		for (uint32_t column = 0; column < dimentaion; ++column)
+		{
+			(*out_inverse_matrix)[row][column] = (uint32_t)((adjugate_matrix[row][column] * determinant) % prime_field);
+		}
+	}
+
+	return_code = STATUS_CODE_SUCCESS;
+cleanup:
+	if (adjugate_matrix != NULL)
+	{
+		for (uint32_t row = 0; row < dimentaion; ++row)
+		{
+			free(adjugate_matrix[row]);
+		}
+		free(adjugate_matrix);
+	}
+	if (STATUS_FAILED(return_code) && (*out_inverse_matrix != NULL))
+	{
+		for (uint32_t row = 0; row < dimentaion; ++row)
+		{
+			free((*out_inverse_matrix)[row]);
+		}
+		free(*out_inverse_matrix);
+		*out_inverse_matrix = NULL;
+	}
+	return return_code;
 }
+
+
 
 STATUS_CODE gcd(int64_t first_element, int64_t second_element, int64_t* out_gcd)
 {
