@@ -64,6 +64,7 @@ cleanup:
 	}
 	return return_code;
 }
+
 STATUS_CODE square_matrix_inverse(const long double** matrix, uint32_t dimentaion, uint32_t prime_field, long double*** out_inverse_matrix)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
@@ -213,17 +214,19 @@ cleanup:
 	return return_code;
 }
 
-
-
-STATUS_CODE gcd(long double first_element, long doublesecond_element, long double* out_gcd)
+STATUS_CODE gcd(long double first_element, long double second_element, long double* out_gcd)
 {
+	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
+
 	// Euclidean algorithm
 	while (second_element != 0) {
 		long double temp = second_element;
 		second_element = first_element % second_element;
 		first_element = temp;
 	}
-	return first_element;
+	*out_gcd = first_element;
+
+	return return_code;
 }
 
 STATUS_CODE is_matrix_invertible(const long double** matrix, uint32_t dimentaion, uint32_t prime_field, bool* out_is_invertible)
