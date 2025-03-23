@@ -22,7 +22,7 @@ add_executable (GaloisFieldHillCipher
   "include/StatusCodes.h"
   "include/MathUtils.h"
   "include/CipherUtils.h"
-)
+ "src/CipherUtils.cpp")
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET GaloisFieldHillCipher PROPERTY CXX_STANDARD 20)
