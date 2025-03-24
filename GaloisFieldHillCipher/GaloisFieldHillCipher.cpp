@@ -18,5 +18,12 @@ int main()
 		printf("\n");
 	}
 
+	double value = -16777619.4556; 
+	double out_value = 0;
+	add_random_bits_between_bytes(&out_value, value);
+
+	printf("Value: %f\n", value);
+	printf("Out Value: %f\n", out_value);
+
 	return return_code;
 }
