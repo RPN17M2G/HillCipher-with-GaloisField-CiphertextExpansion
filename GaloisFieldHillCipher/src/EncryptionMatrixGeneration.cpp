@@ -10,14 +10,6 @@ STATUS_CODE generate_encryption_matrix(double*** out_matrix, uint32_t dimentatio
         goto cleanup;
     }
 
-	/*
-	if (sodium_init() < 0)
-	{
-		return_code = STATUS_CODE::STATUS_CODE_ERROR_SODIUM_INITIALIZATION;
-		goto cleanup;
-	}
-	*/
-
     *out_matrix = (double**)malloc(dimentation * sizeof(double*));
     if (*out_matrix == NULL)
     {

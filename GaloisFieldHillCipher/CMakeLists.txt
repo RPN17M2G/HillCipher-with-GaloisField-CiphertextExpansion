@@ -24,20 +24,3 @@ add_executable (GaloisFieldHillCipher
   "include/CipherUtils.h"
  "src/CipherUtils.cpp")
 
-if (CMAKE_VERSION VERSION_GREATER 3.12)
-  set_property(TARGET GaloisFieldHillCipher PROPERTY CXX_STANDARD 20)
-endif()
-
-# Specify the path to the sodium library
-#set(SODIUM_INCLUDE_DIR "path/to/sodium/include")
-#set(SODIUM_LIBRARY_DIR "path/to/sodium/lib")
-
-# Include the sodium headers
-#include_directories(${SODIUM_INCLUDE_DIR})
-
-# Link the sodium library
-#link_directories(${SODIUM_LIBRARY_DIR})
-#target_link_libraries(GaloisFieldHillCipher sodium)
-
-# TODO: Add tests and install targets if needed.
-
