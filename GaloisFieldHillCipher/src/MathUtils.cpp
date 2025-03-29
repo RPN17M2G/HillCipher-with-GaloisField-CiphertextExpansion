@@ -159,7 +159,7 @@ STATUS_CODE square_matrix_inverse(const double** matrix, uint32_t dimentaion, ui
 	{
 		for (uint32_t column = 0; column < dimentaion; ++column)
 		{
-			(*out_inverse_matrix)[row][column] = (double)((adjugate_matrix[row][column] / determinant) % prime_field);
+			(*out_inverse_matrix)[row][column] = fmod(adjugate_matrix[row][column] / determinant, prime_field);
 		}
 	}
 
@@ -185,7 +185,7 @@ cleanup:
 	return return_code;
 }
 
-STATUS_CODE matrix_multipication_with_vector(const double** matrix, const double* vector, uint32_t dimentaion, uint32_t prime_field, double** out_vector)
+STATUS_CODE matrix_multipication_with_vector(const double** matrix, const uint8_t* vector, uint32_t dimentaion, uint32_t prime_field, double** out_vector)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 	*out_vector = (double*)malloc(dimentaion * sizeof(double));
@@ -200,7 +200,7 @@ STATUS_CODE matrix_multipication_with_vector(const double** matrix, const double
 		(*out_vector)[row] = 0;
 		for (uint32_t column = 0; column < dimentaion; ++column)
 		{
-			(*out_vector)[row] += (matrix[row][column] * vector[column]) % prime_field;
+			(*out_vector)[row] += fmod(matrix[row][column] * vector[column], prime_field);
 		}
 	}
 
@@ -221,7 +221,7 @@ STATUS_CODE gcd(double first_element, double second_element, double* out_gcd)
 	// Euclidean algorithm
 	while (second_element != 0) {
 		double temp = second_element;
-		second_element = first_element % second_element;
+		second_element = fmod(first_element, second_element);
 		first_element = temp;
 	}
 	*out_gcd = first_element;
@@ -266,7 +266,7 @@ STATUS_CODE free_matrix(double** matrix, const uint32_t dimentaion)
 	return STATUS_CODE_SUCCESS;
 }
 
-STATYS_CODE build_minor_matrix(const double** matrix, const uint32_t dimentaion, const uint32_t row, const uint32_t column, double*** out_matrix)
+STATUS_CODE build_minor_matrix(const double** matrix, uint32_t dimentaion, uint32_t row, uint32_t column, double*** out_matrix)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 
