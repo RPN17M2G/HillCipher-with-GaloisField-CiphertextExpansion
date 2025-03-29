@@ -6,7 +6,7 @@
 int main()
 {
 	double** out_matrix = NULL;
-	uint32_t matrix_dimentaion = 4 + (NUMBER_OF_RANDOM_BYTES_TO_ADD / sizeof(**out_matrix)) + 1;
+	uint32_t matrix_dimentaion = 4 + ((NUMBER_OF_RANDOM_BITS_TO_ADD * BYTE_SIZE) / sizeof(**out_matrix)) + 1;
 
 	STATUS_CODE return_code = generate_encryption_matrix(&out_matrix, matrix_dimentaion, DEFAULT_PRIME_GALOIS_FIELD);
 	
@@ -19,12 +19,22 @@ int main()
 		printf("\n");
 	}
 
-	double value = -16777619.4556; 
-	CIPHERTEXT_EXPANSION_VECTOR out_value;
-	add_random_bits_between_bytes(&out_value, value);
+	uint8_t value[] = {250, 40, 123};
+	uint8_t* out_value = NULL;
+	uint32_t out_value_size = 0;
+	add_random_bits_between_bytes(&out_value, &out_value_size, value, sizeof(value));
 
-	printf("Value: %f\n", value);
-	printf("Out Value: %f\n", out_value);
+	uint32_t padded_out_size = 0;
+	add_padding_to_match_size(&out_value, &padded_out_size, out_value_size, sizeof(value) * BYTE_SIZE);
+	printf("%d", padded_out_size);
+	printf("%d", out_value_size);
+
+	free(out_value);
+	for (uint32_t row = 0; row < matrix_dimentaion; ++row)
+	{
+		free(out_matrix[row]);
+	}
+	free(out_matrix);
 
 	return return_code;
 }
