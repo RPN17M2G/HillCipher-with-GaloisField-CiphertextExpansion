@@ -15,8 +15,8 @@ STATUS_CODE add_random_bits_between_bytes(uint8_t** out, uint32_t* out_size, uin
 		goto cleanup;
 	}
 
-	*out = (uint8_t*)malloc(((BYTE_SIZE * value_length) + (NUMBER_OF_RANDOM_BITS_TO_ADD * value_length)) / BYTE_SIZE + 1);
-    *out_size = (BYTE_SIZE * value_length) + (NUMBER_OF_RANDOM_BITS_TO_ADD * value_length);
+	*out = (uint8_t*)malloc(((value_length) + (NUMBER_OF_RANDOM_BITS_TO_ADD * ((value_length / BYTE_SIZE) + 1))) / BYTE_SIZE + 1);
+    *out_size = (value_length) + (NUMBER_OF_RANDOM_BITS_TO_ADD * ((value_length / BYTE_SIZE) + 1));
 	if (NULL == *out)
 	{
 		return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
@@ -63,7 +63,7 @@ STATUS_CODE add_random_bits_between_bytes(uint8_t** out, uint32_t* out_size, uin
 
 	return_code = STATUS_CODE_SUCCESS;
 cleanup:
-	if ((NULL != out) && (NULL != *out))
+	if ((STATUS_FAILED(return_code)) && (NULL != out) && (NULL != *out))
 	{
 		free(*out);
 		*out = NULL;

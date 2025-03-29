@@ -20,14 +20,34 @@ int main()
 	}
 
 	uint8_t value[] = {250, 40, 123};
+
+	printf("Original vector(size: %d): \n", 3 * BYTE_SIZE);
+	for (uint32_t i = 0; i < 3; ++i)
+	{
+		printf("%u ", value[i]);
+	}
+	printf("\n");
+
 	uint8_t* out_value = NULL;
 	uint32_t out_value_size = 0;
-	add_random_bits_between_bytes(&out_value, &out_value_size, value, sizeof(value));
+	add_random_bits_between_bytes(&out_value, &out_value_size, value, 3 * BYTE_SIZE);
+
+	printf("Bit inserted vector(size: %d): \n", out_value_size);
+	for (uint32_t i = 0; i < out_value_size / BYTE_SIZE; ++i)
+	{
+		printf("%u ", out_value[i]);
+	}
+	printf("\n");
 
 	uint32_t padded_out_size = 0;
-	add_padding_to_match_size(&out_value, &padded_out_size, out_value_size, sizeof(value) * BYTE_SIZE);
-	printf("%d", padded_out_size);
-	printf("%d", out_value_size);
+	add_padding_to_match_size(&out_value, &padded_out_size, out_value_size, 3 * BYTE_SIZE);
+	
+	printf("Padded vector(size: %d): \n", padded_out_size);
+	for (uint32_t i = 0; i < padded_out_size / BYTE_SIZE; ++i)
+	{
+		printf("%u ", out_value[i]);
+	}
+	printf("\n");
 
 	free(out_value);
 	for (uint32_t row = 0; row < matrix_dimentaion; ++row)
