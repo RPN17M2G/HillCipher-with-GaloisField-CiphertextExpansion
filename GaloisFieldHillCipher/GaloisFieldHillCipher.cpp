@@ -19,10 +19,11 @@ int main()
 		printf("\n");
 	}
 
-	uint8_t value[] = {250, 40, 123};
+	uint8_t value[] = {250, 40, 123, 1, 234, 55, 98, 23};
+	uint32_t value_size = 8;
 
-	printf("Original vector(size: %d): \n", 3 * BYTE_SIZE);
-	for (uint32_t i = 0; i < 3; ++i)
+	printf("Original vector(size: %d): \n", value_size * BYTE_SIZE);
+	for (uint32_t i = 0; i < value_size; ++i)
 	{
 		printf("%u ", value[i]);
 	}
@@ -30,7 +31,7 @@ int main()
 
 	uint8_t* out_value = NULL;
 	uint32_t out_value_size = 0;
-	add_random_bits_between_bytes(&out_value, &out_value_size, value, 3 * BYTE_SIZE);
+	add_random_bits_between_bytes(&out_value, &out_value_size, value, value_size * BYTE_SIZE);
 
 	printf("Bit inserted vector(size: %d): \n", out_value_size);
 	for (uint32_t i = 0; i < out_value_size / BYTE_SIZE; ++i)
@@ -39,17 +40,18 @@ int main()
 	}
 	printf("\n");
 
-	uint32_t padded_out_size = 0;
-	add_padding_to_match_size(&out_value, &padded_out_size, out_value_size, 3 * BYTE_SIZE);
-	
-	printf("Padded vector(size: %d): \n", padded_out_size);
-	for (uint32_t i = 0; i < padded_out_size / BYTE_SIZE; ++i)
+	uint8_t* removed = NULL;
+	uint32_t removed_size = 0;
+	remove_random_bits_between_bytes(&removed, &removed_size, out_value, out_value_size);
+
+	printf("Bit removed vector(size: %d): \n", removed_size);
+	for (uint32_t i = 0; i < removed_size / BYTE_SIZE; ++i)
 	{
-		printf("%u ", out_value[i]);
+		printf("%u ", removed[i]);
 	}
-	printf("\n");
 
 	free(out_value);
+	free(removed);
 	for (uint32_t row = 0; row < matrix_dimentaion; ++row)
 	{
 		free(out_matrix[row]);
