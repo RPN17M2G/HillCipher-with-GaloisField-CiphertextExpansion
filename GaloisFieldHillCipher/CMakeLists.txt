@@ -22,5 +22,6 @@ add_executable (GaloisFieldHillCipher
   "include/StatusCodes.h"
   "include/MathUtils.h"
   "include/CipherUtils.h"
- "src/CipherUtils.cpp")
+ "src/CipherUtils.cpp" 
+ "src/ExtendedHillCipher.cpp")
 

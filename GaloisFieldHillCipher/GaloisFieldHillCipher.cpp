@@ -49,6 +49,18 @@ int main()
 	{
 		printf("%u ", removed[i]);
 	}
+	printf("\n");
+
+	double* ciphertext = NULL;
+	uint32_t ciphertext_size = 0;
+	encrypt(&ciphertext, &ciphertext_size, out_matrix, matrix_dimentaion, DEFAULT_PRIME_GALOIS_FIELD, out_value, out_value_size);
+
+	printf("Ciphertext(size %d): \n", ciphertext_size);
+	for (uint32_t number = 0; number < ciphertext_size / BYTE_SIZE; ++number)
+	{
+		printf("%f ", ciphertext[number]);
+	}
+	printf("\n");
 
 	free(out_value);
 	free(removed);

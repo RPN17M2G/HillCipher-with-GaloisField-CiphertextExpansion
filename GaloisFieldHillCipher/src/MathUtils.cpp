@@ -185,7 +185,7 @@ cleanup:
 	return return_code;
 }
 
-STATUS_CODE matrix_multipication_with_vector(const double** matrix, const uint8_t* vector, uint32_t dimentaion, uint32_t prime_field, double** out_vector)
+STATUS_CODE matrix_multipication_with_vector(double** out_vector, double** matrix, uint8_t* vector, uint32_t dimentaion, uint32_t prime_field)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 	*out_vector = (double*)malloc(dimentaion * sizeof(double));
