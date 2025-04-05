@@ -1,6 +1,6 @@
 #include "MathUtils.h"
 
-STATUS_CODE matrix_determinant(const double** matrix, const uint32_t dimentaion, double* out_determinant)
+STATUS_CODE matrix_determinant(double** matrix, uint32_t dimentaion, double* out_determinant)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 	double** minor_matrix = NULL;
@@ -36,7 +36,7 @@ STATUS_CODE matrix_determinant(const double** matrix, const uint32_t dimentaion,
 				}
 
 				double minor_matrix_determinant = 0;
-				return_code = matrix_determinant((const double**)minor_matrix, dimentaion - 1, &minor_matrix_determinant);
+				return_code = matrix_determinant(minor_matrix, dimentaion - 1, &minor_matrix_determinant);
 
 				if (STATUS_FAILED(return_code))
 				{
@@ -65,7 +65,7 @@ cleanup:
 	return return_code;
 }
 
-STATUS_CODE square_matrix_inverse(const double** matrix, uint32_t dimentaion, uint32_t prime_field, double*** out_inverse_matrix)
+STATUS_CODE square_matrix_inverse(double** matrix, uint32_t dimentaion, uint32_t prime_field, double*** out_inverse_matrix)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 	double determinant = 0;
@@ -229,7 +229,7 @@ STATUS_CODE gcd(double first_element, double second_element, double* out_gcd)
 	return return_code;
 }
 
-STATUS_CODE is_matrix_invertible(const double** matrix, uint32_t dimentaion, uint32_t prime_field, bool* out_is_invertible)
+STATUS_CODE is_matrix_invertible(double** matrix, uint32_t dimentaion, uint32_t prime_field, bool* out_is_invertible)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 	double determinant = 0;
@@ -255,7 +255,7 @@ cleanup:
 	return return_code;
 }
 
-STATUS_CODE free_matrix(double** matrix, const uint32_t dimentaion)
+STATUS_CODE free_matrix(double** matrix, uint32_t dimentaion)
 {
 	for (uint32_t row = 0; row < dimentaion; ++row)
 	{
@@ -266,7 +266,7 @@ STATUS_CODE free_matrix(double** matrix, const uint32_t dimentaion)
 	return STATUS_CODE_SUCCESS;
 }
 
-STATUS_CODE build_minor_matrix(const double** matrix, uint32_t dimentaion, uint32_t row, uint32_t column, double*** out_matrix)
+STATUS_CODE build_minor_matrix(double** matrix, uint32_t dimentaion, uint32_t row, uint32_t column, double*** out_matrix)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 

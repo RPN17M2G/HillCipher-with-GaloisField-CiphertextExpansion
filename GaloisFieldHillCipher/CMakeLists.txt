@@ -16,12 +16,11 @@ include_directories(include)
 # Add source to this project's executable.
 add_executable (GaloisFieldHillCipher 
   "GaloisFieldHillCipher.cpp" 
-  "src/EncryptionMatrixGeneration.cpp"
-  "include/EncryptionMatrixGeneration.h"
   "include/ExtendedHillCipher.h"
   "include/StatusCodes.h"
   "include/MathUtils.h"
   "include/CipherUtils.h"
  "src/CipherUtils.cpp" 
- "src/ExtendedHillCipher.cpp")
+ "src/ExtendedHillCipher.cpp"
+"src/MathUtils.cpp")
 

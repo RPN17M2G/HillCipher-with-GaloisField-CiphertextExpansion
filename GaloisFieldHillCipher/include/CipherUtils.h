@@ -62,3 +62,12 @@ STATUS_CODE pad_to_length(uint8_t** out, uint32_t* out_size, uint8_t* value, uin
  */
 STATUS_CODE divide_into_blocks(uint8_t*** out_blocks, uint32_t* num_blocks, uint8_t* value, uint32_t value_length, uint32_t block_size);
 
+/**
+ * @brief Generates an encryption matrix with cryptography secure random values.
+ *
+ * @param out_matrix - Pointer to the output matrix - allocated inside the function and memory released if fails.
+ * @param dimentation - Dimension of the square matrix.
+ * @param prime_field - Prime field to use for generating random values.
+ * @return STATUS_CODE - Status of the operation.
+ */
+STATUS_CODE generate_encryption_matrix(double*** out_matrix, uint32_t dimentation, uint32_t prime_field);

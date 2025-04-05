@@ -1,7 +1,8 @@
 #pragma once
 
-#include <stdlib.h>
-#include <stdint.h>
+#include <cstdlib>
+#include <cstdint>
+#include <math.h>
 
 #include "StatusCodes.h"
 
@@ -16,7 +17,7 @@
  * @param out_determinant - Pointer to the output determinant value.
  * @return STATUS_CODE - Status of the operation.
  */
-STATUS_CODE matrix_determinant(const double** matrix, uint32_t dimentaion, double* out_determinant);
+STATUS_CODE matrix_determinant(double** matrix, uint32_t dimentaion, double* out_determinant);
 
 /**
  * @brief Calculates the inverse of a square matrix using .
@@ -27,7 +28,7 @@ STATUS_CODE matrix_determinant(const double** matrix, uint32_t dimentaion, doubl
  * @param out_inverse_matrix - Pointer to the output inverse matrix - allocated inside the function and memory released if fails.
  * @return STATUS_CODE - Status of the operation.
  */
-STATUS_CODE square_matrix_inverse(const double** matrix, uint32_t dimentaion, uint32_t prime_field, double*** out_inverse_matrix);
+STATUS_CODE square_matrix_inverse(double** matrix, uint32_t dimentaion, uint32_t prime_field, double*** out_inverse_matrix);
 
 /**
  * @brief Multiplies a square matrix with a vector.
@@ -60,7 +61,7 @@ STATUS_CODE free_matrix(double** matrix, const uint32_t dimentaion);
  * @param out_matrix - Pointer to the output minor matrix - allocated inside the function and memory released if fails.
  * @return STATUS_CODE - Status of the operation.
  */
-STATUS_CODE build_minor_matrix(const double** matrix, uint32_t dimentaion, uint32_t row, uint32_t column, double*** out_matrix);
+STATUS_CODE build_minor_matrix(double** matrix, uint32_t dimentaion, uint32_t row, uint32_t column, double*** out_matrix);
 
 /**
  * @brief Calculates the greatest common divisor (GCD) of two elements.
@@ -81,5 +82,5 @@ STATUS_CODE gcd(double first_element, double second_element, double* out_gcd);
  * @param out_is_invertible - Pointer to the output boolean indicating if the matrix is invertible.
  * @return STATUS_CODE - Status of the operation.
  */
-STATUS_CODE is_matrix_invertible(const double** matrix, uint32_t dimentaion, uint32_t prime_field, bool* out_is_invertible);
+STATUS_CODE is_matrix_invertible(double** matrix, uint32_t dimentaion, uint32_t prime_field, bool* out_is_invertible);
 

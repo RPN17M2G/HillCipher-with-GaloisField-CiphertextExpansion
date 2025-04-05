@@ -19,41 +19,12 @@ int main()
 		printf("\n");
 	}
 
-	uint8_t value[] = {250, 40, 123, 1, 234, 55, 98, 23};
-	uint32_t value_size = 8;
-
-	printf("Original vector(size: %d): \n", value_size * BYTE_SIZE);
-	for (uint32_t i = 0; i < value_size; ++i)
-	{
-		printf("%u ", value[i]);
-	}
-	printf("\n");
-
-	uint8_t* out_value = NULL;
-	uint32_t out_value_size = 0;
-	add_random_bits_between_bytes(&out_value, &out_value_size, value, value_size * BYTE_SIZE);
-
-	printf("Bit inserted vector(size: %d): \n", out_value_size);
-	for (uint32_t i = 0; i < out_value_size / BYTE_SIZE; ++i)
-	{
-		printf("%u ", out_value[i]);
-	}
-	printf("\n");
-
-	uint8_t* removed = NULL;
-	uint32_t removed_size = 0;
-	remove_random_bits_between_bytes(&removed, &removed_size, out_value, out_value_size);
-
-	printf("Bit removed vector(size: %d): \n", removed_size);
-	for (uint32_t i = 0; i < removed_size / BYTE_SIZE; ++i)
-	{
-		printf("%u ", removed[i]);
-	}
-	printf("\n");
-
+	uint8_t plaintext[] = {'H', 'e', 'l', 'l', 'o'};
+	uint32_t plaintext_size = 5 * sizeof(uint8_t);
+	
 	double* ciphertext = NULL;
 	uint32_t ciphertext_size = 0;
-	encrypt(&ciphertext, &ciphertext_size, out_matrix, matrix_dimentaion, DEFAULT_PRIME_GALOIS_FIELD, out_value, out_value_size);
+	encrypt(&ciphertext, &ciphertext_size, out_matrix, matrix_dimentaion, DEFAULT_PRIME_GALOIS_FIELD, plaintext, plaintext_size);
 
 	printf("Ciphertext(size %d): \n", ciphertext_size);
 	for (uint32_t number = 0; number < ciphertext_size / BYTE_SIZE; ++number)
@@ -61,9 +32,8 @@ int main()
 		printf("%f ", ciphertext[number]);
 	}
 	printf("\n");
+	free(ciphertext);
 
-	free(out_value);
-	free(removed);
 	for (uint32_t row = 0; row < matrix_dimentaion; ++row)
 	{
 		free(out_matrix[row]);

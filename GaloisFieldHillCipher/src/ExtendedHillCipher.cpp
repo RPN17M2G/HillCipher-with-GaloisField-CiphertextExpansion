@@ -53,7 +53,7 @@ STATUS_CODE encrypt(double** out_ciphertext, uint32_t* out_ciphertext_size, doub
 
 	return_code = STATUS_CODE_SUCCESS;
 cleanup:
-	if ((STATUS_FAILED(return_code)) && (*out_ciphertext != NULL) && (*out_ciphertext_size != NULL))
+	if ((STATUS_FAILED(return_code)) && (out_ciphertext != NULL) && (*out_ciphertext != NULL) && (out_ciphertext_size != NULL) && (*out_ciphertext_size != NULL))
 	{
 		free(*out_ciphertext);
 		*out_ciphertext = NULL;
@@ -66,6 +66,8 @@ STATUS_CODE decrypt(uint8_t** out_plaintext, uint32_t* out_plaintext_size, doubl
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 
+
+	return_code = STATUS_CODE_SUCCESS;
 cleanup:
 	return return_code;
 }
