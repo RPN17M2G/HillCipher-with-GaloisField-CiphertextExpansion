@@ -1,35 +1,46 @@
 #include "ExtendedHillCipher.h"
 
-STATUS_CODE encrypt(double** out_ciphertext, uint32_t* out_ciphertext_size, double** encryption_matrix, uint32_t dimentation, uint32_t prime_field, uint8_t* plaintext_vector, uint32_t vector_size)
+STATUS_CODE encrypt(double** out_ciphertext, uint32_t* out_ciphertext_bit_size, double** encryption_matrix, uint32_t dimentation, uint32_t prime_field, uint8_t* plaintext_vector, uint32_t vector_bit_size)
 {
+	uint32_t block_size_in_bits = (BYTE_SIZE * dimentation);
+
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 
-	if ((NULL == out_ciphertext) || (NULL == out_ciphertext_size) || (NULL == encryption_matrix) || (NULL == plaintext_vector))
+	if ((NULL == out_ciphertext) || (NULL == out_ciphertext_bit_size) || (NULL == encryption_matrix) || (NULL == plaintext_vector))
 	{
 		return_code = STATUS_CODE_INVALID_ARGUMENT;
 		goto cleanup;
 	}
 
-	uint8_t* padded_plaintext = NULL;
-	uint32_t padded_plaintext_size = 0;
+	uint8_t* random_inserted_plaintext = NULL;
+	uint32_t random_inserted_plaintext_bit_size = 0;
 
-	if (STATUS_FAILED(add_random_bits_between_bytes(&padded_plaintext, &padded_plaintext_size, plaintext_vector, vector_size)))
+	if (STATUS_FAILED(add_random_bits_between_bytes(&random_inserted_plaintext, &random_inserted_plaintext_bit_size, plaintext_vector, vector_bit_size)))
 	{
 		return_code = STATUS_CODE_COULDNT_ADD_RANDOM_BITS;
+		goto cleanup;
+	}
+
+	uint8_t* padded_plaintext = NULL;
+	uint32_t padded_plaintext_bit_size = random_inserted_plaintext_bit_size + (block_size_in_bits  - (random_inserted_plaintext_bit_size % block_size_in_bits));
+
+	if (STATUS_FAILED(pad_to_length(&padded_plaintext, random_inserted_plaintext, random_inserted_plaintext_bit_size, padded_plaintext_bit_size)))
+	{
+		return_code = STATUS_CODE_COULDNT_PAD_VECTOR;
 		goto cleanup;
 	}
 
 	uint8_t** plaintext_blocks = NULL;
 	uint32_t number_of_blocks = 0;
 
-	if (STATUS_FAILED(divide_into_blocks(&plaintext_blocks, &number_of_blocks, plaintext_vector, vector_size, dimentation)))
+	if (STATUS_FAILED(divide_into_blocks(&plaintext_blocks, &number_of_blocks, padded_plaintext, padded_plaintext_bit_size, block_size_in_bits)))
 	{
 		return_code = STATUS_CODE_COULDNT_DIVIDE_TO_BLOCKS;
 		goto cleanup;
 	}
 
-	*out_ciphertext = (double*)malloc(dimentation * number_of_blocks * sizeof(double));
-	*out_ciphertext_size = dimentation * number_of_blocks * sizeof(double) * BYTE_SIZE;
+	*out_ciphertext = (double*)malloc(((block_size_in_bits * number_of_blocks) / BYTE_SIZE) + 1);
+	*out_ciphertext_bit_size = block_size_in_bits * number_of_blocks;
 	if (*out_ciphertext == NULL)
 	{
 		return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
@@ -46,26 +57,27 @@ STATUS_CODE encrypt(double** out_ciphertext, uint32_t* out_ciphertext_size, doub
 			goto cleanup;
 		}
 
-		memcpy_s(*out_ciphertext + (block_number * dimentation), dimentation, ciphertext_block, dimentation);
+		memcpy_s(*out_ciphertext + (block_number * dimentation), block_size_in_bits, ciphertext_block, block_size_in_bits);
 
 		free(ciphertext_block);
 	}
 
 	return_code = STATUS_CODE_SUCCESS;
 cleanup:
-	if ((STATUS_FAILED(return_code)) && (out_ciphertext != NULL) && (*out_ciphertext != NULL) && (out_ciphertext_size != NULL) && (*out_ciphertext_size != NULL))
+	if ((STATUS_FAILED(return_code)) && (out_ciphertext != NULL) && (*out_ciphertext != NULL) && (out_ciphertext_bit_size != NULL) && (*out_ciphertext_bit_size != NULL))
 	{
 		free(*out_ciphertext);
 		*out_ciphertext = NULL;
-		*out_ciphertext_size = 0;
+		*out_ciphertext_bit_size = 0;
 	}
 	return return_code;
 }
 
-STATUS_CODE decrypt(uint8_t** out_plaintext, uint32_t* out_plaintext_size, double** decryption_matrix, uint32_t dimentation, uint32_t prime_field, double* ciphertext_vector, uint32_t vector_size)
+STATUS_CODE decrypt(uint8_t** out_plaintext, uint32_t* out_plaintext_bit_size, double** decryption_matrix, uint32_t dimentation, uint32_t prime_field, double* ciphertext_vector, uint32_t vector_bit_size)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 
+	// Decryption logic to be implemented
 
 	return_code = STATUS_CODE_SUCCESS;
 cleanup:

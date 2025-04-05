@@ -188,7 +188,7 @@ cleanup:
 STATUS_CODE matrix_multipication_with_vector(double** out_vector, double** matrix, uint8_t* vector, uint32_t dimentaion, uint32_t prime_field)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
-	*out_vector = (double*)malloc(dimentaion * sizeof(double));
+	*out_vector = (double*)malloc(dimentaion * sizeof(double) + 1);
 	if (*out_vector == NULL)
 	{
 		return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
