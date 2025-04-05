@@ -39,7 +39,7 @@ STATUS_CODE encrypt(double** out_ciphertext, uint32_t* out_ciphertext_bit_size, 
 		goto cleanup;
 	}
 
-	*out_ciphertext = (double*)malloc(((block_size_in_bits * number_of_blocks) / BYTE_SIZE) + 1);
+	*out_ciphertext = (double*)malloc(((block_size_in_bits * number_of_blocks) / BYTE_SIZE) * sizeof(double));
 	*out_ciphertext_bit_size = block_size_in_bits * number_of_blocks;
 	if (*out_ciphertext == NULL)
 	{
