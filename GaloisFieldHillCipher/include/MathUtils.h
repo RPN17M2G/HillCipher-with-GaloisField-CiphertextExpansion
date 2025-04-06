@@ -43,6 +43,19 @@ STATUS_CODE square_matrix_inverse(double** matrix, uint32_t dimentaion, uint32_t
 STATUS_CODE matrix_multipication_with_vector(double** out_vector, double** matrix, uint8_t* vector, uint32_t dimentaion, uint32_t prime_field);
 
 /**
+ * @brief Multiplies a square matrix with a vector for decryption, the result vector is uint8_t.
+ *
+ * @param matrix - Pointer to the input matrix.
+ * @param vector - Pointer to the input vector.
+ * @param dimentaion - Dimension of the square matrix and vector.
+ * @param prime_field - Prime field to use for calculations.
+ * @param out_vector - Pointer to the output vector - allocated inside the function and memory released if fails.
+ * @return STATUS_CODE - Status of the operation.
+ */
+STATUS_CODE matrix_multipication_with_vector(uint8_t** out_vector, double** matrix, double* vector, uint32_t dimentaion, uint32_t prime_field);
+
+
+/**
  * @brief Frees the memory allocated for a matrix.
  *
  * @param matrix - Pointer to the matrix to be freed.

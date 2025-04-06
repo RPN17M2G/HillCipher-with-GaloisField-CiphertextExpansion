@@ -255,6 +255,35 @@ cleanup:
 	return return_code;
 }
 
+STATUS_CODE matrix_multipication_with_vector(uint8_t** out_vector, double** matrix, double* vector, uint32_t dimentaion, uint32_t prime_field)
+{
+	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
+	*out_vector = (uint8_t*)malloc(dimentaion + 1);
+	if (*out_vector == NULL)
+	{
+		return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
+		goto cleanup;
+	}
+
+	for (uint32_t row = 0; row < dimentaion; ++row)
+	{
+		(*out_vector)[row] = 0;
+		for (uint32_t column = 0; column < dimentaion; ++column)
+		{
+			(*out_vector)[row] += (uint8_t)fmod(matrix[row][column] * vector[column], prime_field);
+		}
+	}
+
+	return_code = STATUS_CODE_SUCCESS;
+cleanup:
+	if (STATUS_FAILED(return_code))
+	{
+		free(*out_vector);
+		*out_vector = NULL;
+	}
+	return return_code;
+}
+
 STATUS_CODE free_matrix(double** matrix, uint32_t dimentaion)
 {
 	for (uint32_t row = 0; row < dimentaion; ++row)

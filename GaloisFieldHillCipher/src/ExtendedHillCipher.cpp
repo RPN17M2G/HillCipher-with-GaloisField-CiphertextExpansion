@@ -22,9 +22,14 @@ STATUS_CODE encrypt(double** out_ciphertext, uint32_t* out_ciphertext_bit_size, 
 	}
 
 	uint8_t* padded_plaintext = NULL;
-	uint32_t padded_plaintext_bit_size = random_inserted_plaintext_bit_size + (block_size_in_bits  - (random_inserted_plaintext_bit_size % block_size_in_bits));
+	uint32_t padded_plaintext_bit_size = 0;
 
-	if (STATUS_FAILED(pad_to_length(&padded_plaintext, random_inserted_plaintext, random_inserted_plaintext_bit_size, padded_plaintext_bit_size)))
+	if (STATUS_FAILED(pad_to_length(&padded_plaintext,
+		&padded_plaintext_bit_size, 
+		random_inserted_plaintext, 
+		random_inserted_plaintext_bit_size, 
+		random_inserted_plaintext_bit_size + (block_size_in_bits - (random_inserted_plaintext_bit_size % block_size_in_bits)), 
+		block_size_in_bits)))
 	{
 		return_code = STATUS_CODE_COULDNT_PAD_VECTOR;
 		goto cleanup;
@@ -77,9 +82,74 @@ STATUS_CODE decrypt(uint8_t** out_plaintext, uint32_t* out_plaintext_bit_size, d
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 
-	// Decryption logic to be implemented
+	if ((NULL == out_plaintext) || (NULL == out_plaintext_bit_size) || (NULL == decryption_matrix) || (NULL == ciphertext_vector))
+	{
+		return_code = STATUS_CODE_INVALID_ARGUMENT;
+		goto cleanup;
+	}
+
+	uint32_t block_size_in_bits = (BYTE_SIZE * dimentation);
+	uint32_t number_of_blocks = vector_bit_size / block_size_in_bits;
+
+	double** ciphertext_blocks = NULL;
+
+	if (STATUS_FAILED(divide_into_blocks(&ciphertext_blocks, &number_of_blocks, ciphertext_vector, vector_bit_size, block_size_in_bits)))
+	{
+		return_code = STATUS_CODE_COULDNT_DIVIDE_TO_BLOCKS;
+		goto cleanup;
+	}
+
+	uint8_t* decrypted_plaintext = (uint8_t*)malloc(vector_bit_size / BYTE_SIZE);
+	if (decrypted_plaintext == NULL)
+	{
+		return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
+		goto cleanup;
+	}
+
+	uint8_t* plaintext_block = NULL;
+
+	for (uint32_t block_number = 0; block_number < number_of_blocks; ++block_number)
+	{
+		if (STATUS_FAILED(matrix_multipication_with_vector(&plaintext_block, decryption_matrix, ciphertext_blocks[block_number], dimentation, prime_field)))
+		{
+			return_code = STATUS_CODE_COULDNT_MULTIPLY_MATRIX_WITH_CIPHERTEXT;
+			goto cleanup;
+		}
+
+		memcpy_s(decrypted_plaintext + (block_number * dimentation), block_size_in_bits, plaintext_block, block_size_in_bits);
+
+		free(plaintext_block);
+	}
+
+	uint8_t* unpadded_plaintext = NULL;
+	uint32_t unpadded_plaintext_bit_size = 0;
+
+	if (STATUS_FAILED(remove_padding(&unpadded_plaintext, &unpadded_plaintext_bit_size, decrypted_plaintext, vector_bit_size)))
+	{
+		return_code = STATUS_CODE_COULDNT_REMOVE_PADDING;
+		goto cleanup;
+	}
+
+	uint8_t* original_plaintext = NULL;
+	uint32_t original_plaintext_bit_size = 0;
+
+	if (STATUS_FAILED(remove_random_bits_between_bytes(&original_plaintext, &original_plaintext_bit_size, unpadded_plaintext, unpadded_plaintext_bit_size)))
+	{
+		return_code = STATUS_CODE_COULDNT_REMOVE_RANDOM_BITS;
+		goto cleanup;
+	}
+
+	*out_plaintext = original_plaintext;
+	*out_plaintext_bit_size = original_plaintext_bit_size;
 
 	return_code = STATUS_CODE_SUCCESS;
+
 cleanup:
+	if ((STATUS_FAILED(return_code)) && (out_plaintext != NULL) && (*out_plaintext != NULL) && (out_plaintext_bit_size != NULL) && (*out_plaintext_bit_size != NULL))
+	{
+		free(*out_plaintext);
+		*out_plaintext = NULL;
+		*out_plaintext_bit_size = 0;
+	}
 	return return_code;
 }

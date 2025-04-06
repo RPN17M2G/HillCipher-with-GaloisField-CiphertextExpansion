@@ -138,7 +138,7 @@ cleanup:
     return return_code;
 }
 
-STATUS_CODE pad_to_length(uint8_t** out, uint8_t* value, uint32_t value_bit_length, uint32_t target_bit_length)
+STATUS_CODE pad_to_length(uint8_t** out, uint32_t* out_bit_length, uint8_t* value, uint32_t value_bit_length, uint32_t target_bit_length, uint32_t block_bit_size)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 
@@ -154,6 +154,11 @@ STATUS_CODE pad_to_length(uint8_t** out, uint8_t* value, uint32_t value_bit_leng
         goto cleanup;
     }
 
+    if (target_bit_length == value_bit_length)
+    {
+        target_bit_length += block_bit_size;
+    }
+
     *out = (uint8_t*)malloc(target_bit_length / BYTE_SIZE);
     if (NULL == *out)
     {
@@ -166,13 +171,57 @@ STATUS_CODE pad_to_length(uint8_t** out, uint8_t* value, uint32_t value_bit_leng
 
     // Pad the remaining bytes with 0
     memset(*out + (value_bit_length / BYTE_SIZE), 0, (target_bit_length - value_bit_length) / BYTE_SIZE);
+    *(*out + (value_bit_length / BYTE_SIZE)) = PADDING_MAGIC;
+
+    *out_bit_length = target_bit_length;
 
     return_code = STATUS_CODE_SUCCESS;
 cleanup:
-    if ((STATUS_FAILED(return_code)) && (NULL != out) && (NULL != *out))
+    if ((STATUS_FAILED(return_code)) && (NULL != out) && (NULL != *out) && (NULL != out_bit_length))
     {
         free(*out);
         *out = NULL;
+        *out_bit_length = 0;
+    }
+    return return_code;
+}
+
+STATUS_CODE remove_padding(uint8_t** out, uint32_t* out_bit_length, uint8_t* value, uint32_t value_bit_length)
+{
+    STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
+
+    if ((NULL == out) || (NULL == value) || (NULL == out_bit_length))
+    {
+        return_code = STATUS_CODE_INVALID_ARGUMENT;
+        goto cleanup;
+    }
+
+	for (uint16_t byte_number = 0; byte_number < value_bit_length / BYTE_SIZE; ++byte_number)
+	{
+		if (value[byte_number] == PADDING_MAGIC)
+		{
+			*out_bit_length = (byte_number * BYTE_SIZE);
+			break;
+		}
+	}
+
+    *out = (uint8_t*)malloc(*out_bit_length / BYTE_SIZE);
+    if (NULL == *out)
+    {
+        return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
+        goto cleanup;
+    }
+
+    // Copy the original value to the output array
+    memcpy_s(*out, *out_bit_length / BYTE_SIZE, value, value_bit_length / BYTE_SIZE);
+
+    return_code = STATUS_CODE_SUCCESS;
+cleanup:
+    if ((STATUS_FAILED(return_code)) && (NULL != out) && (NULL != *out) && (NULL != out_bit_length))
+    {
+        free(*out);
+        *out = NULL;
+        *out_bit_length = 0;
     }
     return return_code;
 }
@@ -232,6 +281,65 @@ cleanup:
     return return_code;
 }
 
+STATUS_CODE divide_into_blocks(double*** out_blocks, uint32_t* num_blocks, double* value, uint32_t value_bit_length, uint32_t block_bit_size)
+{
+    STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
+
+    if ((NULL == out_blocks) 
+        || (NULL == num_blocks) 
+        || (NULL == value)
+        || (value_bit_length % block_bit_size != 0)
+        || (sizeof(double) % block_bit_size != 0))
+    {
+        return_code = STATUS_CODE_INVALID_ARGUMENT;
+        goto cleanup;
+    }
+
+    if (block_bit_size == 0)
+    {
+        return_code = STATUS_CODE_INVALID_ARGUMENT;
+        goto cleanup;
+    }
+
+    *num_blocks = value_bit_length / block_bit_size;
+    *out_blocks = (double**)malloc(*num_blocks * sizeof(*out_blocks));
+    if (NULL == *out_blocks)
+    {
+        return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
+        goto cleanup;
+    }
+
+    for (uint32_t block_number = 0; block_number < *num_blocks; ++block_number)
+    {
+        (*out_blocks)[block_number] = (double*)malloc(block_bit_size / BYTE_SIZE);
+        if (NULL == (*out_blocks)[block_number])
+        {
+            return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
+            goto cleanup;
+        }
+
+        // Copy the block data
+        memcpy((*out_blocks)[block_number], value + (block_number * block_bit_size / BYTE_SIZE), block_bit_size / BYTE_SIZE);
+    }
+
+    return_code = STATUS_CODE_SUCCESS;
+cleanup:
+    if ((STATUS_FAILED(return_code)) && (NULL != out_blocks) && (NULL != *out_blocks) && (NULL != num_blocks))
+    {
+        for (uint32_t i = 0; i < *num_blocks; ++i)
+        {
+            if ((*out_blocks)[i] != NULL)
+            {
+                free((*out_blocks)[i]);
+            }
+        }
+        free(*out_blocks);
+        *out_blocks = NULL;
+        *num_blocks = 0;
+    }
+    return return_code;
+}
+
 STATUS_CODE generate_encryption_matrix(double*** out_matrix, uint32_t dimentation, uint32_t prime_field)
 {
     STATUS_CODE return_code = STATUS_CODE::STATUS_CODE_UNINITIALIZED;
@@ -261,7 +369,7 @@ STATUS_CODE generate_encryption_matrix(double*** out_matrix, uint32_t dimentatio
         for (uint32_t column = 0; column < dimentation; ++column)
         {
             // Generating a cryptography secure random number using sodium.
-            int64_t secure_random_value = 0;//(uint32_t)(randombytes_uniform(-1 * prime_field, prime_field)); // randombytes_uniform returns a number between 0 and prime_field - 1
+            int64_t secure_random_value = 1;//(uint32_t)(randombytes_uniform(-1 * prime_field, prime_field)); // randombytes_uniform returns a number between 0 and prime_field - 1
             (*out_matrix)[row][column] = secure_random_value;
         }
     }
