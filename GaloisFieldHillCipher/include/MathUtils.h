@@ -6,8 +6,8 @@
 
 #include "StatusCodes.h"
 
-#define IS_EVEN(number) (number % 2 == 0)
-#define IS_ODD(number) (number % 2 != 0)
+#define IS_EVEN(number) ((number) % 2 == 0)
+#define IS_ODD(number) ((number) % 2 != 0)
 
 /**
  * @brief Calculates the determinant of a square matrix.
@@ -28,7 +28,7 @@ STATUS_CODE matrix_determinant(double** matrix, uint32_t dimentaion, double* out
  * @param out_inverse_matrix - Pointer to the output inverse matrix - allocated inside the function and memory released if fails.
  * @return STATUS_CODE - Status of the operation.
  */
-STATUS_CODE square_matrix_inverse(double** matrix, uint32_t dimentaion, uint32_t prime_field, double*** out_inverse_matrix);
+STATUS_CODE inverse_square_matrix(double** matrix, uint32_t dimentaion, uint32_t prime_field, double*** out_inverse_matrix);
 
 /**
  * @brief Multiplies a square matrix with a vector.
@@ -40,7 +40,7 @@ STATUS_CODE square_matrix_inverse(double** matrix, uint32_t dimentaion, uint32_t
  * @param out_vector - Pointer to the output vector - allocated inside the function and memory released if fails.
  * @return STATUS_CODE - Status of the operation.
  */
-STATUS_CODE matrix_multipication_with_vector(double** out_vector, double** matrix, uint8_t* vector, uint32_t dimentaion, uint32_t prime_field);
+STATUS_CODE multiply_matrix_with_vector(double** out_vector, double** matrix, uint8_t* vector, uint32_t dimentaion, uint32_t prime_field);
 
 /**
  * @brief Multiplies a square matrix with a vector for decryption, the result vector is uint8_t.
@@ -52,7 +52,7 @@ STATUS_CODE matrix_multipication_with_vector(double** out_vector, double** matri
  * @param out_vector - Pointer to the output vector - allocated inside the function and memory released if fails.
  * @return STATUS_CODE - Status of the operation.
  */
-STATUS_CODE matrix_multipication_with_vector(uint8_t** out_vector, double** matrix, double* vector, uint32_t dimentaion, uint32_t prime_field);
+STATUS_CODE multiply_matrix_with_vector(uint8_t** out_vector, double** matrix, double* vector, uint32_t dimentaion, uint32_t prime_field);
 
 
 /**

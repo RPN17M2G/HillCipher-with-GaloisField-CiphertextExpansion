@@ -6,12 +6,13 @@
 #include <stdio.h>
 
 #include "StatusCodes.h"
+#include "MathUtils.h"
 
-#define DEFAULT_PRIME_GALOIS_FIELD 16777619
-#define BYTE_SIZE 8
-#define TWO_BITS_MASK 0x03
-#define NUMBER_OF_RANDOM_BITS_TO_ADD 2
-#define PADDING_MAGIC 0x17
+#define DEFAULT_PRIME_GALOIS_FIELD (16777619)
+#define BYTE_SIZE (8)
+#define TWO_BITS_MASK (0x03)
+#define NUMBER_OF_RANDOM_BITS_TO_ADD (2)
+#define PADDING_MAGIC (0x17)
 
 #define IS_BIT_SET(byte, bit_number) ((byte & (1 << (BYTE_SIZE - 1 - (bit_number % BYTE_SIZE)))) != 0)
 #define SET_BIT(byte, bit_number) (byte |= (1 << (BYTE_SIZE - 1 - (bit_number % BYTE_SIZE))))
@@ -98,3 +99,14 @@ STATUS_CODE divide_into_blocks(double*** out_blocks, uint32_t* num_blocks, doubl
  * @return STATUS_CODE - Status of the operation.
  */
 STATUS_CODE generate_encryption_matrix(double*** out_matrix, uint32_t dimentation, uint32_t prime_field);
+
+/**
+ * @brief Generates a decryption matrix from encryption matrix.
+ *
+ * @param out_matrix - Pointer to the output matrix - allocated inside the function and memory released if fails.
+ * @param dimentation - Dimension of the square matrix.
+ * @param encryption_matrix - The encryption matrix
+ * @param prime_field - Prime field to use for generating random values.
+ * @return STATUS_CODE - Status of the operation.
+ */
+STATUS_CODE generate_decryption_matrix(double*** out_matrix, uint32_t dimentation, double** encryption_matrix, uint32_t prime_field);

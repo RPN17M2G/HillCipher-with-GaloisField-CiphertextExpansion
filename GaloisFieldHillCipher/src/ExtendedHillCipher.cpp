@@ -56,7 +56,7 @@ STATUS_CODE encrypt(double** out_ciphertext, uint32_t* out_ciphertext_bit_size, 
 
 	for (uint32_t block_number = 0; block_number < number_of_blocks; ++block_number)
 	{
-		if (STATUS_FAILED(matrix_multipication_with_vector(&ciphertext_block, encryption_matrix, plaintext_blocks[block_number], dimentation, prime_field)))
+		if (STATUS_FAILED(multiply_matrix_with_vector(&ciphertext_block, encryption_matrix, plaintext_blocks[block_number], dimentation, prime_field)))
 		{
 			return_code = STATUS_CODE_COULDNT_MULTIPLY_MATRIX_WITH_PLAINTEXT;
 			goto cleanup;
@@ -110,7 +110,7 @@ STATUS_CODE decrypt(uint8_t** out_plaintext, uint32_t* out_plaintext_bit_size, d
 
 	for (uint32_t block_number = 0; block_number < number_of_blocks; ++block_number)
 	{
-		if (STATUS_FAILED(matrix_multipication_with_vector(&plaintext_block, decryption_matrix, ciphertext_blocks[block_number], dimentation, prime_field)))
+		if (STATUS_FAILED(multiply_matrix_with_vector(&plaintext_block, decryption_matrix, ciphertext_blocks[block_number], dimentation, prime_field)))
 		{
 			return_code = STATUS_CODE_COULDNT_MULTIPLY_MATRIX_WITH_CIPHERTEXT;
 			goto cleanup;
@@ -125,7 +125,7 @@ STATUS_CODE decrypt(uint8_t** out_plaintext, uint32_t* out_plaintext_bit_size, d
 	uint32_t unpadded_plaintext_bit_size = 0;
 
 	if (STATUS_FAILED(remove_padding(&unpadded_plaintext, &unpadded_plaintext_bit_size, decrypted_plaintext, vector_bit_size)))
-	{
+	{	
 		return_code = STATUS_CODE_COULDNT_REMOVE_PADDING;
 		goto cleanup;
 	}

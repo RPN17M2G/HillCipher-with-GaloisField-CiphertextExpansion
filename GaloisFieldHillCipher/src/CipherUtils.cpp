@@ -388,3 +388,19 @@ cleanup:
     }
     return return_code;
 }
+
+STATUS_CODE generate_decryption_matrix(double*** out_matrix, uint32_t dimentation, double** encryption_matrix, uint32_t prime_field)
+{
+    STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
+
+    return_code = inverse_square_matrix(encryption_matrix, dimentation, prime_field, out_matrix);
+
+    if (STATUS_FAILED(return_code))
+    {
+        goto cleanup;
+    }
+
+    return_code = STATUS_CODE_SUCCESS;
+cleanup:
+    return return_code;
+}

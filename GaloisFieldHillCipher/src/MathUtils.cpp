@@ -65,7 +65,7 @@ cleanup:
 	return return_code;
 }
 
-STATUS_CODE square_matrix_inverse(double** matrix, uint32_t dimentaion, uint32_t prime_field, double*** out_inverse_matrix)
+STATUS_CODE inverse_square_matrix(double** matrix, uint32_t dimentaion, uint32_t prime_field, double*** out_inverse_matrix)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 	double determinant = 0;
@@ -185,7 +185,7 @@ cleanup:
 	return return_code;
 }
 
-STATUS_CODE matrix_multipication_with_vector(double** out_vector, double** matrix, uint8_t* vector, uint32_t dimentaion, uint32_t prime_field)
+STATUS_CODE multiply_matrix_with_vector(double** out_vector, double** matrix, uint8_t* vector, uint32_t dimentaion, uint32_t prime_field)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 	*out_vector = (double*)malloc(dimentaion * sizeof(double) + 1);
@@ -255,7 +255,7 @@ cleanup:
 	return return_code;
 }
 
-STATUS_CODE matrix_multipication_with_vector(uint8_t** out_vector, double** matrix, double* vector, uint32_t dimentaion, uint32_t prime_field)
+STATUS_CODE multiply_matrix_with_vector(uint8_t** out_vector, double** matrix, double* vector, uint32_t dimentaion, uint32_t prime_field)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 	*out_vector = (uint8_t*)malloc(dimentaion + 1);
