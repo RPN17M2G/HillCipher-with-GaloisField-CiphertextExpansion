@@ -9,18 +9,20 @@ if (POLICY CMP0141)
   set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
 endif()
 
-project ("GaloisFieldHillCipher")
+project ("GaloisFieldHillCipher" LANGUAGES C)
 
-include_directories(include)
+FILE(GLOB_RECURSE SOURCES src/*.c GaloisFieldHillCipher.c)
+FILE(GLOB_RECURSE INCLUDES include/*.h
+	thirdparty/sodium/include/*.h)
 
-# Add source to this project's executable.
-add_executable (GaloisFieldHillCipher 
-  "GaloisFieldHillCipher.cpp" 
-  "include/ExtendedHillCipher.h"
-  "include/StatusCodes.h"
-  "include/MathUtils.h"
-  "include/CipherUtils.h"
- "src/CipherUtils.cpp" 
- "src/ExtendedHillCipher.cpp"
-"src/MathUtils.cpp")
+add_executable (GaloisFieldHillCipher  
+	${SOURCES}
+	${INCLUDES})
 
+add_library(sodium INTERFACE thirdparty/sodium/libsodium.lib)
+target_link_libraries(GaloisFieldHillCipher INTERFACE sodium)
+
+target_include_directories(GaloisFieldHillCipher PRIVATE 
+  include
+  thirdparty/sodium/include
+)

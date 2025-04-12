@@ -38,7 +38,7 @@ STATUS_CODE encrypt(double** out_ciphertext, uint32_t* out_ciphertext_bit_size, 
 	uint8_t** plaintext_blocks = NULL;
 	uint32_t number_of_blocks = 0;
 
-	if (STATUS_FAILED(divide_into_blocks(&plaintext_blocks, &number_of_blocks, padded_plaintext, padded_plaintext_bit_size, block_size_in_bits)))
+	if (STATUS_FAILED(divide_uint8_t_into_blocks(&plaintext_blocks, &number_of_blocks, padded_plaintext, padded_plaintext_bit_size, block_size_in_bits)))
 	{
 		return_code = STATUS_CODE_COULDNT_DIVIDE_TO_BLOCKS;
 		goto cleanup;
@@ -56,7 +56,7 @@ STATUS_CODE encrypt(double** out_ciphertext, uint32_t* out_ciphertext_bit_size, 
 
 	for (uint32_t block_number = 0; block_number < number_of_blocks; ++block_number)
 	{
-		if (STATUS_FAILED(multiply_matrix_with_vector(&ciphertext_block, encryption_matrix, plaintext_blocks[block_number], dimentation, prime_field)))
+		if (STATUS_FAILED(multiply_matrix_with_uint8_t_vector(&ciphertext_block, encryption_matrix, plaintext_blocks[block_number], dimentation, prime_field)))
 		{
 			return_code = STATUS_CODE_COULDNT_MULTIPLY_MATRIX_WITH_PLAINTEXT;
 			goto cleanup;
@@ -93,7 +93,7 @@ STATUS_CODE decrypt(uint8_t** out_plaintext, uint32_t* out_plaintext_bit_size, d
 
 	double** ciphertext_blocks = NULL;
 
-	if (STATUS_FAILED(divide_into_blocks(&ciphertext_blocks, &number_of_blocks, ciphertext_vector, vector_bit_size, block_size_in_bits)))
+	if (STATUS_FAILED(divide_double_into_blocks(&ciphertext_blocks, &number_of_blocks, ciphertext_vector, vector_bit_size, block_size_in_bits)))
 	{
 		return_code = STATUS_CODE_COULDNT_DIVIDE_TO_BLOCKS;
 		goto cleanup;
@@ -110,7 +110,7 @@ STATUS_CODE decrypt(uint8_t** out_plaintext, uint32_t* out_plaintext_bit_size, d
 
 	for (uint32_t block_number = 0; block_number < number_of_blocks; ++block_number)
 	{
-		if (STATUS_FAILED(multiply_matrix_with_vector(&plaintext_block, decryption_matrix, ciphertext_blocks[block_number], dimentation, prime_field)))
+		if (STATUS_FAILED(multiply_matrix_with_double_vector(&plaintext_block, decryption_matrix, ciphertext_blocks[block_number], dimentation, prime_field)))
 		{
 			return_code = STATUS_CODE_COULDNT_MULTIPLY_MATRIX_WITH_CIPHERTEXT;
 			goto cleanup;

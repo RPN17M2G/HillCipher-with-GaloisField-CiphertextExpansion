@@ -30,10 +30,16 @@ STATUS_CODE add_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_size,
     memset(*out, 0, total_bytes);
 
     uint32_t output_bit = 0;
-
+    uint32_t random_bits = 0;
     for (uint32_t bit_number = 0; bit_number < value_bit_length; ++bit_number)
     {
-        uint8_t random_bits = 1 & TWO_BITS_MASK; // TODO: Add random bits
+        return_code = generate_secure_random_number(&random_bits, (uint32_t)0, (uint32_t)TWO_BITS_MAX_VALUE);
+		if (STATUS_FAILED(return_code))
+		{
+			goto cleanup;
+		}
+
+        uint8_t masked_random_bits = random_bits & TWO_BITS_MASK; // TODO: Add random bits
 
         if ((output_bit % BYTE_SIZE == 0) && (output_bit != 0))
         {
@@ -226,7 +232,7 @@ cleanup:
     return return_code;
 }
 
-STATUS_CODE divide_into_blocks(uint8_t*** out_blocks, uint32_t* num_blocks, uint8_t* value, uint32_t value_bit_length, uint32_t block_bit_size)
+STATUS_CODE divide_uint8_t_into_blocks(uint8_t*** out_blocks, uint32_t* num_blocks, uint8_t* value, uint32_t value_bit_length, uint32_t block_bit_size)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 
@@ -281,7 +287,7 @@ cleanup:
     return return_code;
 }
 
-STATUS_CODE divide_into_blocks(double*** out_blocks, uint32_t* num_blocks, double* value, uint32_t value_bit_length, uint32_t block_bit_size)
+STATUS_CODE divide_double_into_blocks(double*** out_blocks, uint32_t* num_blocks, double* value, uint32_t value_bit_length, uint32_t block_bit_size)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 
@@ -342,18 +348,18 @@ cleanup:
 
 STATUS_CODE generate_encryption_matrix(double*** out_matrix, uint32_t dimentation, uint32_t prime_field)
 {
-    STATUS_CODE return_code = STATUS_CODE::STATUS_CODE_UNINITIALIZED;
+    STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 
     if (out_matrix == NULL)
     {
-        return_code = STATUS_CODE::STATUS_CODE_INVALID_ARGUMENT;
+        return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
     }
 
     *out_matrix = (double**)malloc(dimentation * sizeof(double*));
     if (*out_matrix == NULL)
     {
-        return_code = STATUS_CODE::STATUS_CODE_ERROR_MEMORY_ALLOCATION;
+        return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
         goto cleanup;
     }
 
@@ -363,18 +369,20 @@ STATUS_CODE generate_encryption_matrix(double*** out_matrix, uint32_t dimentatio
         (*out_matrix)[row] = (double*)malloc(dimentation * sizeof(double));
         if ((*out_matrix)[row] == NULL)
         {
-            return_code = STATUS_CODE::STATUS_CODE_ERROR_MEMORY_ALLOCATION;
+            return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
             goto cleanup;
         }
         for (uint32_t column = 0; column < dimentation; ++column)
         {
-            // Generating a cryptography secure random number using sodium.
-            int64_t secure_random_value = 1;//(uint32_t)(randombytes_uniform(-1 * prime_field, prime_field)); // randombytes_uniform returns a number between 0 and prime_field - 1
-            (*out_matrix)[row][column] = secure_random_value;
+            return_code = generate_secure_random_double(&((*out_matrix)[row][column]), (uint32_t)0, prime_field - 1);
+            if (STATUS_FAILED(return_code))
+            {
+                goto cleanup;
+            }
         }
     }
 
-    return_code = STATUS_CODE::STATUS_CODE_SUCCESS;
+    return_code = STATUS_CODE_SUCCESS;
 cleanup:
     if (STATUS_FAILED(return_code) && (out_matrix != NULL) && (*out_matrix != NULL))
     {

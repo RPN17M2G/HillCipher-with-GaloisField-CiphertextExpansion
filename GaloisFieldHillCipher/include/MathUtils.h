@@ -1,8 +1,10 @@
 #pragma once
 
-#include <cstdlib>
-#include <cstdint>
+#include <stdio.h>
+#include <stdint.h>
 #include <math.h>
+#include <stdbool.h>
+#include <stdlib.h>
 
 #include "StatusCodes.h"
 
@@ -40,7 +42,7 @@ STATUS_CODE inverse_square_matrix(double** matrix, uint32_t dimentaion, uint32_t
  * @param out_vector - Pointer to the output vector - allocated inside the function and memory released if fails.
  * @return STATUS_CODE - Status of the operation.
  */
-STATUS_CODE multiply_matrix_with_vector(double** out_vector, double** matrix, uint8_t* vector, uint32_t dimentaion, uint32_t prime_field);
+STATUS_CODE multiply_matrix_with_uint8_t_vector(double** out_vector, double** matrix, uint8_t* vector, uint32_t dimentaion, uint32_t prime_field);
 
 /**
  * @brief Multiplies a square matrix with a vector for decryption, the result vector is uint8_t.
@@ -52,7 +54,7 @@ STATUS_CODE multiply_matrix_with_vector(double** out_vector, double** matrix, ui
  * @param out_vector - Pointer to the output vector - allocated inside the function and memory released if fails.
  * @return STATUS_CODE - Status of the operation.
  */
-STATUS_CODE multiply_matrix_with_vector(uint8_t** out_vector, double** matrix, double* vector, uint32_t dimentaion, uint32_t prime_field);
+STATUS_CODE multiply_matrix_with_double_vector(uint8_t** out_vector, double** matrix, double* vector, uint32_t dimentaion, uint32_t prime_field);
 
 
 /**

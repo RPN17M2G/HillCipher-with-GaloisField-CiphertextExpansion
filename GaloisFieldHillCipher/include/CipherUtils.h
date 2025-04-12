@@ -1,10 +1,12 @@
 #pragma once
 
-#include <cstdlib>
-#include <cstdint>
-#include <cstring>
 #include <stdio.h>
+#include <stdint.h>
+#include <string.h>
+#include <stdbool.h>
+#include <stdlib.h>
 
+#include "CSPRNG.h"
 #include "StatusCodes.h"
 #include "MathUtils.h"
 
@@ -13,6 +15,7 @@
 #define TWO_BITS_MASK (0x03)
 #define NUMBER_OF_RANDOM_BITS_TO_ADD (2)
 #define PADDING_MAGIC (0x17)
+#define TWO_BITS_MAX_VALUE (3)
 
 #define IS_BIT_SET(byte, bit_number) ((byte & (1 << (BYTE_SIZE - 1 - (bit_number % BYTE_SIZE)))) != 0)
 #define SET_BIT(byte, bit_number) (byte |= (1 << (BYTE_SIZE - 1 - (bit_number % BYTE_SIZE))))
@@ -75,7 +78,7 @@ STATUS_CODE remove_padding(uint8_t** out, uint32_t* out_bit_length, uint8_t* val
  * @param block_bit_size - Size of each block in bits.
  * @return STATUS_CODE - Status of the operation.
  */
-STATUS_CODE divide_into_blocks(uint8_t*** out_blocks, uint32_t* num_blocks, uint8_t* value, uint32_t value_bit_length, uint32_t block_bit_size);
+STATUS_CODE divide_uint8_t_into_blocks(uint8_t*** out_blocks, uint32_t* num_blocks, uint8_t* value, uint32_t value_bit_length, uint32_t block_bit_size);
 
 /**
  * @brief Divides a double vector into blocks of a specific size.
@@ -87,7 +90,7 @@ STATUS_CODE divide_into_blocks(uint8_t*** out_blocks, uint32_t* num_blocks, uint
  * @param block_bit_size - Size of each block in bits.
  * @return STATUS_CODE - Status of the operation.
  */
-STATUS_CODE divide_into_blocks(double*** out_blocks, uint32_t* num_blocks, double* value, uint32_t value_bit_length, uint32_t block_bit_size);
+STATUS_CODE divide_double_into_blocks(double*** out_blocks, uint32_t* num_blocks, double* value, uint32_t value_bit_length, uint32_t block_bit_size);
 
 
 /**

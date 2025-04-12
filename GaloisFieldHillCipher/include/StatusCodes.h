@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdio.h>
+
 #define STATUS_SUCCESS(status) (status == STATUS_CODE_SUCCESS)
 #define STATUS_FAILED(status) (status != STATUS_CODE_SUCCESS)
 
