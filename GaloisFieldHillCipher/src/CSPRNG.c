@@ -40,7 +40,7 @@ cleanup:
 	return return_code;
 }
 
-STATUS_CODE generate_secure_random_double(double* out_number, double minimum_value, double maximum_value)
+STATUS_CODE generate_secure_random_double(double* out_number, uint32_t minimum_value, uint32_t maximum_value)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 
