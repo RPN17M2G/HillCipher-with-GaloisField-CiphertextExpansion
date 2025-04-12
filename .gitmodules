@@ -1,3 +1,3 @@
-[submodule "GaloisFieldHillCipher/thirdparty/sodium"]
-	path = GaloisFieldHillCipher/thirdparty/sodium
-	url = https://github.com/jedisct1/libsodium.git
+[submodule "GaloisFieldHillCipher/thirdparty/libsodium-cmake"]
+	path = GaloisFieldHillCipher/thirdparty/libsodium-cmake
+	url = https://github.com/robinlinden/libsodium-cmake.git
