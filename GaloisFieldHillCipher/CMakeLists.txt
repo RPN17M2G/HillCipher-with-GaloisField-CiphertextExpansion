@@ -15,14 +15,18 @@ FILE(GLOB_RECURSE SOURCES src/*.c GaloisFieldHillCipher.c)
 FILE(GLOB_RECURSE INCLUDES include/*.h
 	thirdparty/sodium/include/*.h)
 
+add_subdirectory(../libsodium libsodium-build)
+
 add_executable (GaloisFieldHillCipher  
 	${SOURCES}
 	${INCLUDES})
 
-add_library(sodium INTERFACE thirdparty/sodium/libsodium.lib)
-target_link_libraries(GaloisFieldHillCipher INTERFACE sodium)
+#add_library(sodium INTERFACE thirdparty/sodium/libsodium.lib)
+#target_link_libraries(GaloisFieldHillCipher INTERFACE sodium)
+
+
+target_link_libraries(GaloisFieldHillCipher PRIVATE sodium)
 
 target_include_directories(GaloisFieldHillCipher PRIVATE 
   include
-  thirdparty/sodium/include
 )
