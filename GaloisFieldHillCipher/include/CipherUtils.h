@@ -90,7 +90,7 @@ STATUS_CODE divide_uint8_t_into_blocks(uint8_t*** out_blocks, uint32_t* num_bloc
  * @param block_bit_size - Size of each block in bits.
  * @return STATUS_CODE - Status of the operation.
  */
-STATUS_CODE divide_double_into_blocks(double*** out_blocks, uint32_t* num_blocks, double* value, uint32_t value_bit_length, uint32_t block_bit_size);
+STATUS_CODE divide_double_into_blocks(long double*** out_blocks, uint32_t* num_blocks, long double* value, uint32_t value_bit_length, uint32_t block_bit_size);
 
 
 /**
@@ -101,7 +101,7 @@ STATUS_CODE divide_double_into_blocks(double*** out_blocks, uint32_t* num_blocks
  * @param prime_field - Prime field to use for generating random values.
  * @return STATUS_CODE - Status of the operation.
  */
-STATUS_CODE generate_encryption_matrix(double*** out_matrix, uint32_t dimentation, uint32_t prime_field);
+STATUS_CODE generate_encryption_matrix(long double*** out_matrix, uint32_t dimentation, uint32_t prime_field);
 
 /**
  * @brief Generates a decryption matrix from encryption matrix.
@@ -112,4 +112,4 @@ STATUS_CODE generate_encryption_matrix(double*** out_matrix, uint32_t dimentatio
  * @param prime_field - Prime field to use for generating random values.
  * @return STATUS_CODE - Status of the operation.
  */
-STATUS_CODE generate_decryption_matrix(double*** out_matrix, uint32_t dimentation, double** encryption_matrix, uint32_t prime_field);
+STATUS_CODE generate_decryption_matrix(long double*** out_matrix, uint32_t dimentation, long double** encryption_matrix, uint32_t prime_field);

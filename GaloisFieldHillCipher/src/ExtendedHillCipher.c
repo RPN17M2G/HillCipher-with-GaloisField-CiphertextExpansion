@@ -1,6 +1,6 @@
 #include "ExtendedHillCipher.h"
 
-STATUS_CODE encrypt(double** out_ciphertext, uint32_t* out_ciphertext_bit_size, double** encryption_matrix, uint32_t dimentation, uint32_t prime_field, uint8_t* plaintext_vector, uint32_t vector_bit_size)
+STATUS_CODE encrypt(long double** out_ciphertext, uint32_t* out_ciphertext_bit_size, long double** encryption_matrix, uint32_t dimentation, uint32_t prime_field, uint8_t* plaintext_vector, uint32_t vector_bit_size)
 {
 	uint32_t block_size_in_bits = (BYTE_SIZE * dimentation);
 
@@ -44,7 +44,7 @@ STATUS_CODE encrypt(double** out_ciphertext, uint32_t* out_ciphertext_bit_size, 
 		goto cleanup;
 	}
 
-	*out_ciphertext = (double*)malloc(((block_size_in_bits * number_of_blocks) / BYTE_SIZE) * sizeof(double));
+	*out_ciphertext = (long double*)malloc(((block_size_in_bits * number_of_blocks) / BYTE_SIZE) * sizeof(long double));
 	*out_ciphertext_bit_size = block_size_in_bits * number_of_blocks;
 	if (*out_ciphertext == NULL)
 	{
@@ -52,7 +52,7 @@ STATUS_CODE encrypt(double** out_ciphertext, uint32_t* out_ciphertext_bit_size, 
 		goto cleanup;
 	}
 
-	double* ciphertext_block = NULL;
+	long double* ciphertext_block = NULL;
 
 	for (uint32_t block_number = 0; block_number < number_of_blocks; ++block_number)
 	{
@@ -78,7 +78,7 @@ cleanup:
 	return return_code;
 }
 
-STATUS_CODE decrypt(uint8_t** out_plaintext, uint32_t* out_plaintext_bit_size, double** decryption_matrix, uint32_t dimentation, uint32_t prime_field, double* ciphertext_vector, uint32_t vector_bit_size)
+STATUS_CODE decrypt(uint8_t** out_plaintext, uint32_t* out_plaintext_bit_size, long double** decryption_matrix, uint32_t dimentation, uint32_t prime_field, long double* ciphertext_vector, uint32_t vector_bit_size)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 
@@ -91,7 +91,7 @@ STATUS_CODE decrypt(uint8_t** out_plaintext, uint32_t* out_plaintext_bit_size, d
 	uint32_t block_size_in_bits = (BYTE_SIZE * dimentation);
 	uint32_t number_of_blocks = vector_bit_size / block_size_in_bits;
 
-	double** ciphertext_blocks = NULL;
+	long double** ciphertext_blocks = NULL;
 
 	if (STATUS_FAILED(divide_double_into_blocks(&ciphertext_blocks, &number_of_blocks, ciphertext_vector, vector_bit_size, block_size_in_bits)))
 	{

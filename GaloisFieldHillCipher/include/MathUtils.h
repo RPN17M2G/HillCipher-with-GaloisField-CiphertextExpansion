@@ -19,7 +19,7 @@
  * @param out_determinant - Pointer to the output determinant value.
  * @return STATUS_CODE - Status of the operation.
  */
-STATUS_CODE matrix_determinant(double** matrix, uint32_t dimentaion, double* out_determinant);
+STATUS_CODE matrix_determinant(long double** matrix, uint32_t dimentaion, long double* out_determinant);
 
 /**
  * @brief Calculates the inverse of a square matrix using .
@@ -30,7 +30,7 @@ STATUS_CODE matrix_determinant(double** matrix, uint32_t dimentaion, double* out
  * @param out_inverse_matrix - Pointer to the output inverse matrix - allocated inside the function and memory released if fails.
  * @return STATUS_CODE - Status of the operation.
  */
-STATUS_CODE inverse_square_matrix(double** matrix, uint32_t dimentaion, uint32_t prime_field, double*** out_inverse_matrix);
+STATUS_CODE inverse_square_matrix(long double** matrix, uint32_t dimentaion, uint32_t prime_field, long double*** out_inverse_matrix);
 
 /**
  * @brief Multiplies a square matrix with a vector.
@@ -42,7 +42,7 @@ STATUS_CODE inverse_square_matrix(double** matrix, uint32_t dimentaion, uint32_t
  * @param out_vector - Pointer to the output vector - allocated inside the function and memory released if fails.
  * @return STATUS_CODE - Status of the operation.
  */
-STATUS_CODE multiply_matrix_with_uint8_t_vector(double** out_vector, double** matrix, uint8_t* vector, uint32_t dimentaion, uint32_t prime_field);
+STATUS_CODE multiply_matrix_with_uint8_t_vector(long double** out_vector, long double** matrix, uint8_t* vector, uint32_t dimentaion, uint32_t prime_field);
 
 /**
  * @brief Multiplies a square matrix with a vector for decryption, the result vector is uint8_t.
@@ -54,7 +54,7 @@ STATUS_CODE multiply_matrix_with_uint8_t_vector(double** out_vector, double** ma
  * @param out_vector - Pointer to the output vector - allocated inside the function and memory released if fails.
  * @return STATUS_CODE - Status of the operation.
  */
-STATUS_CODE multiply_matrix_with_double_vector(uint8_t** out_vector, double** matrix, double* vector, uint32_t dimentaion, uint32_t prime_field);
+STATUS_CODE multiply_matrix_with_double_vector(uint8_t** out_vector, long double** matrix, long double* vector, uint32_t dimentaion, uint32_t prime_field);
 
 
 /**
@@ -64,7 +64,7 @@ STATUS_CODE multiply_matrix_with_double_vector(uint8_t** out_vector, double** ma
  * @param dimentaion - Dimension of the square matrix.
  * @return STATUS_CODE - Status of the operation.
  */
-STATUS_CODE free_matrix(double** matrix, const uint32_t dimentaion);
+STATUS_CODE free_matrix(long double** matrix, const uint32_t dimentaion);
 
 /**
  * @brief Builds a minor matrix by removing a specified row and column from the input matrix.
@@ -76,7 +76,7 @@ STATUS_CODE free_matrix(double** matrix, const uint32_t dimentaion);
  * @param out_matrix - Pointer to the output minor matrix - allocated inside the function and memory released if fails.
  * @return STATUS_CODE - Status of the operation.
  */
-STATUS_CODE build_minor_matrix(double** matrix, uint32_t dimentaion, uint32_t row, uint32_t column, double*** out_matrix);
+STATUS_CODE build_minor_matrix(long double** matrix, uint32_t dimentaion, uint32_t row, uint32_t column, long double*** out_matrix);
 
 /**
  * @brief Calculates the greatest common divisor (GCD) of two elements.
@@ -86,7 +86,7 @@ STATUS_CODE build_minor_matrix(double** matrix, uint32_t dimentaion, uint32_t ro
  * @param out_gcd - Pointer to the output GCD value.
  * @return STATUS_CODE - Status of the operation.
  */
-STATUS_CODE gcd(double first_element, double second_element, double* out_gcd);
+STATUS_CODE gcd(long double first_element, long double second_element, long double* out_gcd);
 
 /**
  * @brief Checks if a matrix is invertible.
@@ -97,5 +97,5 @@ STATUS_CODE gcd(double first_element, double second_element, double* out_gcd);
  * @param out_is_invertible - Pointer to the output boolean indicating if the matrix is invertible.
  * @return STATUS_CODE - Status of the operation.
  */
-STATUS_CODE is_matrix_invertible(double** matrix, uint32_t dimentaion, uint32_t prime_field, bool* out_is_invertible);
+STATUS_CODE is_matrix_invertible(long double** matrix, uint32_t dimentaion, uint32_t prime_field, bool* out_is_invertible);
 
