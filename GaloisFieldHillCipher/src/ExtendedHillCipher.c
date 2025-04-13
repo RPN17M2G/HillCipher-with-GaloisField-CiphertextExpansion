@@ -1,6 +1,6 @@
 #include "ExtendedHillCipher.h"
 
-STATUS_CODE encrypt(long double** out_ciphertext, uint32_t* out_ciphertext_bit_size, long double** encryption_matrix, uint32_t dimentation, uint32_t prime_field, uint8_t* plaintext_vector, uint32_t vector_bit_size)
+STATUS_CODE encrypt(int64_t** out_ciphertext, uint32_t* out_ciphertext_bit_size, int64_t** encryption_matrix, uint32_t dimentation, uint32_t prime_field, uint8_t* plaintext_vector, uint32_t vector_bit_size)
 {
 	uint32_t block_size_in_bits = (BYTE_SIZE * dimentation);
 
@@ -44,7 +44,7 @@ STATUS_CODE encrypt(long double** out_ciphertext, uint32_t* out_ciphertext_bit_s
 		goto cleanup;
 	}
 
-	*out_ciphertext = (long double*)malloc(((block_size_in_bits * number_of_blocks) / BYTE_SIZE) * sizeof(long double));
+	*out_ciphertext = (int64_t*)malloc(((block_size_in_bits * number_of_blocks) / BYTE_SIZE) * sizeof(int64_t));
 	*out_ciphertext_bit_size = block_size_in_bits * number_of_blocks;
 	if (*out_ciphertext == NULL)
 	{
@@ -52,7 +52,7 @@ STATUS_CODE encrypt(long double** out_ciphertext, uint32_t* out_ciphertext_bit_s
 		goto cleanup;
 	}
 
-	long double* ciphertext_block = NULL;
+	int64_t* ciphertext_block = NULL;
 
 	for (uint32_t block_number = 0; block_number < number_of_blocks; ++block_number)
 	{
@@ -78,7 +78,7 @@ cleanup:
 	return return_code;
 }
 
-STATUS_CODE decrypt(uint8_t** out_plaintext, uint32_t* out_plaintext_bit_size, long double** decryption_matrix, uint32_t dimentation, uint32_t prime_field, long double* ciphertext_vector, uint32_t vector_bit_size)
+STATUS_CODE decrypt(uint8_t** out_plaintext, uint32_t* out_plaintext_bit_size, int64_t** decryption_matrix, uint32_t dimentation, uint32_t prime_field, int64_t* ciphertext_vector, uint32_t vector_bit_size)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 
@@ -91,9 +91,9 @@ STATUS_CODE decrypt(uint8_t** out_plaintext, uint32_t* out_plaintext_bit_size, l
 	uint32_t block_size_in_bits = (BYTE_SIZE * dimentation);
 	uint32_t number_of_blocks = vector_bit_size / block_size_in_bits;
 
-	long double** ciphertext_blocks = NULL;
+	int64_t** ciphertext_blocks = NULL;
 
-	if (STATUS_FAILED(divide_double_into_blocks(&ciphertext_blocks, &number_of_blocks, ciphertext_vector, vector_bit_size, block_size_in_bits)))
+	if (STATUS_FAILED(divide_int64_t_into_blocks(&ciphertext_blocks, &number_of_blocks, ciphertext_vector, vector_bit_size, block_size_in_bits)))
 	{
 		return_code = STATUS_CODE_COULDNT_DIVIDE_TO_BLOCKS;
 		goto cleanup;
@@ -110,7 +110,7 @@ STATUS_CODE decrypt(uint8_t** out_plaintext, uint32_t* out_plaintext_bit_size, l
 
 	for (uint32_t block_number = 0; block_number < number_of_blocks; ++block_number)
 	{
-		if (STATUS_FAILED(multiply_matrix_with_double_vector(&plaintext_block, decryption_matrix, ciphertext_blocks[block_number], dimentation, prime_field)))
+		if (STATUS_FAILED(multiply_matrix_with_int64_t_vector(&plaintext_block, decryption_matrix, ciphertext_blocks[block_number], dimentation, prime_field)))
 		{
 			return_code = STATUS_CODE_COULDNT_MULTIPLY_MATRIX_WITH_CIPHERTEXT;
 			goto cleanup;

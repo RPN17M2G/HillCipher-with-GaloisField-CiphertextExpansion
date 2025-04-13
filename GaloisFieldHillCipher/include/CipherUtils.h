@@ -81,7 +81,7 @@ STATUS_CODE remove_padding(uint8_t** out, uint32_t* out_bit_length, uint8_t* val
 STATUS_CODE divide_uint8_t_into_blocks(uint8_t*** out_blocks, uint32_t* num_blocks, uint8_t* value, uint32_t value_bit_length, uint32_t block_bit_size);
 
 /**
- * @brief Divides a double vector into blocks of a specific size.
+ * @brief Divides an int64_t vector into blocks of a specific size.
  *
  * @param out_blocks - Pointer to the output vector of blocks - allocated inside the function and memory released if fails.
  * @param num_blocks - Number of blocks in the output vector.
@@ -90,7 +90,7 @@ STATUS_CODE divide_uint8_t_into_blocks(uint8_t*** out_blocks, uint32_t* num_bloc
  * @param block_bit_size - Size of each block in bits.
  * @return STATUS_CODE - Status of the operation.
  */
-STATUS_CODE divide_double_into_blocks(long double*** out_blocks, uint32_t* num_blocks, long double* value, uint32_t value_bit_length, uint32_t block_bit_size);
+STATUS_CODE divide_int64_t_into_blocks(int64_t*** out_blocks, uint32_t* num_blocks, int64_t* value, uint32_t value_bit_length, uint32_t block_bit_size);
 
 
 /**
@@ -101,7 +101,7 @@ STATUS_CODE divide_double_into_blocks(long double*** out_blocks, uint32_t* num_b
  * @param prime_field - Prime field to use for generating random values.
  * @return STATUS_CODE - Status of the operation.
  */
-STATUS_CODE generate_encryption_matrix(long double*** out_matrix, uint32_t dimentation, uint32_t prime_field);
+STATUS_CODE generate_encryption_matrix(int64_t*** out_matrix, uint32_t dimentation, uint32_t prime_field);
 
 /**
  * @brief Generates a decryption matrix from encryption matrix.
@@ -112,4 +112,4 @@ STATUS_CODE generate_encryption_matrix(long double*** out_matrix, uint32_t dimen
  * @param prime_field - Prime field to use for generating random values.
  * @return STATUS_CODE - Status of the operation.
  */
-STATUS_CODE generate_decryption_matrix(long double*** out_matrix, uint32_t dimentation, long double** encryption_matrix, uint32_t prime_field);
+STATUS_CODE generate_decryption_matrix(int64_t*** out_matrix, uint32_t dimentation, int64_t** encryption_matrix, uint32_t prime_field);

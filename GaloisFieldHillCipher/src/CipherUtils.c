@@ -287,7 +287,7 @@ cleanup:
     return return_code;
 }
 
-STATUS_CODE divide_double_into_blocks(long double*** out_blocks, uint32_t* num_blocks, long double* value, uint32_t value_bit_length, uint32_t block_bit_size)
+STATUS_CODE divide_int64_t_into_blocks(int64_t*** out_blocks, uint32_t* num_blocks, int64_t* value, uint32_t value_bit_length, uint32_t block_bit_size)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 
@@ -295,7 +295,7 @@ STATUS_CODE divide_double_into_blocks(long double*** out_blocks, uint32_t* num_b
         || (NULL == num_blocks) 
         || (NULL == value)
         || (value_bit_length % block_bit_size != 0)
-        || (sizeof(long double) % block_bit_size != 0))
+        || ((sizeof(int64_t) * BYTE_SIZE) % block_bit_size != 0))
     {
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
@@ -308,7 +308,7 @@ STATUS_CODE divide_double_into_blocks(long double*** out_blocks, uint32_t* num_b
     }
 
     *num_blocks = value_bit_length / block_bit_size;
-    *out_blocks = (long double**)malloc(*num_blocks * sizeof(*out_blocks));
+    *out_blocks = (int64_t**)malloc(*num_blocks * sizeof(*out_blocks));
     if (NULL == *out_blocks)
     {
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
@@ -317,7 +317,7 @@ STATUS_CODE divide_double_into_blocks(long double*** out_blocks, uint32_t* num_b
 
     for (uint32_t block_number = 0; block_number < *num_blocks; ++block_number)
     {
-        (*out_blocks)[block_number] = (long double*)malloc(block_bit_size / BYTE_SIZE);
+        (*out_blocks)[block_number] = (int64_t*)malloc(block_bit_size / BYTE_SIZE);
         if (NULL == (*out_blocks)[block_number])
         {
             return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
@@ -346,7 +346,7 @@ cleanup:
     return return_code;
 }
 
-STATUS_CODE generate_encryption_matrix(long double*** out_matrix, uint32_t dimentation, uint32_t prime_field)
+STATUS_CODE generate_encryption_matrix(int64_t*** out_matrix, uint32_t dimentation, uint32_t prime_field)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 
@@ -356,7 +356,7 @@ STATUS_CODE generate_encryption_matrix(long double*** out_matrix, uint32_t dimen
         goto cleanup;
     }
 
-    *out_matrix = (long double**)malloc(dimentation * sizeof(long double*));
+    *out_matrix = (int64_t**)malloc(dimentation * sizeof(int64_t*));
     if (*out_matrix == NULL)
     {
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
@@ -366,7 +366,7 @@ STATUS_CODE generate_encryption_matrix(long double*** out_matrix, uint32_t dimen
     // Generate random numbers mod prime_field to fill the matrix
     for (uint32_t row = 0; row < dimentation; ++row)
     {
-        (*out_matrix)[row] = (long double*)malloc(dimentation * sizeof(long double));
+        (*out_matrix)[row] = (int64_t*)malloc(dimentation * sizeof(int64_t));
         if ((*out_matrix)[row] == NULL)
         {
             return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
@@ -380,7 +380,7 @@ STATUS_CODE generate_encryption_matrix(long double*** out_matrix, uint32_t dimen
             {
                 goto cleanup;
             }
-			(*out_matrix)[row][column] = (long double)(secure_random_number);
+			(*out_matrix)[row][column] = (int64_t)(secure_random_number);
         }
     }
 
@@ -407,7 +407,7 @@ cleanup:
     return return_code;
 }
 
-STATUS_CODE generate_decryption_matrix(long double*** out_matrix, uint32_t dimentation, long double** encryption_matrix, uint32_t prime_field)
+STATUS_CODE generate_decryption_matrix(int64_t*** out_matrix, uint32_t dimentation, int64_t** encryption_matrix, uint32_t prime_field)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 

@@ -2,9 +2,16 @@
 
 int main()
 {
-	double** encryption_matrix = NULL;
-	double** decryption_matrix = NULL;
+	int64_t** encryption_matrix = NULL;
+	int64_t** decryption_matrix = NULL;
 	uint32_t matrix_dimentation = 2;
+
+
+	uint8_t plaintext[] = { 'H', 'e', 'l', 'l', 'o', 'H', 'e', 'l', 'l', 'o' };
+	uint32_t plaintext_bit_size = 10 * BYTE_SIZE;
+
+	int64_t* ciphertext = NULL;
+	uint32_t ciphertext_bit_size = 0;
 
 	STATUS_CODE return_code = generate_encryption_matrix(&encryption_matrix, matrix_dimentation, DEFAULT_PRIME_GALOIS_FIELD);
 	if (STATUS_FAILED(return_code))
@@ -17,16 +24,11 @@ int main()
 	{
 		for (uint32_t column = 0; column < matrix_dimentation; ++column)
 		{
-			printf("%f ", encryption_matrix[row][column]);
+			printf("%d ", encryption_matrix[row][column]);
 		}
 		printf("\n");
 	}
 
-	uint8_t plaintext[] = { 'H', 'e', 'l', 'l', 'o', 'H', 'e', 'l', 'l', 'o' };
-	uint32_t plaintext_bit_size = 10 * BYTE_SIZE;
-
-	double* ciphertext = NULL;
-	uint32_t ciphertext_bit_size = 0;
 	return_code = encrypt(&ciphertext, &ciphertext_bit_size, encryption_matrix, matrix_dimentation, DEFAULT_PRIME_GALOIS_FIELD, plaintext, plaintext_bit_size);
 	if (STATUS_FAILED(return_code))
 	{
@@ -36,7 +38,7 @@ int main()
 	printf("\nCiphertext(size %d, in bytes: %d): \n", ciphertext_bit_size, ciphertext_bit_size / BYTE_SIZE);
 	for (uint32_t number = 0; number < ciphertext_bit_size / BYTE_SIZE; ++number)
 	{
-		printf("%f ", ciphertext[number]);
+		printf("%d ", ciphertext[number]);
 	}
 	printf("\n\n");
 
@@ -51,7 +53,7 @@ int main()
 	{
 		for (uint32_t column = 0; column < matrix_dimentation; ++column)
 		{
-			printf("%f ", decryption_matrix[row][column]);
+			printf("%d ", decryption_matrix[row][column]);
 		}
 		printf("\n");
 	}
@@ -67,7 +69,7 @@ int main()
 	printf("\nDecrypted Plaintext(size %d, in bytes: %d): \n", decrypted_size, decrypted_size / BYTE_SIZE);
 	for (uint32_t number = 0; number < decrypted_size / BYTE_SIZE; ++number)
 	{
-		printf("%f ", decrypted_text[number]);
+		printf("%c ", decrypted_text[number]);
 	}
 	printf("\n\n");
 

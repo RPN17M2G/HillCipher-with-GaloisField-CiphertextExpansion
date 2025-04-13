@@ -1,9 +1,9 @@
 #include "MathUtils.h"
 
-STATUS_CODE matrix_determinant(long double** matrix, uint32_t dimentaion, long double* out_determinant)
+STATUS_CODE matrix_determinant(int64_t** matrix, uint32_t dimentaion, int64_t* out_determinant)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
-	long double** minor_matrix = NULL;
+	int64_t** minor_matrix = NULL;
 
 	if (matrix == NULL || out_determinant == NULL)
 	{
@@ -18,6 +18,8 @@ STATUS_CODE matrix_determinant(long double** matrix, uint32_t dimentaion, long d
 		return_code = STATUS_CODE_SUCCESS;
 		goto cleanup;
 	}
+
+	*out_determinant = 0;
 
 	for (uint32_t row = 0; row < dimentaion; ++row)
 	{
@@ -35,7 +37,7 @@ STATUS_CODE matrix_determinant(long double** matrix, uint32_t dimentaion, long d
 					goto cleanup;
 				}
 
-				long double minor_matrix_determinant = 0;
+				int64_t minor_matrix_determinant = 0;
 				return_code = matrix_determinant(minor_matrix, dimentaion - 1, &minor_matrix_determinant);
 
 				if (STATUS_FAILED(return_code))
@@ -44,7 +46,7 @@ STATUS_CODE matrix_determinant(long double** matrix, uint32_t dimentaion, long d
 				}
 
 				// Calculate the cofactor of the element
-				long double cofactor = matrix[row][column] * minor_matrix_determinant;
+				int64_t cofactor = matrix[row][column] * minor_matrix_determinant;
 				if (IS_ODD(row + column)) // If the sum of the row and column is odd, the cofactor is negative
 				{
 					cofactor *= -1;
@@ -65,12 +67,37 @@ cleanup:
 	return return_code;
 }
 
-STATUS_CODE inverse_square_matrix(long double** matrix, uint32_t dimentaion, uint32_t prime_field, long double*** out_inverse_matrix)
+STATUS_CODE matrix_determinant_over_galois_field(int64_t** matrix, uint32_t dimentaion, uint32_t prime_field, int64_t* out_determinant)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
-	long double determinant = 0;
+	int64_t determinant = 0;
+
+	if ((matrix == NULL) || (out_determinant == NULL))
+	{
+		return_code = STATUS_CODE_INVALID_ARGUMENT;
+		goto cleanup;
+	}
+
+	return_code = matrix_determinant(matrix, dimentaion, &determinant);
+	if (STATUS_FAILED(return_code))
+	{
+		goto cleanup;
+	}
+
+	*out_determinant = determinant;//% prime_field;
+
+	return_code = STATUS_CODE_SUCCESS;
+cleanup:
+	return return_code;
+}
+
+STATUS_CODE inverse_square_matrix(int64_t** matrix, uint32_t dimentaion, uint32_t prime_field, int64_t*** out_inverse_matrix)
+{
+	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
+	int64_t determinant = 0;
 	bool is_invertible = false;
-	long double** adjugate_matrix = NULL;
+	int64_t** adjugate_matrix = NULL;
+	int64_t inverse_determinant = 0;
 
 	return_code = is_matrix_invertible(matrix, dimentaion, prime_field, &is_invertible);
 	if (STATUS_FAILED(return_code))
@@ -84,14 +111,8 @@ STATUS_CODE inverse_square_matrix(long double** matrix, uint32_t dimentaion, uin
 		goto cleanup;
 	}
 
-	return_code = matrix_determinant(matrix, dimentaion, &determinant);
-	if (STATUS_FAILED(return_code))
-	{
-		goto cleanup;
-	}
-
 	// Calculate the adjugate matrix
-	adjugate_matrix = (long double**)malloc(dimentaion * sizeof(long double*));
+	adjugate_matrix = (int64_t**)malloc(dimentaion * sizeof(int64_t*));
 	if (adjugate_matrix == NULL)
 	{
 		return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
@@ -100,7 +121,7 @@ STATUS_CODE inverse_square_matrix(long double** matrix, uint32_t dimentaion, uin
 
 	for (uint32_t row = 0; row < dimentaion; ++row)
 	{
-		adjugate_matrix[row] = (long double*)malloc(dimentaion * sizeof(long double));
+		adjugate_matrix[row] = (int64_t*)malloc(dimentaion * sizeof(int64_t));
 		if (adjugate_matrix[row] == NULL)
 		{
 			return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
@@ -112,14 +133,14 @@ STATUS_CODE inverse_square_matrix(long double** matrix, uint32_t dimentaion, uin
 	{
 		for (uint32_t column = 0; column < dimentaion; ++column)
 		{
-			long double** minor_matrix = NULL;
+			int64_t** minor_matrix = NULL;
 			return_code = build_minor_matrix(matrix, dimentaion, row, column, &minor_matrix);
 			if (STATUS_FAILED(return_code))
 			{
 				goto cleanup;
 			}
-			long double minor_matrix_determinant = 0;
-			return_code = matrix_determinant(minor_matrix, dimentaion - 1, &minor_matrix_determinant);
+			int64_t minor_matrix_determinant = 0;
+			return_code = matrix_determinant_over_galois_field(minor_matrix, dimentaion - 1, prime_field, &minor_matrix_determinant);
 			if (STATUS_FAILED(return_code))
 			{
 				goto cleanup;
@@ -138,7 +159,7 @@ STATUS_CODE inverse_square_matrix(long double** matrix, uint32_t dimentaion, uin
 	}
 
 	// Calculate the inverse matrix
-	*out_inverse_matrix = (long double**)malloc(dimentaion * sizeof(long double*));
+	*out_inverse_matrix = (int64_t**)malloc(dimentaion * sizeof(int64_t*));
 	if (*out_inverse_matrix == NULL)
 	{
 		return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
@@ -147,7 +168,7 @@ STATUS_CODE inverse_square_matrix(long double** matrix, uint32_t dimentaion, uin
 
 	for (uint32_t row = 0; row < dimentaion; ++row)
 	{
-		(*out_inverse_matrix)[row] = (long double*)malloc(dimentaion * sizeof(long double));
+		(*out_inverse_matrix)[row] = (int64_t*)malloc(dimentaion * sizeof(int64_t));
 		if ((*out_inverse_matrix)[row] == NULL)
 		{
 			return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
@@ -155,11 +176,23 @@ STATUS_CODE inverse_square_matrix(long double** matrix, uint32_t dimentaion, uin
 		}
 	}
 
+	return_code = matrix_determinant_over_galois_field(matrix, dimentaion, prime_field, &determinant);
+	if (STATUS_FAILED(return_code))
+	{
+		goto cleanup;
+	}
+	return_code = inverse_element(&inverse_determinant, prime_field, determinant);
+	if (STATUS_FAILED(return_code))
+	{
+		goto cleanup;
+	}
+
 	for (uint32_t row = 0; row < dimentaion; ++row)
 	{
 		for (uint32_t column = 0; column < dimentaion; ++column)
 		{
-			(*out_inverse_matrix)[row][column] = fmod(adjugate_matrix[row][column] / determinant, prime_field);
+
+			(*out_inverse_matrix)[row][column] = (adjugate_matrix[row][column] * inverse_determinant) % prime_field;
 		}
 	}
 
@@ -185,10 +218,27 @@ cleanup:
 	return return_code;
 }
 
-STATUS_CODE multiply_matrix_with_uint8_t_vector(long double** out_vector, long double** matrix, uint8_t* vector, uint32_t dimentaion, uint32_t prime_field)
+STATUS_CODE inverse_element(int64_t* out_element, uint32_t prime_field, int64_t element_to_inverse)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
-	*out_vector = (long double*)malloc(dimentaion * sizeof(long double) + 1);
+
+	if ((NULL == out_element) || (element_to_inverse > (int64_t)prime_field))
+	{
+		return_code = STATUS_CODE_INVALID_ARGUMENT;
+		goto cleanup;
+	}
+
+	*out_element = (int64_t)pow(element_to_inverse, prime_field - 2) % prime_field;
+
+	return_code = STATUS_CODE_SUCCESS;
+cleanup:
+	return return_code;
+}
+
+STATUS_CODE multiply_matrix_with_uint8_t_vector(int64_t** out_vector, int64_t** matrix, uint8_t* vector, uint32_t dimentaion, uint32_t prime_field)
+{
+	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
+	*out_vector = (int64_t*)malloc(dimentaion * sizeof(int64_t) + 1);
 	if (*out_vector == NULL)
 	{
 		return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
@@ -200,7 +250,7 @@ STATUS_CODE multiply_matrix_with_uint8_t_vector(long double** out_vector, long d
 		(*out_vector)[row] = 0;
 		for (uint32_t column = 0; column < dimentaion; ++column)
 		{
-			(*out_vector)[row] += fmod(matrix[row][column] * vector[column], prime_field);
+			(*out_vector)[row] += (matrix[row][column] * vector[column]) % prime_field;
 		}
 	}
 
@@ -214,14 +264,14 @@ cleanup:
 	return return_code;
 }
 
-STATUS_CODE gcd(long double first_element, long double second_element, long double* out_gcd)
+STATUS_CODE gcd(int64_t first_element, int64_t second_element, int64_t* out_gcd)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 
 	// Euclidean algorithm
 	while (second_element != 0) {
-		long double temp = second_element;
-		second_element = fmod(first_element, second_element);
+		int64_t temp = second_element;
+		second_element = first_element % second_element;
 		first_element = temp;
 	}
 	*out_gcd = first_element;
@@ -231,19 +281,19 @@ cleanup:
 	return return_code;
 }
 
-STATUS_CODE is_matrix_invertible(long double** matrix, uint32_t dimentaion, uint32_t prime_field, bool* out_is_invertible)
+STATUS_CODE is_matrix_invertible(int64_t** matrix, uint32_t dimentaion, uint32_t prime_field, bool* out_is_invertible)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
-	long double determinant = 0;
-	long double gcd_result = 0;
+	int64_t determinant = 0;
+	int64_t gcd_result = 0;
 	
-	return_code = matrix_determinant(matrix, dimentaion, &determinant);
+	return_code = matrix_determinant_over_galois_field(matrix, dimentaion, prime_field, &determinant);
 	if (STATUS_FAILED(return_code))
 	{
 		goto cleanup;
 	}
 
-	return_code = gcd((long double)prime_field, determinant, &gcd_result);
+	return_code = gcd((int64_t)prime_field, determinant, &gcd_result);
 	if (STATUS_FAILED(return_code))
 	{
 		goto cleanup;
@@ -257,7 +307,7 @@ cleanup:
 	return return_code;
 }
 
-STATUS_CODE multiply_matrix_with_double_vector(uint8_t** out_vector, long double** matrix, long double* vector, uint32_t dimentaion, uint32_t prime_field)
+STATUS_CODE multiply_matrix_with_int64_t_vector(uint8_t** out_vector, int64_t** matrix, int64_t* vector, uint32_t dimentaion, uint32_t prime_field)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 	*out_vector = (uint8_t*)malloc(dimentaion + 1);
@@ -272,7 +322,7 @@ STATUS_CODE multiply_matrix_with_double_vector(uint8_t** out_vector, long double
 		(*out_vector)[row] = 0;
 		for (uint32_t column = 0; column < dimentaion; ++column)
 		{
-			(*out_vector)[row] += (uint8_t)fmod(matrix[row][column] * vector[column], prime_field);
+			(*out_vector)[row] += (uint8_t)((matrix[row][column] * vector[column]) % prime_field);
 		}
 	}
 
@@ -286,7 +336,7 @@ cleanup:
 	return return_code;
 }
 
-STATUS_CODE free_matrix(long double** matrix, uint32_t dimentaion)
+STATUS_CODE free_matrix(int64_t** matrix, uint32_t dimentaion)
 {
 	for (uint32_t row = 0; row < dimentaion; ++row)
 	{
@@ -297,11 +347,11 @@ STATUS_CODE free_matrix(long double** matrix, uint32_t dimentaion)
 	return STATUS_CODE_SUCCESS;
 }
 
-STATUS_CODE build_minor_matrix(long double** matrix, uint32_t dimentaion, uint32_t row, uint32_t column, long double*** out_matrix)
+STATUS_CODE build_minor_matrix(int64_t** matrix, uint32_t dimentaion, uint32_t row, uint32_t column, int64_t*** out_matrix)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 
-	long double** minor_matrix = (long double**)malloc((dimentaion - 1) * sizeof(long double*));
+	int64_t** minor_matrix = (int64_t**)malloc((dimentaion - 1) * sizeof(int64_t*));
 	if (minor_matrix == NULL)
 	{
 		return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
@@ -310,7 +360,7 @@ STATUS_CODE build_minor_matrix(long double** matrix, uint32_t dimentaion, uint32
 
 	for (uint32_t sub_row = 0; sub_row < dimentaion - 1; ++sub_row)
 	{
-		minor_matrix[sub_row] = (long double*)malloc((dimentaion - 1) * sizeof(long double));
+		minor_matrix[sub_row] = (int64_t*)malloc((dimentaion - 1) * sizeof(int64_t));
 		if (minor_matrix[sub_row] == NULL)
 		{
 			return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
