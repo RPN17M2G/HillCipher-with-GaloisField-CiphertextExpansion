@@ -7,7 +7,7 @@ int main()
 	uint32_t matrix_dimentation = 2;
 
 
-	uint8_t plaintext[] = { 'H', 'e', 'l', 'l', 'o', 'H', 'e', 'l', 'l', 'o' };
+	uint8_t plaintext[] = {0};//{ 'H', 'e', 'l', 'l', 'o', 'H', 'e', 'l', 'l', 'o' };
 	uint32_t plaintext_bit_size = 10 * BYTE_SIZE;
 
 	int64_t* ciphertext = NULL;

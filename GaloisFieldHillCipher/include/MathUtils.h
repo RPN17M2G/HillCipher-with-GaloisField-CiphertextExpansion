@@ -16,10 +16,11 @@
  *
  * @param matrix - Pointer to the input matrix.
  * @param dimentaion - Dimension of the square matrix.
+ * @param prime_field - The galois prime field
  * @param out_determinant - Pointer to the output determinant value.
  * @return STATUS_CODE - Status of the operation.
  */
-STATUS_CODE matrix_determinant(int64_t** matrix, uint32_t dimentaion, int64_t* out_determinant);
+STATUS_CODE matrix_determinant(int64_t** matrix, uint32_t dimentaion, uint32_t prime_field, int64_t* out_determinant);
 
 /**
  * @brief Calculates the determinant of a square matrix over a finite field.

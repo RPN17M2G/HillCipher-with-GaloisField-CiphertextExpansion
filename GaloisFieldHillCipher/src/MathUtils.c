@@ -1,6 +1,6 @@
 #include "MathUtils.h"
 
-STATUS_CODE matrix_determinant(int64_t** matrix, uint32_t dimentaion, int64_t* out_determinant)
+STATUS_CODE matrix_determinant(int64_t** matrix, uint32_t dimentaion, uint32_t prime_field, int64_t* out_determinant)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 	int64_t** minor_matrix = NULL;
@@ -38,19 +38,22 @@ STATUS_CODE matrix_determinant(int64_t** matrix, uint32_t dimentaion, int64_t* o
 				}
 
 				int64_t minor_matrix_determinant = 0;
-				return_code = matrix_determinant(minor_matrix, dimentaion - 1, &minor_matrix_determinant);
+				return_code = matrix_determinant(minor_matrix, dimentaion - 1, prime_field, &minor_matrix_determinant);
 
 				if (STATUS_FAILED(return_code))
 				{
 					goto cleanup;
 				}
 
-				// Calculate the cofactor of the element
-				int64_t cofactor = matrix[row][column] * minor_matrix_determinant;
+				int64_t matrix_element = matrix[row][column];
 				if (IS_ODD(row + column)) // If the sum of the row and column is odd, the cofactor is negative
 				{
-					cofactor *= -1;
+					// Negate the matrix element over the finite field
+					matrix_element = prime_field - matrix_element;
 				}
+
+				// Calculate the cofactor of the element
+				int64_t cofactor =  matrix_element * minor_matrix_determinant;
 				*out_determinant += cofactor;
 
 				(void)free_matrix(minor_matrix, dimentaion - 1);
@@ -78,13 +81,13 @@ STATUS_CODE matrix_determinant_over_galois_field(int64_t** matrix, uint32_t dime
 		goto cleanup;
 	}
 
-	return_code = matrix_determinant(matrix, dimentaion, &determinant);
+	return_code = matrix_determinant(matrix, dimentaion, prime_field, &determinant);
 	if (STATUS_FAILED(return_code))
 	{
 		goto cleanup;
 	}
 
-	*out_determinant = determinant;//% prime_field;
+	*out_determinant = determinant % prime_field;
 
 	return_code = STATUS_CODE_SUCCESS;
 cleanup:
