@@ -325,7 +325,10 @@ STATUS_CODE divide_int64_t_into_blocks(int64_t*** out_blocks, uint32_t* num_bloc
         }
 
         // Copy the block data
-        memcpy((*out_blocks)[block_number], value + (block_number * block_bit_size / BYTE_SIZE), block_bit_size / BYTE_SIZE);
+        for (uint32_t element_index_in_block = 0; element_index_in_block < (block_bit_size / BYTE_SIZE); ++element_index_in_block)
+        {
+			(*out_blocks)[block_number][element_index_in_block] = value[(block_number * (block_bit_size / BYTE_SIZE)) + element_index_in_block];
+        }
     }
 
     return_code = STATUS_CODE_SUCCESS;
