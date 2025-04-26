@@ -45,7 +45,7 @@ STATUS_CODE matrix_determinant_over_galois_field(int64_t** matrix, uint32_t dime
 STATUS_CODE inverse_square_matrix(int64_t** matrix, uint32_t dimentaion, uint32_t prime_field, int64_t*** out_inverse_matrix);
 
 /**
- * @brief Calculates the inverse of an element.
+ * @brief Calculates the inverse of an element over a galois field.
  *
  * @param out_element - Pointer to the output inverse element.
  * @param prime_field - Prime field to use for calculations.
@@ -53,6 +53,27 @@ STATUS_CODE inverse_square_matrix(int64_t** matrix, uint32_t dimentaion, uint32_
  * @return STATUS_CODE - Status of the operation.
  */
 STATUS_CODE inverse_element(int64_t* out_element, uint32_t prime_field, int64_t element_to_inverse);
+
+/*
+ * @brief Negates an element over a galois field.
+ *
+ * @param out_element - Pointer to the output negated element.
+ * @param prime_field - Prime field to use for calculations.
+ * @param element_to_negate - The element to negate.
+ * @return STATUS_CODE - Status of the operation.
+ */
+STATUS_CODE negate_element(int64_t* out_element, uint32_t prime_field, int64_t element_to_negate);
+
+/**
+ * @brief Raises an element to a power over a finite field.
+ *
+ * @param result - Pointer to the output result.
+ * @param base - The base element.
+ * @param exponent - The exponent.
+ * @param field - The finite field to use for calculations.
+ * @return STATUS_CODE - Status of the operation.
+ */
+STATUS_CODE pow_over_finite_field(int64_t* result, int64_t base, int64_t exponent, int64_t field);
 
 /**
  * @brief Multiplies a square matrix with a vector.

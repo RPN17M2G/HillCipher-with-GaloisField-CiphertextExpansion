@@ -21,45 +21,40 @@ STATUS_CODE matrix_determinant(int64_t** matrix, uint32_t dimentaion, uint32_t p
 
 	*out_determinant = 0;
 
-	for (uint32_t row = 0; row < dimentaion; ++row)
+	// Expand along the first row (row 0)
+	uint32_t row = 0;
+	for (uint32_t column = 0; column < dimentaion; ++column)
 	{
-		for (uint32_t column = 0; column < dimentaion; ++column)
+		if (matrix[row][column] == 0)
 		{
-			if (matrix[row][column] == 0) // Irrelevant calculation because multiplication with 0 is always 0
-			{
-				continue;
-			}
-			else
-			{
-				return_code = build_minor_matrix(matrix, dimentaion, row, column, &minor_matrix);
-				if (STATUS_FAILED(return_code))
-				{
-					goto cleanup;
-				}
-
-				int64_t minor_matrix_determinant = 0;
-				return_code = matrix_determinant(minor_matrix, dimentaion - 1, prime_field, &minor_matrix_determinant);
-
-				if (STATUS_FAILED(return_code))
-				{
-					goto cleanup;
-				}
-
-				int64_t matrix_element = matrix[row][column];
-				if (IS_ODD(row + column)) // If the sum of the row and column is odd, the cofactor is negative
-				{
-					// Negate the matrix element over the finite field
-					matrix_element = prime_field - matrix_element;
-				}
-
-				// Calculate the cofactor of the element
-				int64_t cofactor =  matrix_element * minor_matrix_determinant;
-				*out_determinant += cofactor;
-
-				(void)free_matrix(minor_matrix, dimentaion - 1);
-				minor_matrix = NULL;
-			}
+			continue;
 		}
+
+		return_code = build_minor_matrix(matrix, dimentaion, row, column, &minor_matrix);
+		if (STATUS_FAILED(return_code))
+		{
+			goto cleanup;
+		}
+
+		int64_t minor_matrix_determinant = 0;
+		return_code = matrix_determinant(minor_matrix, dimentaion - 1, prime_field, &minor_matrix_determinant);
+
+		if (STATUS_FAILED(return_code))
+		{
+			goto cleanup;
+		}
+
+		int64_t matrix_element = matrix[row][column];
+		if (IS_ODD(row + column)) // If (row + column) is odd, sign change
+		{
+			matrix_element = prime_field - matrix_element;
+		}
+
+		int64_t cofactor = (matrix_element * minor_matrix_determinant) % prime_field;
+		*out_determinant = (*out_determinant + cofactor) % prime_field;
+
+		(void)free_matrix(minor_matrix, dimentaion - 1);
+		minor_matrix = NULL;
 	}
 
 cleanup:
@@ -114,6 +109,18 @@ STATUS_CODE inverse_square_matrix(int64_t** matrix, uint32_t dimentaion, uint32_
 		goto cleanup;
 	}
 
+
+	return_code = matrix_determinant_over_galois_field(matrix, dimentaion, prime_field, &determinant);
+	if (STATUS_FAILED(return_code))
+	{
+		goto cleanup;
+	}
+	return_code = inverse_element(&inverse_determinant, prime_field, determinant);
+	if (STATUS_FAILED(return_code))
+	{
+		goto cleanup;
+	}
+
 	// Calculate the adjugate matrix
 	adjugate_matrix = (int64_t**)malloc(dimentaion * sizeof(int64_t*));
 	if (adjugate_matrix == NULL)
@@ -151,10 +158,14 @@ STATUS_CODE inverse_square_matrix(int64_t** matrix, uint32_t dimentaion, uint32_
 
 			if (IS_ODD(row + column)) // If the sum of the row and column is odd, the cofactor is negative
 			{
-				minor_matrix_determinant *= -1;
+				return_code = negate_element(&minor_matrix_determinant, prime_field, minor_matrix_determinant);
+				if (STATUS_FAILED(return_code))
+				{
+					goto cleanup;
+				}
 			}
 
-			adjugate_matrix[column][row] = minor_matrix_determinant;
+			adjugate_matrix[column][row] = minor_matrix_determinant % prime_field;
 
 			(void)free_matrix(minor_matrix, dimentaion - 1);
 			minor_matrix = NULL;
@@ -177,17 +188,6 @@ STATUS_CODE inverse_square_matrix(int64_t** matrix, uint32_t dimentaion, uint32_
 			return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
 			goto cleanup;
 		}
-	}
-
-	return_code = matrix_determinant_over_galois_field(matrix, dimentaion, prime_field, &determinant);
-	if (STATUS_FAILED(return_code))
-	{
-		goto cleanup;
-	}
-	return_code = inverse_element(&inverse_determinant, prime_field, determinant);
-	if (STATUS_FAILED(return_code))
-	{
-		goto cleanup;
 	}
 
 	for (uint32_t row = 0; row < dimentaion; ++row)
@@ -221,6 +221,50 @@ cleanup:
 	return return_code;
 }
 
+STATUS_CODE negate_element(int64_t* out_element, uint32_t prime_field, int64_t element_to_negate)
+{
+	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
+
+	if ((NULL == out_element) || (element_to_negate > (int64_t)prime_field))
+	{
+		return_code = STATUS_CODE_INVALID_ARGUMENT;
+		goto cleanup;
+	}
+	
+	*out_element = prime_field - (element_to_negate % prime_field);
+
+	return_code = STATUS_CODE_SUCCESS;
+cleanup:
+	return return_code;
+}
+
+STATUS_CODE pow_over_finite_field(int64_t* result, int64_t base, int64_t exponent, int64_t field)
+{
+	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
+	if (result == NULL || base < 0 || exponent < 0 || field <= 0)
+	{
+		return_code = STATUS_CODE_INVALID_ARGUMENT;
+		goto cleanup;
+	}
+
+	*result = 1;
+	base = base % field;
+
+	while (exponent > 0)
+	{
+		if (exponent & 1)
+		{
+			*result = (*result * base) % field;
+		}
+		base = (base * base) % field;
+		exponent >>= 1;
+	}
+
+	return_code = STATUS_CODE_SUCCESS;
+cleanup:
+	return return_code;
+}
+
 STATUS_CODE inverse_element(int64_t* out_element, uint32_t prime_field, int64_t element_to_inverse)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
@@ -231,7 +275,11 @@ STATUS_CODE inverse_element(int64_t* out_element, uint32_t prime_field, int64_t 
 		goto cleanup;
 	}
 
-	*out_element = (int64_t)pow(element_to_inverse, prime_field - 2) % prime_field;
+	return_code = pow_over_finite_field(out_element, element_to_inverse, prime_field - 2, prime_field);
+	if (STATUS_FAILED(return_code))
+	{
+		goto cleanup;
+	}
 
 	return_code = STATUS_CODE_SUCCESS;
 cleanup:
