@@ -116,7 +116,11 @@ STATUS_CODE decrypt(uint8_t** out_plaintext, uint32_t* out_plaintext_bit_size, i
 			goto cleanup;
 		}
 
-		memcpy_s(decrypted_plaintext + (block_number * dimentation), block_size_in_bits, plaintext_block, block_size_in_bits);
+
+		for (uint32_t block_index = 0; block_index < block_size_in_bits / BYTE_SIZE; ++block_index)
+		{
+			decrypted_plaintext[(block_number * dimentation) + block_index] = plaintext_block[block_index];
+		}
 
 		free(plaintext_block);
 	}

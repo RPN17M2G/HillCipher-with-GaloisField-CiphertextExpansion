@@ -219,8 +219,10 @@ STATUS_CODE remove_padding(uint8_t** out, uint32_t* out_bit_length, uint8_t* val
     }
 
     // Copy the original value to the output array
-    memcpy_s(*out, *out_bit_length / BYTE_SIZE, value, value_bit_length / BYTE_SIZE);
-
+    for (uint32_t copy_index = 0; copy_index < (*out_bit_length / BYTE_SIZE); ++copy_index)
+    {
+        (*out)[copy_index] = value[copy_index];
+    }
     return_code = STATUS_CODE_SUCCESS;
 cleanup:
     if ((STATUS_FAILED(return_code)) && (NULL != out) && (NULL != *out) && (NULL != out_bit_length))
