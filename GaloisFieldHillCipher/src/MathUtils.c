@@ -361,6 +361,15 @@ cleanup:
 STATUS_CODE multiply_matrix_with_int64_t_vector(uint8_t** out_vector, int64_t** matrix, int64_t* vector, uint32_t dimentaion, uint32_t prime_field)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
+	int64_t temp_result = 0;
+	int64_t product = 0;
+	
+	if ((NULL == out_vector) || (NULL == matrix) || (NULL == vector))
+	{
+		return_code = STATUS_CODE_INVALID_ARGUMENT;
+		goto cleanup;
+	}
+	
 	*out_vector = (uint8_t*)malloc(dimentaion + 1);
 	if (*out_vector == NULL)
 	{
@@ -370,11 +379,13 @@ STATUS_CODE multiply_matrix_with_int64_t_vector(uint8_t** out_vector, int64_t** 
 
 	for (uint32_t row = 0; row < dimentaion; ++row)
 	{
-		(*out_vector)[row] = 0;
+		temp_result = 0;
 		for (uint32_t column = 0; column < dimentaion; ++column)
 		{
-			(*out_vector)[row] += (uint8_t)((matrix[row][column] * vector[column]) % prime_field);
+			product = (matrix[row][column] * vector[column]) % prime_field;
+			temp_result = (temp_result + product ) % prime_field;
 		}
+		(*out_vector)[row] = (uint8_t)(temp_result % 255);
 	}
 
 	return_code = STATUS_CODE_SUCCESS;
