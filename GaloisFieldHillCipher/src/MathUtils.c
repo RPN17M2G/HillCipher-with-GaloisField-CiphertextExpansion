@@ -289,6 +289,9 @@ cleanup:
 STATUS_CODE multiply_matrix_with_uint8_t_vector(int64_t** out_vector, int64_t** matrix, uint8_t* vector, uint32_t dimentaion, uint32_t prime_field)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
+	int64_t product = 0;
+	int64_t temp_result = 0;
+
 	*out_vector = (int64_t*)malloc(dimentaion * sizeof(int64_t) + 1);
 	if (*out_vector == NULL)
 	{
@@ -298,11 +301,13 @@ STATUS_CODE multiply_matrix_with_uint8_t_vector(int64_t** out_vector, int64_t** 
 
 	for (uint32_t row = 0; row < dimentaion; ++row)
 	{
-		(*out_vector)[row] = 0;
+		temp_result = 0;
 		for (uint32_t column = 0; column < dimentaion; ++column)
 		{
-			(*out_vector)[row] += (matrix[row][column] * vector[column]) % prime_field;
+			product = (matrix[row][column] * vector[column]) % prime_field;
+			temp_result = (temp_result + product) % prime_field;
 		}
+		(*out_vector)[row] = temp_result;
 	}
 
 	return_code = STATUS_CODE_SUCCESS;
@@ -385,7 +390,7 @@ STATUS_CODE multiply_matrix_with_int64_t_vector(uint8_t** out_vector, int64_t** 
 			product = (matrix[row][column] * vector[column]) % prime_field;
 			temp_result = (temp_result + product ) % prime_field;
 		}
-		(*out_vector)[row] = (uint8_t)(temp_result % 255);
+		(*out_vector)[row] = (uint8_t)(temp_result % UINT8_MAX);
 	}
 
 	return_code = STATUS_CODE_SUCCESS;

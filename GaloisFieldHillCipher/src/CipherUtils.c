@@ -39,7 +39,7 @@ STATUS_CODE add_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_size,
 			goto cleanup;
 		}
 
-        uint8_t masked_random_bits = random_bits & TWO_BITS_MASK; // TODO: Add random bits
+        uint8_t masked_random_bits = random_bits & TWO_BITS_MASK;
 
         if ((output_bit % BYTE_SIZE == 0) && (output_bit != 0))
         {

@@ -7,8 +7,16 @@ int main()
 	uint32_t matrix_dimentation = 2;
 
 
-	uint8_t plaintext[] = {0};//{ 'H', 'e', 'l', 'l', 'o', 'H', 'e', 'l', 'l', 'o' };
+	uint8_t plaintext[] = { 'H', 'e', 'l', 'l', 'o', 'H', 'e', 'l', 'l', 'o' };
 	uint32_t plaintext_bit_size = 10 * BYTE_SIZE;
+
+	printf("Plaintext(size %d, in bytes: %d): \n", plaintext_bit_size, plaintext_bit_size / BYTE_SIZE);
+	for (uint32_t i = 0; i < plaintext_bit_size / BYTE_SIZE; ++i)
+	{
+		printf("%c ", plaintext[i]);
+	}
+	printf("\n");
+
 
 	int64_t* ciphertext = NULL;
 	uint32_t ciphertext_bit_size = 0;
