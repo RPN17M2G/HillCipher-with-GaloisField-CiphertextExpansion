@@ -6,6 +6,8 @@ STATUS_CODE add_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_size,
 
     uint32_t output_byte = 0;
     uint8_t current_working_byte = 0;
+    uint32_t random_bits = 0;
+    uint32_t value_bit = 0;
 
     if ((NULL == out) || (NULL == out_bit_size))
     {
@@ -16,8 +18,7 @@ STATUS_CODE add_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_size,
     // Calculate the size of the output vector
     uint32_t number_of_random_bits = NUMBER_OF_RANDOM_BITS_TO_ADD * (value_bit_length / BYTE_SIZE);
     uint32_t total_bits = value_bit_length + number_of_random_bits;
-    total_bits = total_bits + (BYTE_SIZE - (total_bits % BYTE_SIZE)); // Round up to the nearest up byte
-    uint32_t total_bytes = (total_bits / BYTE_SIZE);
+    uint32_t total_bytes = (uint32_t)(total_bits / BYTE_SIZE);
 
     *out = (uint8_t*)malloc(total_bytes);
     *out_bit_size = total_bits;
@@ -29,9 +30,7 @@ STATUS_CODE add_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_size,
 
     memset(*out, 0, total_bytes);
 
-    uint32_t output_bit = 0;
-    uint32_t random_bits = 0;
-    for (uint32_t bit_number = 0; bit_number < value_bit_length; ++bit_number)
+    for (uint32_t bit_number = 0; bit_number < total_bits; ++bit_number)
     {
         return_code = generate_secure_random_number(&random_bits, (uint32_t)0, (uint32_t)TWO_BITS_MAX_VALUE);
 		if (STATUS_FAILED(return_code))
@@ -41,14 +40,15 @@ STATUS_CODE add_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_size,
 
         uint8_t masked_random_bits = random_bits & TWO_BITS_MASK;
 
-        if ((output_bit % BYTE_SIZE == 0) && (output_bit != 0))
+        if ((bit_number % BYTE_SIZE == 0) && (bit_number != 0))
         {
             ++output_byte;
         }
 
         if (bit_number % (BYTE_SIZE + NUMBER_OF_RANDOM_BITS_TO_ADD) < BYTE_SIZE)
         {
-            current_working_byte = value[bit_number / BYTE_SIZE];
+            current_working_byte = value[(uint32_t)value_bit / BYTE_SIZE];
+            ++value_bit;
         }
         else
         {
@@ -57,14 +57,12 @@ STATUS_CODE add_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_size,
 
         if (IS_BIT_SET(current_working_byte, bit_number % BYTE_SIZE))
         {
-            (*out)[output_byte] = SET_BIT((*out)[output_byte], output_bit);
+            (*out)[output_byte] = SET_BIT((*out)[output_byte], bit_number);
         }
         else
         {
-            (*out)[output_byte] = CLEAR_BIT((*out)[output_byte], output_bit);
+            (*out)[output_byte] = CLEAR_BIT((*out)[output_byte], bit_number);
         }
-
-        ++output_bit;
     }
 
     return_code = STATUS_CODE_SUCCESS;
