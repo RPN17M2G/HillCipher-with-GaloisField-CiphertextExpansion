@@ -17,7 +17,7 @@ STATUS_CODE add_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_size,
     }
 
     // Calculate the size of the output vector
-    uint32_t number_of_random_bits = NUMBER_OF_RANDOM_BITS_TO_ADD * (value_bit_length / BYTE_SIZE);
+    uint32_t number_of_random_bits = NUMBER_OF_RANDOM_BITS_TO_ADD * (uint32_t)(value_bit_length / BYTE_SIZE);
     uint32_t total_bits = value_bit_length + number_of_random_bits;
     uint32_t total_bytes = (uint32_t)(total_bits / BYTE_SIZE);
 
@@ -46,14 +46,14 @@ STATUS_CODE add_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_size,
         }
         else
         {
-            return_code = generate_secure_random_number(&random_bit, (uint32_t)0, (uint32_t)1);
+            return_code = generate_secure_random_number(&random_bit, (uint32_t)0, (uint32_t)2);
             if (STATUS_FAILED(return_code))
             {
                 goto cleanup;
             }
 
             current_working_byte = random_bit;
-            current_working_byte_bit_index = 0;
+            current_working_byte_bit_index = BYTE_SIZE - 1;
         }
 
         if (IS_BIT_SET(current_working_byte, current_working_byte_bit_index))
@@ -88,21 +88,24 @@ STATUS_CODE remove_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_si
         goto cleanup;
     }
 
-    *out = (uint8_t*)malloc((value_bit_length / (BYTE_SIZE + NUMBER_OF_RANDOM_BITS_TO_ADD)) * BYTE_SIZE + 1);
-    *out_bit_size = (value_bit_length / (BYTE_SIZE + NUMBER_OF_RANDOM_BITS_TO_ADD)) * BYTE_SIZE;
+    uint32_t block_size = BYTE_SIZE + NUMBER_OF_RANDOM_BITS_TO_ADD;
+    double number_of_random_plus_byte_blocks = value_bit_length / block_size;
+    *out_bit_size = (number_of_random_plus_byte_blocks + (uint32_t)(value_bit_length % block_size != 0)) * BYTE_SIZE;
+    *out = (uint8_t*)malloc(*out_bit_size + 1);
     if (NULL == *out)
     {
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
         goto cleanup;
     }
 
-    memset(*out, 0, value_bit_length / (BYTE_SIZE + NUMBER_OF_RANDOM_BITS_TO_ADD) * BYTE_SIZE);
+    memset(*out, 0, *out_bit_size);
 
     uint32_t output_byte = 0;
     uint32_t output_bit = 0;
     uint8_t random_bits_counter = 0;
+    uint32_t byte_index = 0;
 
-    for (uint32_t bit_number = 0; bit_number < value_bit_length; ++bit_number)
+    for (uint32_t bit_number = 0; bit_number < value_bit_length + NUMBER_OF_RANDOM_BITS_TO_ADD; ++bit_number)
     {
         // Skip the random bits
         if ((output_bit % BYTE_SIZE == 0) && (output_bit != 0))
@@ -115,7 +118,8 @@ STATUS_CODE remove_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_si
             random_bits_counter = 0;
         }
 
-        if (IS_BIT_SET(value[bit_number / BYTE_SIZE], bit_number % BYTE_SIZE))
+        byte_index = (uint32_t)(bit_number / BYTE_SIZE);
+        if (IS_BIT_SET(value[byte_index], bit_number % BYTE_SIZE))
         {
             (*out)[output_byte] = SET_BIT((*out)[output_byte], output_bit);
         }
@@ -171,12 +175,22 @@ STATUS_CODE pad_to_length(uint8_t** out, uint32_t* out_bit_length, uint8_t* valu
         goto cleanup;
     }
 
-    // Copy the original value to the output array
-    memcpy_s(*out, target_bit_length / BYTE_SIZE, value, value_bit_length / BYTE_SIZE);
 
-    // Pad the remaining bytes with 0
-    memset(*out + (value_bit_length / BYTE_SIZE), 0, (target_bit_length - value_bit_length) / BYTE_SIZE);
-    *(*out + (value_bit_length / BYTE_SIZE)) = PADDING_MAGIC;
+    // Copy the original value to the output array using a for loop
+    for (uint32_t index = 0; index < value_bit_length / BYTE_SIZE; ++index)
+    {
+        (*out)[index] = value[index];
+    }
+
+    // Pad the remaining bytes with 0 using a for loop
+    for (uint32_t index = value_bit_length / BYTE_SIZE; index < target_bit_length / BYTE_SIZE; ++index)
+    {
+        (*out)[index] = 0;
+    }
+
+    // Set the padding magic byte
+    (*out)[value_bit_length / BYTE_SIZE] = PADDING_MAGIC;
+
 
     *out_bit_length = target_bit_length;
 
@@ -194,6 +208,7 @@ cleanup:
 STATUS_CODE remove_padding(uint8_t** out, uint32_t* out_bit_length, uint8_t* value, uint32_t value_bit_length)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
+	bool out_flag_check = false;
 
     if ((NULL == out) || (NULL == value) || (NULL == out_bit_length))
     {
@@ -203,12 +218,25 @@ STATUS_CODE remove_padding(uint8_t** out, uint32_t* out_bit_length, uint8_t* val
 
 	for (uint16_t byte_number = 0; byte_number < value_bit_length / BYTE_SIZE; ++byte_number)
 	{
+		// Check if the magic byte is part of the padding
+        if (out_flag_check && (value[byte_number] != 0))
+        {
+            out_flag_check = false;
+        }
+
+		// Check if the byte is the padding magic number
 		if (value[byte_number] == PADDING_MAGIC)
 		{
 			*out_bit_length = (byte_number * BYTE_SIZE);
-			break;
+            out_flag_check = true;
 		}
 	}
+
+    if (!out_flag_check)
+    {
+        return_code = STATUS_CODE_NO_PADDING;
+        goto cleanup;
+    }
 
     *out = (uint8_t*)malloc(*out_bit_length / BYTE_SIZE);
     if (NULL == *out)
@@ -249,7 +277,7 @@ STATUS_CODE divide_uint8_t_into_blocks(uint8_t*** out_blocks, uint32_t* num_bloc
         goto cleanup;
     }
 
-    *num_blocks = value_bit_length / block_bit_size;
+    *num_blocks = (value_bit_length / block_bit_size);
     *out_blocks = (uint8_t**)malloc(*num_blocks * sizeof(*out_blocks));
     if (NULL == *out_blocks)
     {
@@ -308,7 +336,7 @@ STATUS_CODE divide_int64_t_into_blocks(int64_t*** out_blocks, uint32_t* num_bloc
         goto cleanup;
     }
 
-    *num_blocks = value_bit_length / block_bit_size;
+    *num_blocks = (value_bit_length / block_bit_size);
     *out_blocks = (int64_t**)malloc(*num_blocks * sizeof(*out_blocks));
     if (NULL == *out_blocks)
     {
