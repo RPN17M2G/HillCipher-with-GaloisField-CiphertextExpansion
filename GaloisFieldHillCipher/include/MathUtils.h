@@ -8,6 +8,8 @@
 
 #include "StatusCodes.h"
 
+#define MEMORY_BUFFER_FOR_PLAINTEXT_BLOCK (3)
+
 #define IS_EVEN(number) ((number) % 2 == 0)
 #define IS_ODD(number) ((number) % 2 != 0)
 

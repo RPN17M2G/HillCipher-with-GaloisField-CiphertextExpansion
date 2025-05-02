@@ -375,7 +375,7 @@ STATUS_CODE multiply_matrix_with_int64_t_vector(uint8_t** out_vector, int64_t** 
 		goto cleanup;
 	}
 	
-	*out_vector = (uint8_t*)malloc(dimentaion + 1);
+	*out_vector = (uint8_t*)malloc(dimentaion + MEMORY_BUFFER_FOR_PLAINTEXT_BLOCK);
 	if (*out_vector == NULL)
 	{
 		return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
