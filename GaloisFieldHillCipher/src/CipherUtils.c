@@ -6,8 +6,9 @@ STATUS_CODE add_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_size,
 
     uint32_t output_byte = 0;
     uint8_t current_working_byte = 0;
-    uint32_t random_bits = 0;
+    uint32_t random_bit = 0;
     uint32_t value_bit = 0;
+    uint32_t current_working_byte_bit_index = 0;
 
     if ((NULL == out) || (NULL == out_bit_size))
     {
@@ -32,14 +33,6 @@ STATUS_CODE add_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_size,
 
     for (uint32_t bit_number = 0; bit_number < total_bits; ++bit_number)
     {
-        return_code = generate_secure_random_number(&random_bits, (uint32_t)0, (uint32_t)TWO_BITS_MAX_VALUE);
-		if (STATUS_FAILED(return_code))
-		{
-			goto cleanup;
-		}
-
-        uint8_t masked_random_bits = random_bits & TWO_BITS_MASK;
-
         if ((bit_number % BYTE_SIZE == 0) && (bit_number != 0))
         {
             ++output_byte;
@@ -48,14 +41,22 @@ STATUS_CODE add_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_size,
         if (bit_number % (BYTE_SIZE + NUMBER_OF_RANDOM_BITS_TO_ADD) < BYTE_SIZE)
         {
             current_working_byte = value[(uint32_t)value_bit / BYTE_SIZE];
+            current_working_byte_bit_index = value_bit % BYTE_SIZE;
             ++value_bit;
         }
         else
         {
-            current_working_byte = random_bits;
+            return_code = generate_secure_random_number(&random_bit, (uint32_t)0, (uint32_t)1);
+            if (STATUS_FAILED(return_code))
+            {
+                goto cleanup;
+            }
+
+            current_working_byte = random_bit;
+            current_working_byte_bit_index = 0;
         }
 
-        if (IS_BIT_SET(current_working_byte, bit_number % BYTE_SIZE))
+        if (IS_BIT_SET(current_working_byte, current_working_byte_bit_index))
         {
             (*out)[output_byte] = SET_BIT((*out)[output_byte], bit_number);
         }
