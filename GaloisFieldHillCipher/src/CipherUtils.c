@@ -337,24 +337,25 @@ STATUS_CODE divide_int64_t_into_blocks(int64_t*** out_blocks, uint32_t* num_bloc
     }
 
     *num_blocks = (value_bit_length / block_bit_size);
-    *out_blocks = (int64_t**)malloc(*num_blocks * sizeof(*out_blocks));
+    *out_blocks = (int64_t**)malloc(*num_blocks * sizeof(int64_t*) + 1);
     if (NULL == *out_blocks)
     {
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
         goto cleanup;
     }
 
-    for (uint32_t block_number = 0; block_number < *num_blocks; ++block_number)
+    for (size_t block_number = 0; block_number < *num_blocks; ++block_number)
     {
-        (*out_blocks)[block_number] = (int64_t*)malloc(block_bit_size / BYTE_SIZE);
+        (*out_blocks)[block_number] = (int64_t*)malloc(((block_bit_size / BYTE_SIZE) * sizeof(int64_t)) + 1);
         if (NULL == (*out_blocks)[block_number])
         {
             return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
             goto cleanup;
         }
+        memset((*out_blocks)[block_number], 0, block_bit_size / BYTE_SIZE);
 
         // Copy the block data
-        for (uint32_t element_index_in_block = 0; element_index_in_block < (block_bit_size / BYTE_SIZE); ++element_index_in_block)
+        for (size_t element_index_in_block = 0; element_index_in_block < (block_bit_size / BYTE_SIZE); ++element_index_in_block)
         {
 			(*out_blocks)[block_number][element_index_in_block] = value[(block_number * (block_bit_size / BYTE_SIZE)) + element_index_in_block];
         }
@@ -398,7 +399,7 @@ STATUS_CODE generate_encryption_matrix(int64_t*** out_matrix, uint32_t dimentati
     // Generate random numbers mod prime_field to fill the matrix
     for (uint32_t row = 0; row < dimentation; ++row)
     {
-        (*out_matrix)[row] = (int64_t*)malloc(dimentation * sizeof(int64_t));
+        (*out_matrix)[row] = (int64_t*)malloc(dimentation * sizeof(int64_t) + 1);
         if ((*out_matrix)[row] == NULL)
         {
             return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
