@@ -47,11 +47,11 @@ STATUS_CODE matrix_determinant(int64_t** matrix, uint32_t dimentaion, uint32_t p
 		int64_t matrix_element = matrix[row][column];
 		if (IS_ODD(row + column)) // If (row + column) is odd, sign change
 		{
-			matrix_element = prime_field - matrix_element;
+			matrix_element = negate_over_galois_field(matrix_element, prime_field);
 		}
 
-		int64_t cofactor = (matrix_element * minor_matrix_determinant) % prime_field;
-		*out_determinant = (*out_determinant + cofactor) % prime_field;
+		int64_t cofactor = multiply_over_galois_field(matrix_element, minor_matrix_determinant, prime_field);
+		*out_determinant = add_over_galois_field(*out_determinant, cofactor, prime_field);
 
 		(void)free_matrix(minor_matrix, dimentaion - 1);
 		minor_matrix = NULL;
@@ -82,7 +82,7 @@ STATUS_CODE matrix_determinant_over_galois_field(int64_t** matrix, uint32_t dime
 		goto cleanup;
 	}
 
-	*out_determinant = determinant % prime_field;
+	*out_determinant = align_to_galois_field(determinant, prime_field);
 
 	return_code = STATUS_CODE_SUCCESS;
 cleanup:
@@ -115,11 +115,7 @@ STATUS_CODE inverse_square_matrix(int64_t** matrix, uint32_t dimentaion, uint32_
 	{
 		goto cleanup;
 	}
-	return_code = inverse_element(&inverse_determinant, prime_field, determinant);
-	if (STATUS_FAILED(return_code))
-	{
-		goto cleanup;
-	}
+	inverse_determinant = raise_power_over_galois_field(determinant, prime_field - 2, prime_field);
 
 	// Calculate the adjugate matrix
 	adjugate_matrix = (int64_t**)malloc(dimentaion * sizeof(int64_t*));
@@ -158,14 +154,10 @@ STATUS_CODE inverse_square_matrix(int64_t** matrix, uint32_t dimentaion, uint32_
 
 			if (IS_ODD(row + column)) // If the sum of the row and column is odd, the cofactor is negative
 			{
-				return_code = negate_element(&minor_matrix_determinant, prime_field, minor_matrix_determinant);
-				if (STATUS_FAILED(return_code))
-				{
-					goto cleanup;
-				}
+				minor_matrix_determinant = negate_over_galois_field(minor_matrix_determinant, prime_field);
 			}
 
-			adjugate_matrix[column][row] = minor_matrix_determinant % prime_field;
+			adjugate_matrix[column][row] = align_to_galois_field(minor_matrix_determinant, prime_field);
 
 			(void)free_matrix(minor_matrix, dimentaion - 1);
 			minor_matrix = NULL;
@@ -195,7 +187,7 @@ STATUS_CODE inverse_square_matrix(int64_t** matrix, uint32_t dimentaion, uint32_
 		for (uint32_t column = 0; column < dimentaion; ++column)
 		{
 
-			(*out_inverse_matrix)[row][column] = (adjugate_matrix[row][column] * inverse_determinant) % prime_field;
+			(*out_inverse_matrix)[row][column] = multiply_over_galois_field(adjugate_matrix[row][column], inverse_determinant, prime_field);
 		}
 	}
 
@@ -221,71 +213,6 @@ cleanup:
 	return return_code;
 }
 
-STATUS_CODE negate_element(int64_t* out_element, uint32_t prime_field, int64_t element_to_negate)
-{
-	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
-
-	if ((NULL == out_element) || (element_to_negate > (int64_t)prime_field))
-	{
-		return_code = STATUS_CODE_INVALID_ARGUMENT;
-		goto cleanup;
-	}
-	
-	*out_element = prime_field - (element_to_negate % prime_field);
-
-	return_code = STATUS_CODE_SUCCESS;
-cleanup:
-	return return_code;
-}
-
-STATUS_CODE pow_over_finite_field(int64_t* result, int64_t base, int64_t exponent, int64_t field)
-{
-	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
-	if (result == NULL || base < 0 || exponent < 0 || field <= 0)
-	{
-		return_code = STATUS_CODE_INVALID_ARGUMENT;
-		goto cleanup;
-	}
-
-	*result = 1;
-	base = base % field;
-
-	while (exponent > 0)
-	{
-		if (exponent & 1)
-		{
-			*result = (*result * base) % field;
-		}
-		base = (base * base) % field;
-		exponent >>= 1;
-	}
-
-	return_code = STATUS_CODE_SUCCESS;
-cleanup:
-	return return_code;
-}
-
-STATUS_CODE inverse_element(int64_t* out_element, uint32_t prime_field, int64_t element_to_inverse)
-{
-	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
-
-	if ((NULL == out_element) || (element_to_inverse > (int64_t)prime_field))
-	{
-		return_code = STATUS_CODE_INVALID_ARGUMENT;
-		goto cleanup;
-	}
-
-	return_code = pow_over_finite_field(out_element, element_to_inverse, prime_field - 2, prime_field);
-	if (STATUS_FAILED(return_code))
-	{
-		goto cleanup;
-	}
-
-	return_code = STATUS_CODE_SUCCESS;
-cleanup:
-	return return_code;
-}
-
 STATUS_CODE multiply_matrix_with_uint8_t_vector(int64_t** out_vector, int64_t** matrix, uint8_t* vector, uint32_t dimentaion, uint32_t prime_field)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
@@ -304,8 +231,8 @@ STATUS_CODE multiply_matrix_with_uint8_t_vector(int64_t** out_vector, int64_t** 
 		temp_result = 0;
 		for (uint32_t column = 0; column < dimentaion; ++column)
 		{
-			product = (matrix[row][column] * vector[column]) % prime_field;
-			temp_result = (temp_result + product) % prime_field;
+			product = multiply_over_galois_field(matrix[row][column], (int64_t)vector[column], prime_field);
+			temp_result = add_over_galois_field(temp_result, product, prime_field);
 		}
 		(*out_vector)[row] = temp_result;
 	}
@@ -362,11 +289,11 @@ STATUS_CODE is_matrix_invertible(int64_t** matrix, uint32_t dimentaion, uint32_t
 cleanup:
 	return return_code;
 }
-
+ 
 STATUS_CODE multiply_matrix_with_int64_t_vector(uint8_t** out_vector, int64_t** matrix, int64_t* vector, uint32_t dimentaion, uint32_t prime_field)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
-	int64_t temp_result = 0;
+	uint64_t temp_result = 0;
 	int64_t product = 0;
 	
 	if ((NULL == out_vector) || (NULL == matrix) || (NULL == vector))
@@ -382,15 +309,21 @@ STATUS_CODE multiply_matrix_with_int64_t_vector(uint8_t** out_vector, int64_t** 
 		goto cleanup;
 	}
 
-	for (uint32_t row = 0; row < dimentaion; ++row)
+	for (size_t row = 0; row < dimentaion; ++row)
 	{
 		temp_result = 0;
-		for (uint32_t column = 0; column < dimentaion; ++column)
+		for (size_t column = 0; column < dimentaion; ++column)
 		{
-			product = (matrix[row][column] * vector[column]) % prime_field;
-			temp_result = (temp_result + product ) % prime_field;
+			product = multiply_over_galois_field(matrix[row][column], (int64_t)vector[column], prime_field);
+			temp_result = add_over_galois_field(temp_result, product, prime_field);
 		}
-		(*out_vector)[row] = (uint8_t)(temp_result % UINT8_MAX);
+
+		if (temp_result > UINT8_MAX)
+		{
+			return_code = STATUS_CODE_INVALID_RESULT_WIDTH;
+			goto cleanup;
+		}
+		(*out_vector)[row] = (uint8_t)(temp_result);
 	}
 
 	return_code = STATUS_CODE_SUCCESS;
