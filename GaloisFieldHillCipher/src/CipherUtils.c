@@ -9,6 +9,9 @@ STATUS_CODE add_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_size,
     uint32_t random_bit = 0;
     uint32_t value_bit = 0;
     uint32_t current_working_byte_bit_index = 0;
+    uint32_t number_of_random_bits = 0;
+    uint32_t total_bits = 0;
+    uint32_t total_bytes = 0;
 
     if ((NULL == out) || (NULL == out_bit_size))
     {
@@ -17,9 +20,9 @@ STATUS_CODE add_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_size,
     }
 
     // Calculate the size of the output vector
-    uint32_t number_of_random_bits = NUMBER_OF_RANDOM_BITS_TO_ADD * (uint32_t)(value_bit_length / BYTE_SIZE);
-    uint32_t total_bits = value_bit_length + number_of_random_bits;
-    uint32_t total_bytes = (uint32_t)(total_bits / BYTE_SIZE);
+    number_of_random_bits = NUMBER_OF_RANDOM_BITS_TO_ADD * (uint32_t)(value_bit_length / BYTE_SIZE);
+    total_bits = value_bit_length + number_of_random_bits;
+    total_bytes = (uint32_t)(total_bits / BYTE_SIZE);
 
     *out = (uint8_t*)malloc(total_bytes);
     *out_bit_size = total_bits;
@@ -31,7 +34,7 @@ STATUS_CODE add_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_size,
 
     memset(*out, 0, total_bytes);
 
-    for (uint32_t bit_number = 0; bit_number < total_bits; ++bit_number)
+    for (size_t bit_number = 0; bit_number < total_bits; ++bit_number)
     {
         if ((bit_number % BYTE_SIZE == 0) && (bit_number != 0))
         {
@@ -81,6 +84,12 @@ cleanup:
 STATUS_CODE remove_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_size, uint8_t* value, uint32_t value_bit_length)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
+    uint32_t block_size = 0;
+    double number_of_random_plus_byte_blocks = 0;
+    uint32_t output_byte = 0;
+    uint32_t output_bit = 0;
+    uint8_t random_bits_counter = 0;
+    uint32_t byte_index = 0;
 
     if ((NULL == out) || (NULL == out_bit_size) || (NULL == value))
     {
@@ -88,8 +97,8 @@ STATUS_CODE remove_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_si
         goto cleanup;
     }
 
-    uint32_t block_size = BYTE_SIZE + NUMBER_OF_RANDOM_BITS_TO_ADD;
-    double number_of_random_plus_byte_blocks = value_bit_length / block_size;
+    block_size = BYTE_SIZE + NUMBER_OF_RANDOM_BITS_TO_ADD;
+    number_of_random_plus_byte_blocks = value_bit_length / block_size;
     *out_bit_size = (number_of_random_plus_byte_blocks + (uint32_t)(value_bit_length % block_size != 0)) * BYTE_SIZE;
     *out = (uint8_t*)malloc(*out_bit_size + 1);
     if (NULL == *out)
@@ -100,12 +109,7 @@ STATUS_CODE remove_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_si
 
     memset(*out, 0, *out_bit_size);
 
-    uint32_t output_byte = 0;
-    uint32_t output_bit = 0;
-    uint8_t random_bits_counter = 0;
-    uint32_t byte_index = 0;
-
-    for (uint32_t bit_number = 0; bit_number < value_bit_length + NUMBER_OF_RANDOM_BITS_TO_ADD; ++bit_number)
+    for (size_t bit_number = 0; bit_number < value_bit_length + NUMBER_OF_RANDOM_BITS_TO_ADD; ++bit_number)
     {
         // Skip the random bits
         if ((output_bit % BYTE_SIZE == 0) && (output_bit != 0))
@@ -176,14 +180,14 @@ STATUS_CODE pad_to_length(uint8_t** out, uint32_t* out_bit_length, uint8_t* valu
     }
 
 
-    // Copy the original value to the output array using a for loop
-    for (uint32_t index = 0; index < value_bit_length / BYTE_SIZE; ++index)
+    // Copy the original value to the output array
+    for (size_t index = 0; index < value_bit_length / BYTE_SIZE; ++index)
     {
         (*out)[index] = value[index];
     }
 
-    // Pad the remaining bytes with 0 using a for loop
-    for (uint32_t index = value_bit_length / BYTE_SIZE; index < target_bit_length / BYTE_SIZE; ++index)
+    // Pad the remaining bytes with 0
+    for (size_t index = value_bit_length / BYTE_SIZE; index < target_bit_length / BYTE_SIZE; ++index)
     {
         (*out)[index] = 0;
     }
@@ -216,7 +220,7 @@ STATUS_CODE remove_padding(uint8_t** out, uint32_t* out_bit_length, uint8_t* val
         goto cleanup;
     }
 
-	for (uint16_t byte_number = 0; byte_number < value_bit_length / BYTE_SIZE; ++byte_number)
+	for (size_t byte_number = 0; byte_number < value_bit_length / BYTE_SIZE; ++byte_number)
 	{
 		// Check if the magic byte is part of the padding
         if (out_flag_check && (value[byte_number] != 0))
@@ -246,7 +250,7 @@ STATUS_CODE remove_padding(uint8_t** out, uint32_t* out_bit_length, uint8_t* val
     }
 
     // Copy the original value to the output array
-    for (uint32_t copy_index = 0; copy_index < (*out_bit_length / BYTE_SIZE); ++copy_index)
+    for (size_t copy_index = 0; copy_index < (*out_bit_length / BYTE_SIZE); ++copy_index)
     {
         (*out)[copy_index] = value[copy_index];
     }
@@ -285,7 +289,7 @@ STATUS_CODE divide_uint8_t_into_blocks(uint8_t*** out_blocks, uint32_t* num_bloc
         goto cleanup;
     }
 
-    for (uint32_t block_number = 0; block_number < *num_blocks; ++block_number)
+    for (size_t block_number = 0; block_number < *num_blocks; ++block_number)
     {
         (*out_blocks)[block_number] = (uint8_t*)malloc(block_bit_size / BYTE_SIZE);
         if (NULL == (*out_blocks)[block_number])
@@ -365,7 +369,7 @@ STATUS_CODE divide_int64_t_into_blocks(int64_t*** out_blocks, uint32_t* num_bloc
 cleanup:
     if ((STATUS_FAILED(return_code)) && (NULL != out_blocks) && (NULL != *out_blocks) && (NULL != num_blocks))
     {
-        for (uint32_t i = 0; i < *num_blocks; ++i)
+        for (size_t i = 0; i < *num_blocks; ++i)
         {
             if ((*out_blocks)[i] != NULL)
             {
@@ -382,6 +386,7 @@ cleanup:
 STATUS_CODE generate_encryption_matrix(int64_t*** out_matrix, uint32_t dimentation, uint32_t prime_field)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
+    uint32_t secure_random_number = 0;
 
     if (out_matrix == NULL)
     {
@@ -397,7 +402,7 @@ STATUS_CODE generate_encryption_matrix(int64_t*** out_matrix, uint32_t dimentati
     }
 
     // Generate random numbers mod prime_field to fill the matrix
-    for (uint32_t row = 0; row < dimentation; ++row)
+    for (size_t row = 0; row < dimentation; ++row)
     {
         (*out_matrix)[row] = (int64_t*)malloc(dimentation * sizeof(int64_t) + 1);
         if ((*out_matrix)[row] == NULL)
@@ -405,9 +410,9 @@ STATUS_CODE generate_encryption_matrix(int64_t*** out_matrix, uint32_t dimentati
             return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
             goto cleanup;
         }
-        for (uint32_t column = 0; column < dimentation; ++column)
+        for (size_t column = 0; column < dimentation; ++column)
         {
-			uint32_t secure_random_number = 0;
+			secure_random_number = 0;
             return_code = generate_secure_random_number(&secure_random_number, (uint32_t)0, prime_field - 1);
             if (STATUS_FAILED(return_code))
             {

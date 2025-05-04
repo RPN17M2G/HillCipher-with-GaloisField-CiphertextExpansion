@@ -4,6 +4,10 @@ STATUS_CODE matrix_determinant(int64_t** matrix, uint32_t dimentaion, uint32_t p
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 	int64_t** minor_matrix = NULL;
+	uint32_t row = 0;
+	int64_t minor_matrix_determinant = 0;
+	int64_t matrix_element = 0;
+	int64_t cofactor = 0;
 
 	if (matrix == NULL || out_determinant == NULL)
 	{
@@ -22,8 +26,8 @@ STATUS_CODE matrix_determinant(int64_t** matrix, uint32_t dimentaion, uint32_t p
 	*out_determinant = 0;
 
 	// Expand along the first row (row 0)
-	uint32_t row = 0;
-	for (uint32_t column = 0; column < dimentaion; ++column)
+	row = 0;
+	for (size_t column = 0; column < dimentaion; ++column)
 	{
 		if (matrix[row][column] == 0)
 		{
@@ -36,7 +40,7 @@ STATUS_CODE matrix_determinant(int64_t** matrix, uint32_t dimentaion, uint32_t p
 			goto cleanup;
 		}
 
-		int64_t minor_matrix_determinant = 0;
+		minor_matrix_determinant = 0;
 		return_code = matrix_determinant(minor_matrix, dimentaion - 1, prime_field, &minor_matrix_determinant);
 
 		if (STATUS_FAILED(return_code))
@@ -44,13 +48,12 @@ STATUS_CODE matrix_determinant(int64_t** matrix, uint32_t dimentaion, uint32_t p
 			goto cleanup;
 		}
 
-		int64_t matrix_element = matrix[row][column];
+		matrix_element = matrix[row][column];
 		if (IS_ODD(row + column)) // If (row + column) is odd, sign change
 		{
 			matrix_element = negate_over_galois_field(matrix_element, prime_field);
 		}
-
-		int64_t cofactor = multiply_over_galois_field(matrix_element, minor_matrix_determinant, prime_field);
+		cofactor = multiply_over_galois_field(matrix_element, minor_matrix_determinant, prime_field);
 		*out_determinant = add_over_galois_field(*out_determinant, cofactor, prime_field);
 
 		(void)free_matrix(minor_matrix, dimentaion - 1);
@@ -96,6 +99,8 @@ STATUS_CODE inverse_square_matrix(int64_t** matrix, uint32_t dimentaion, uint32_
 	bool is_invertible = false;
 	int64_t** adjugate_matrix = NULL;
 	int64_t inverse_determinant = 0;
+	int64_t** minor_matrix = NULL;
+	int64_t minor_matrix_determinant = 0;
 
 	return_code = is_matrix_invertible(matrix, dimentaion, prime_field, &is_invertible);
 	if (STATUS_FAILED(return_code))
@@ -125,7 +130,7 @@ STATUS_CODE inverse_square_matrix(int64_t** matrix, uint32_t dimentaion, uint32_
 		goto cleanup;
 	}
 
-	for (uint32_t row = 0; row < dimentaion; ++row)
+	for (size_t row = 0; row < dimentaion; ++row)
 	{
 		adjugate_matrix[row] = (int64_t*)malloc(dimentaion * sizeof(int64_t));
 		if (adjugate_matrix[row] == NULL)
@@ -135,17 +140,17 @@ STATUS_CODE inverse_square_matrix(int64_t** matrix, uint32_t dimentaion, uint32_
 		}
 	}
 
-	for (uint32_t row = 0; row < dimentaion; ++row)
+	for (size_t row = 0; row < dimentaion; ++row)
 	{
-		for (uint32_t column = 0; column < dimentaion; ++column)
+		for (size_t column = 0; column < dimentaion; ++column)
 		{
-			int64_t** minor_matrix = NULL;
+			minor_matrix = NULL;
 			return_code = build_minor_matrix(matrix, dimentaion, row, column, &minor_matrix);
 			if (STATUS_FAILED(return_code))
 			{
 				goto cleanup;
 			}
-			int64_t minor_matrix_determinant = 0;
+			minor_matrix_determinant = 0;
 			return_code = matrix_determinant_over_galois_field(minor_matrix, dimentaion - 1, prime_field, &minor_matrix_determinant);
 			if (STATUS_FAILED(return_code))
 			{
@@ -172,7 +177,7 @@ STATUS_CODE inverse_square_matrix(int64_t** matrix, uint32_t dimentaion, uint32_
 		goto cleanup;
 	}
 
-	for (uint32_t row = 0; row < dimentaion; ++row)
+	for (size_t row = 0; row < dimentaion; ++row)
 	{
 		(*out_inverse_matrix)[row] = (int64_t*)malloc(dimentaion * sizeof(int64_t));
 		if ((*out_inverse_matrix)[row] == NULL)
@@ -182,9 +187,9 @@ STATUS_CODE inverse_square_matrix(int64_t** matrix, uint32_t dimentaion, uint32_
 		}
 	}
 
-	for (uint32_t row = 0; row < dimentaion; ++row)
+	for (size_t row = 0; row < dimentaion; ++row)
 	{
-		for (uint32_t column = 0; column < dimentaion; ++column)
+		for (size_t column = 0; column < dimentaion; ++column)
 		{
 
 			(*out_inverse_matrix)[row][column] = multiply_over_galois_field(adjugate_matrix[row][column], inverse_determinant, prime_field);
@@ -195,7 +200,7 @@ STATUS_CODE inverse_square_matrix(int64_t** matrix, uint32_t dimentaion, uint32_
 cleanup:
 	if (adjugate_matrix != NULL)
 	{
-		for (uint32_t row = 0; row < dimentaion; ++row)
+		for (size_t row = 0; row < dimentaion; ++row)
 		{
 			free(adjugate_matrix[row]);
 		}
@@ -203,7 +208,7 @@ cleanup:
 	}
 	if (STATUS_FAILED(return_code) && (*out_inverse_matrix != NULL))
 	{
-		for (uint32_t row = 0; row < dimentaion; ++row)
+		for (size_t row = 0; row < dimentaion; ++row)
 		{
 			free((*out_inverse_matrix)[row]);
 		}
@@ -226,10 +231,10 @@ STATUS_CODE multiply_matrix_with_uint8_t_vector(int64_t** out_vector, int64_t** 
 		goto cleanup;
 	}
 
-	for (uint32_t row = 0; row < dimentaion; ++row)
+	for (size_t row = 0; row < dimentaion; ++row)
 	{
 		temp_result = 0;
-		for (uint32_t column = 0; column < dimentaion; ++column)
+		for (size_t column = 0; column < dimentaion; ++column)
 		{
 			product = multiply_over_galois_field(matrix[row][column], (int64_t)vector[column], prime_field);
 			temp_result = add_over_galois_field(temp_result, product, prime_field);
@@ -250,10 +255,11 @@ cleanup:
 STATUS_CODE gcd(int64_t first_element, int64_t second_element, int64_t* out_gcd)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
+	int64_t temp = 0;
 
 	// Euclidean algorithm
 	while (second_element != 0) {
-		int64_t temp = second_element;
+		temp = second_element;
 		second_element = first_element % second_element;
 		first_element = temp;
 	}
@@ -338,7 +344,7 @@ cleanup:
 
 STATUS_CODE free_matrix(int64_t** matrix, uint32_t dimentaion)
 {
-	for (uint32_t row = 0; row < dimentaion; ++row)
+	for (size_t row = 0; row < dimentaion; ++row)
 	{
 		free(matrix[row]);
 	}
@@ -350,6 +356,8 @@ STATUS_CODE free_matrix(int64_t** matrix, uint32_t dimentaion)
 STATUS_CODE build_minor_matrix(int64_t** matrix, uint32_t dimentaion, uint32_t row, uint32_t column, int64_t*** out_matrix)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
+	uint32_t minor_matrix_row = 0;
+	uint32_t minor_matrix_column = 0;
 
 	int64_t** minor_matrix = (int64_t**)malloc((dimentaion - 1) * sizeof(int64_t*));
 	if (minor_matrix == NULL)
@@ -358,7 +366,7 @@ STATUS_CODE build_minor_matrix(int64_t** matrix, uint32_t dimentaion, uint32_t r
 		goto cleanup;
 	}
 
-	for (uint32_t sub_row = 0; sub_row < dimentaion - 1; ++sub_row)
+	for (size_t sub_row = 0; sub_row < dimentaion - 1; ++sub_row)
 	{
 		minor_matrix[sub_row] = (int64_t*)malloc((dimentaion - 1) * sizeof(int64_t));
 		if (minor_matrix[sub_row] == NULL)
@@ -368,15 +376,15 @@ STATUS_CODE build_minor_matrix(int64_t** matrix, uint32_t dimentaion, uint32_t r
 		}
 	}
 
-	uint32_t minor_matrix_row = 0;
-	uint32_t minor_matrix_column = 0;
-	for (uint32_t sub_row = 0; sub_row < dimentaion; ++sub_row)
+	minor_matrix_row = 0;
+	minor_matrix_column = 0;
+	for (size_t sub_row = 0; sub_row < dimentaion; ++sub_row)
 	{
 		if (sub_row == row) // Insert all rows except the current row
 		{
 			continue;
 		}
-		for (uint32_t sub_column = 0; sub_column < dimentaion; ++sub_column)
+		for (size_t sub_column = 0; sub_column < dimentaion; ++sub_column)
 		{
 			if (sub_column == column) // Insert all columns except the current column
 			{
