@@ -7,8 +7,14 @@ int main()
 	uint32_t matrix_dimentation = 2;
 
 
-	uint8_t plaintext[] = { 'H', 'e', 'l', 'l', 'o', 'H', 'e', 'l', 'l', 'o' };
-	uint32_t plaintext_bit_size = 10 * BYTE_SIZE;
+	uint32_t plaintext_size = 200;
+	uint8_t* plaintext = (uint8_t*)malloc(plaintext_size * BYTE_SIZE);
+	for (uint32_t i = 0; i < plaintext_size; ++i)
+	{
+		plaintext[i] = (uint8_t)(i % 25 + 'A');
+	}
+
+	uint32_t plaintext_bit_size = plaintext_size * BYTE_SIZE;
 
 	printf("Plaintext(size %d, in bytes: %d): \n", plaintext_bit_size, plaintext_bit_size / BYTE_SIZE);
 	for (uint32_t i = 0; i < plaintext_bit_size / BYTE_SIZE; ++i)
