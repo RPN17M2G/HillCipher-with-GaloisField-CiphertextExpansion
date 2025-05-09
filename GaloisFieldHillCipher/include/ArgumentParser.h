@@ -1,20 +1,17 @@
 #pragma once
+
+#include <argparse.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <argp.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <errno.h>
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
 
 #include "StatusCodes.h"
 
 #define MAX_ERROR_MSG_LEN (256)
+#define DECIMAL_BASE (10)
 
 #define ARGUMENT_INPUT_SHORT 'i'
 #define ARGUMENT_OUTPUT_SHORT 'o'
@@ -31,6 +28,8 @@
 #define ARGUMENT_DIMENSION_DOCENTATION "Dimension (uint32_t)"
 #define ARGUMENT_VERBOSE_DOCENTATION "Enable verbose output"
 
+#define USAGE "GaloisFieldHillCipher [options]"
+
 typedef struct {
     const char* input_file;
     const char* output_file;
@@ -38,9 +37,10 @@ typedef struct {
     bool verbose;
 } ParsedArguments;
 
-typedef struct {
-	ParsedArguments* args;
-    uint8_t* error;
-} InternalState;
+
+STATUS_CODE create_output_file_if_needed(const char* path);
+STATUS_CODE validate_input_file(const char* path);
+STATUS_CODE extract_arguments(int argc, char** argv, ParsedArguments* out_args);
+
 
 STATUS_CODE parse_arguments(int argc, char** argv, ParsedArguments* out_args);

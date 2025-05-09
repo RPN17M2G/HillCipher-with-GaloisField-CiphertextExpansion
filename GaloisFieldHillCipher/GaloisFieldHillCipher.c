@@ -1,6 +1,6 @@
 ﻿#include "GaloisFieldHillCipher.h"
 
-int main()
+int main(int argc, char** argv)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 	uint32_t matrix_dimension = 5;
@@ -15,6 +15,15 @@ int main()
 
 	uint32_t plaintext_size = 200;
 	uint32_t plaintext_bit_size = 0;
+
+	ParsedArguments parsed_args = { 0 };
+	return_code = parse_arguments(argc, argv, &parsed_args);
+	if (STATUS_FAILED(return_code))
+	{
+		printf("[!] Failed to parse arguments. See status code for details.\n");
+		goto cleanup;
+	}
+
 	uint8_t* plaintext = (uint8_t*)malloc(plaintext_size * BYTE_SIZE);
 	if (plaintext == NULL)
 	{
