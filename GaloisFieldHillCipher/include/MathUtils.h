@@ -117,8 +117,8 @@ STATUS_CODE is_matrix_invertible(bool* out_is_invertible, int64_t** matrix, uint
  * @brief Generates a square matrix with cryptography secure random values.
  *
  * @param out_matrix - Pointer to the output matrix - allocated inside the function and memory released if fails.
- * @param dimentation - Dimension of the square matrix.
+ * @param dimension - Dimension of the square matrix.
  * @param prime_field - Prime field to use for generating random values.
  * @return STATUS_CODE - Status of the operation.
  */
-STATUS_CODE generate_square_matrix_over_field(int64_t*** out_matrix, uint32_t dimentation, uint32_t prime_field);
+STATUS_CODE generate_square_matrix_over_field(int64_t*** out_matrix, uint32_t dimension, uint32_t prime_field);

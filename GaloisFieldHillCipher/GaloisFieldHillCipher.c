@@ -3,7 +3,7 @@
 int main()
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
-	uint32_t matrix_dimentation = 5;
+	uint32_t matrix_dimension = 5;
 	uint32_t max_attempts = 3;
 
 	uint8_t* decrypted_text = NULL;
@@ -37,25 +37,25 @@ int main()
 	}
 	printf("\n");
 
-	printf("\n[*] Searching for an invertible matrix over %d galois field in the dimentation of %d. This may take a few minutes...\n", DEFAULT_PRIME_GALOIS_FIELD, matrix_dimentation);
-	return_code = generate_encryption_matrix(&encryption_matrix, matrix_dimentation, DEFAULT_PRIME_GALOIS_FIELD, max_attempts);
+	printf("\n[*] Searching for an invertible matrix over %d galois field in the dimension of %d. This may take a few minutes...\n", DEFAULT_PRIME_GALOIS_FIELD, matrix_dimension);
+	return_code = generate_encryption_matrix(&encryption_matrix, matrix_dimension, DEFAULT_PRIME_GALOIS_FIELD, max_attempts);
 	if (STATUS_FAILED(return_code))
 	{
-		printf("[!] Couldn't generate encryption matrix. Maybe not found an invertible matrix in the requested dimentation on %d attempts...\n", max_attempts);
+		printf("[!] Couldn't generate encryption matrix. Maybe not found an invertible matrix in the requested dimension on %d attempts...\n", max_attempts);
 		goto cleanup;
 	}
 
-	printf("[*] Encryption matrix(dimentation: %d): \n", matrix_dimentation);
-	for (size_t row = 0; row < matrix_dimentation; ++row)
+	printf("[*] Encryption matrix(dimension: %d): \n", matrix_dimension);
+	for (size_t row = 0; row < matrix_dimension; ++row)
 	{
-		for (size_t column = 0; column < matrix_dimentation; ++column)
+		for (size_t column = 0; column < matrix_dimension; ++column)
 		{
 			printf("%d ", encryption_matrix[row][column]);
 		}
 		printf("\n");
 	}
 
-	return_code = encrypt(&ciphertext, &ciphertext_bit_size, encryption_matrix, matrix_dimentation, DEFAULT_PRIME_GALOIS_FIELD, plaintext, plaintext_bit_size);
+	return_code = encrypt(&ciphertext, &ciphertext_bit_size, encryption_matrix, matrix_dimension, DEFAULT_PRIME_GALOIS_FIELD, plaintext, plaintext_bit_size);
 	if (STATUS_FAILED(return_code))
 	{
 		printf("[!] Couldn't encrypt the plaintext. See status code for details.\n");
@@ -69,24 +69,24 @@ int main()
 	}
 	printf("\n\n");
 
-	return_code = generate_decryption_matrix(&decryption_matrix, matrix_dimentation, encryption_matrix, DEFAULT_PRIME_GALOIS_FIELD);
+	return_code = generate_decryption_matrix(&decryption_matrix, matrix_dimension, encryption_matrix, DEFAULT_PRIME_GALOIS_FIELD);
 	if (STATUS_FAILED(return_code))
 	{
-		printf("[!] Couldn't generate decryption matrix. Maybe not found an invertible matrix in the requested dimentation...\n");
+		printf("[!] Couldn't generate decryption matrix. Maybe not found an invertible matrix in the requested dimension...\n");
 		goto cleanup;
 	}
 
-	printf("[*] Decryption matrix(dimentation: %d): \n", matrix_dimentation);
-	for (size_t row = 0; row < matrix_dimentation; ++row)
+	printf("[*] Decryption matrix(dimension: %d): \n", matrix_dimension);
+	for (size_t row = 0; row < matrix_dimension; ++row)
 	{
-		for (size_t column = 0; column < matrix_dimentation; ++column)
+		for (size_t column = 0; column < matrix_dimension; ++column)
 		{
 			printf("%d ", decryption_matrix[row][column]);
 		}
 		printf("\n");
 	}
 
-	return_code = decrypt(&decrypted_text, &decrypted_size, decryption_matrix, matrix_dimentation, DEFAULT_PRIME_GALOIS_FIELD, ciphertext, ciphertext_bit_size);
+	return_code = decrypt(&decrypted_text, &decrypted_size, decryption_matrix, matrix_dimension, DEFAULT_PRIME_GALOIS_FIELD, ciphertext, ciphertext_bit_size);
 	if (STATUS_FAILED(return_code))
 	{
 		printf("[!] Couldn't decrypt the ciphertext. See status code for details.\n");
@@ -103,7 +103,7 @@ int main()
 cleanup:
 	if (encryption_matrix != NULL)
 	{
-		for (size_t row = 0; row < matrix_dimentation; ++row)
+		for (size_t row = 0; row < matrix_dimension; ++row)
 		{
 			free(encryption_matrix[row]);
 		}
@@ -112,7 +112,7 @@ cleanup:
 
 	if (decryption_matrix != NULL)
 	{
-		for (size_t row = 0; row < matrix_dimentation; ++row)
+		for (size_t row = 0; row < matrix_dimension; ++row)
 		{
 			free(decryption_matrix[row]);
 		}

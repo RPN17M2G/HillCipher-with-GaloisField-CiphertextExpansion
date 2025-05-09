@@ -296,7 +296,7 @@ cleanup:
 	return return_code;
 }
 
-STATUS_CODE generate_square_matrix_over_field(int64_t*** out_matrix, uint32_t dimentation, uint32_t prime_field)
+STATUS_CODE generate_square_matrix_over_field(int64_t*** out_matrix, uint32_t dimension, uint32_t prime_field)
 {
 
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
@@ -308,7 +308,7 @@ STATUS_CODE generate_square_matrix_over_field(int64_t*** out_matrix, uint32_t di
 		goto cleanup;
 	}
 
-	*out_matrix = (int64_t**)malloc(dimentation * sizeof(int64_t*));
+	*out_matrix = (int64_t**)malloc(dimension * sizeof(int64_t*));
 	if (*out_matrix == NULL)
 	{
 		return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
@@ -316,15 +316,15 @@ STATUS_CODE generate_square_matrix_over_field(int64_t*** out_matrix, uint32_t di
 	}
 
 	// Generate random numbers mod prime_field to fill the matrix
-	for (size_t row = 0; row < dimentation; ++row)
+	for (size_t row = 0; row < dimension; ++row)
 	{
-		(*out_matrix)[row] = (int64_t*)malloc(dimentation * sizeof(int64_t) + 1);
+		(*out_matrix)[row] = (int64_t*)malloc(dimension * sizeof(int64_t) + 1);
 		if ((*out_matrix)[row] == NULL)
 		{
 			return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
 			goto cleanup;
 		}
-		for (size_t column = 0; column < dimentation; ++column)
+		for (size_t column = 0; column < dimension; ++column)
 		{
 			secure_random_number = 0;
 			return_code = generate_secure_random_number(&secure_random_number, (uint32_t)0, prime_field - 1);
@@ -340,7 +340,7 @@ STATUS_CODE generate_square_matrix_over_field(int64_t*** out_matrix, uint32_t di
 cleanup:
 	if (STATUS_FAILED(return_code) && (out_matrix != NULL) && (*out_matrix != NULL))
 	{
-		for (size_t row = 0; row < dimentation; ++row)
+		for (size_t row = 0; row < dimension; ++row)
 		{
 			free((*out_matrix)[row]);
 			(*out_matrix)[row] = NULL;
