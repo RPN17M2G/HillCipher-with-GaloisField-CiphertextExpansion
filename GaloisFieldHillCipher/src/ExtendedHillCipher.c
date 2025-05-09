@@ -175,3 +175,69 @@ cleanup:
 	}
 	return return_code;
 }
+
+
+STATUS_CODE generate_encryption_matrix(int64_t*** out_matrix, uint32_t dimentation, uint32_t prime_field, uint32_t max_attempts)
+{
+	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
+	bool matrix_invertible = false;
+	uint32_t attempt_number = 0;
+
+	if (out_matrix == NULL)
+	{
+		return_code = STATUS_CODE_INVALID_ARGUMENT;
+		goto cleanup;
+	}
+
+	while (++attempt_number < max_attempts)
+	{
+		return_code = generate_square_matrix_over_field(out_matrix, dimentation, prime_field);
+		if (STATUS_FAILED(return_code))
+		{
+			continue;
+		}
+
+		return_code = is_matrix_invertible(&matrix_invertible, *out_matrix, dimentation, prime_field);
+		if (STATUS_FAILED(return_code) || !matrix_invertible)
+		{
+			for (size_t row = 0; row < dimentation; ++row)
+			{
+				free((*out_matrix)[row]);
+				(*out_matrix)[row] = NULL;
+			}
+			free(*out_matrix);
+			*out_matrix = NULL;
+		}
+		else if (matrix_invertible)
+		{
+			break;
+		}
+	}
+
+	if (attempt_number >= max_attempts)
+	{
+		return_code = STATUS_CODE_MATRIX_NOT_INVERTIBLE;
+		goto cleanup;
+	}
+
+	return_code = STATUS_CODE_SUCCESS;
+cleanup:
+	return return_code;
+}
+
+STATUS_CODE generate_decryption_matrix(int64_t*** out_matrix, uint32_t dimentation, int64_t** encryption_matrix, uint32_t prime_field)
+{
+	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
+
+	return_code = inverse_square_matrix(out_matrix, encryption_matrix, dimentation, prime_field);
+
+	if (STATUS_FAILED(return_code))
+	{
+		goto cleanup;
+	}
+
+	return_code = STATUS_CODE_SUCCESS;
+cleanup:
+	return return_code;
+}
+

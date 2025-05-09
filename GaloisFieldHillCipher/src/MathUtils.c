@@ -1,6 +1,6 @@
 #include "MathUtils.h"
 
-STATUS_CODE matrix_determinant(int64_t** matrix, uint32_t dimentaion, uint32_t prime_field, int64_t* out_determinant)
+STATUS_CODE matrix_determinant(int64_t* out_determinant, int64_t** matrix, uint32_t dimentaion, uint32_t prime_field)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 	int64_t** minor_matrix = NULL;
@@ -34,14 +34,14 @@ STATUS_CODE matrix_determinant(int64_t** matrix, uint32_t dimentaion, uint32_t p
 			continue;
 		}
 
-		return_code = build_minor_matrix(matrix, dimentaion, row, column, &minor_matrix);
+		return_code = build_minor_matrix(&minor_matrix, matrix, dimentaion, row, column);
 		if (STATUS_FAILED(return_code))
 		{
 			goto cleanup;
 		}
 
 		minor_matrix_determinant = 0;
-		return_code = matrix_determinant(minor_matrix, dimentaion - 1, prime_field, &minor_matrix_determinant);
+		return_code = matrix_determinant(&minor_matrix_determinant, minor_matrix, dimentaion - 1, prime_field);
 
 		if (STATUS_FAILED(return_code))
 		{
@@ -68,7 +68,7 @@ cleanup:
 	return return_code;
 }
 
-STATUS_CODE matrix_determinant_over_galois_field(int64_t** matrix, uint32_t dimentaion, uint32_t prime_field, int64_t* out_determinant)
+STATUS_CODE matrix_determinant_over_galois_field(int64_t* out_determinant, int64_t** matrix, uint32_t dimentaion, uint32_t prime_field)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 	int64_t determinant = 0;
@@ -79,7 +79,7 @@ STATUS_CODE matrix_determinant_over_galois_field(int64_t** matrix, uint32_t dime
 		goto cleanup;
 	}
 
-	return_code = matrix_determinant(matrix, dimentaion, prime_field, &determinant);
+	return_code = matrix_determinant(&determinant, matrix, dimentaion, prime_field);
 	if (STATUS_FAILED(return_code))
 	{
 		goto cleanup;
@@ -92,7 +92,7 @@ cleanup:
 	return return_code;
 }
 
-STATUS_CODE inverse_square_matrix(int64_t** matrix, uint32_t dimentaion, uint32_t prime_field, int64_t*** out_inverse_matrix)
+STATUS_CODE inverse_square_matrix(int64_t*** out_inverse_matrix, int64_t** matrix, uint32_t dimentaion, uint32_t prime_field)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 	int64_t determinant = 0;
@@ -102,7 +102,7 @@ STATUS_CODE inverse_square_matrix(int64_t** matrix, uint32_t dimentaion, uint32_
 	int64_t** minor_matrix = NULL;
 	int64_t minor_matrix_determinant = 0;
 
-	return_code = is_matrix_invertible(matrix, dimentaion, prime_field, &is_invertible);
+	return_code = is_matrix_invertible(&is_invertible, matrix, dimentaion, prime_field);
 	if (STATUS_FAILED(return_code))
 	{
 		goto cleanup;
@@ -115,7 +115,7 @@ STATUS_CODE inverse_square_matrix(int64_t** matrix, uint32_t dimentaion, uint32_
 	}
 
 
-	return_code = matrix_determinant_over_galois_field(matrix, dimentaion, prime_field, &determinant);
+	return_code = matrix_determinant_over_galois_field(&determinant, matrix, dimentaion, prime_field);
 	if (STATUS_FAILED(return_code))
 	{
 		goto cleanup;
@@ -145,13 +145,13 @@ STATUS_CODE inverse_square_matrix(int64_t** matrix, uint32_t dimentaion, uint32_
 		for (size_t column = 0; column < dimentaion; ++column)
 		{
 			minor_matrix = NULL;
-			return_code = build_minor_matrix(matrix, dimentaion, row, column, &minor_matrix);
+			return_code = build_minor_matrix(&minor_matrix, matrix, dimentaion, row, column);
 			if (STATUS_FAILED(return_code))
 			{
 				goto cleanup;
 			}
 			minor_matrix_determinant = 0;
-			return_code = matrix_determinant_over_galois_field(minor_matrix, dimentaion - 1, prime_field, &minor_matrix_determinant);
+			return_code = matrix_determinant_over_galois_field(&minor_matrix_determinant, minor_matrix, dimentaion - 1, prime_field);
 			if (STATUS_FAILED(return_code))
 			{
 				goto cleanup;
@@ -252,7 +252,7 @@ cleanup:
 	return return_code;
 }
 
-STATUS_CODE gcd(int64_t first_element, int64_t second_element, int64_t* out_gcd)
+STATUS_CODE gcd(int64_t* out_gcd, int64_t first_element, int64_t second_element)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 	int64_t temp = 0;
@@ -270,19 +270,19 @@ cleanup:
 	return return_code;
 }
 
-STATUS_CODE is_matrix_invertible(int64_t** matrix, uint32_t dimentaion, uint32_t prime_field, bool* out_is_invertible)
+STATUS_CODE is_matrix_invertible(bool* out_is_invertible, int64_t** matrix, uint32_t dimentaion, uint32_t prime_field)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 	int64_t determinant = 0;
 	int64_t gcd_result = 0;
 	
-	return_code = matrix_determinant_over_galois_field(matrix, dimentaion, prime_field, &determinant);
+	return_code = matrix_determinant_over_galois_field(&determinant, matrix, dimentaion, prime_field);
 	if (STATUS_FAILED(return_code))
 	{
 		goto cleanup;
 	}
 
-	return_code = gcd((int64_t)prime_field, determinant, &gcd_result);
+	return_code = gcd(&gcd_result, (int64_t)prime_field, determinant);
 	if (STATUS_FAILED(return_code))
 	{
 		goto cleanup;
@@ -293,6 +293,61 @@ STATUS_CODE is_matrix_invertible(int64_t** matrix, uint32_t dimentaion, uint32_t
 	
 	return_code = STATUS_CODE_SUCCESS;
 cleanup:
+	return return_code;
+}
+
+STATUS_CODE generate_square_matrix_over_field(int64_t*** out_matrix, uint32_t dimentation, uint32_t prime_field)
+{
+
+	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
+	uint32_t secure_random_number = 0;
+
+	if (out_matrix == NULL)
+	{
+		return_code = STATUS_CODE_INVALID_ARGUMENT;
+		goto cleanup;
+	}
+
+	*out_matrix = (int64_t**)malloc(dimentation * sizeof(int64_t*));
+	if (*out_matrix == NULL)
+	{
+		return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
+		goto cleanup;
+	}
+
+	// Generate random numbers mod prime_field to fill the matrix
+	for (size_t row = 0; row < dimentation; ++row)
+	{
+		(*out_matrix)[row] = (int64_t*)malloc(dimentation * sizeof(int64_t) + 1);
+		if ((*out_matrix)[row] == NULL)
+		{
+			return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
+			goto cleanup;
+		}
+		for (size_t column = 0; column < dimentation; ++column)
+		{
+			secure_random_number = 0;
+			return_code = generate_secure_random_number(&secure_random_number, (uint32_t)0, prime_field - 1);
+			if (STATUS_FAILED(return_code))
+			{
+				goto cleanup;
+			}
+			(*out_matrix)[row][column] = (int64_t)(secure_random_number);
+		}
+	}
+
+	return_code = STATUS_CODE_SUCCESS;
+cleanup:
+	if (STATUS_FAILED(return_code) && (out_matrix != NULL) && (*out_matrix != NULL))
+	{
+		for (size_t row = 0; row < dimentation; ++row)
+		{
+			free((*out_matrix)[row]);
+			(*out_matrix)[row] = NULL;
+		}
+		free(*out_matrix);
+		*out_matrix = NULL;
+	}
 	return return_code;
 }
  
@@ -353,7 +408,7 @@ STATUS_CODE free_matrix(int64_t** matrix, uint32_t dimentaion)
 	return STATUS_CODE_SUCCESS;
 }
 
-STATUS_CODE build_minor_matrix(int64_t** matrix, uint32_t dimentaion, uint32_t row, uint32_t column, int64_t*** out_matrix)
+STATUS_CODE build_minor_matrix(int64_t*** out_matrix, int64_t** matrix, uint32_t dimentaion, uint32_t row, uint32_t column)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 	uint32_t minor_matrix_row = 0;

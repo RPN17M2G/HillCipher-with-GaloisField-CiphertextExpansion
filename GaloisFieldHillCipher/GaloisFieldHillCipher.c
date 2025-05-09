@@ -2,41 +2,53 @@
 
 int main()
 {
+	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
+	uint32_t matrix_dimentation = 5;
+	uint32_t max_attempts = 3;
+
+	uint8_t* decrypted_text = NULL;
+	uint32_t decrypted_size = 0;
 	int64_t** encryption_matrix = NULL;
 	int64_t** decryption_matrix = NULL;
-	uint32_t matrix_dimentation = 2;
-
-
-	uint32_t plaintext_size = 200;
-	uint8_t* plaintext = (uint8_t*)malloc(plaintext_size * BYTE_SIZE);
-	for (uint32_t i = 0; i < plaintext_size; ++i)
-	{
-		plaintext[i] = (uint8_t)(i % 25 + 'A');
-	}
-
-	uint32_t plaintext_bit_size = plaintext_size * BYTE_SIZE;
-
-	printf("Plaintext(size %d, in bytes: %d): \n", plaintext_bit_size, plaintext_bit_size / BYTE_SIZE);
-	for (uint32_t i = 0; i < plaintext_bit_size / BYTE_SIZE; ++i)
-	{
-		printf("%c ", plaintext[i]);
-	}
-	printf("\n");
-
-
 	int64_t* ciphertext = NULL;
 	uint32_t ciphertext_bit_size = 0;
 
-	STATUS_CODE return_code = generate_encryption_matrix(&encryption_matrix, matrix_dimentation, DEFAULT_PRIME_GALOIS_FIELD);
-	if (STATUS_FAILED(return_code))
+	uint32_t plaintext_size = 200;
+	uint32_t plaintext_bit_size = 0;
+	uint8_t* plaintext = (uint8_t*)malloc(plaintext_size * BYTE_SIZE);
+	if (plaintext == NULL)
 	{
+		printf("[!] Couldn't allocate memory for plaintext.\n");
+		return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
 		goto cleanup;
 	}
 
-	printf("Encryption matrix(dimentation: %d): \n", matrix_dimentation);
-	for (uint32_t row = 0; row < matrix_dimentation; ++row)
+	// Generate plaintext
+	for (size_t i = 0; i < plaintext_size; ++i)
 	{
-		for (uint32_t column = 0; column < matrix_dimentation; ++column)
+		plaintext[i] = (uint8_t)(i % 25 + 'A');
+	}
+	plaintext_bit_size = plaintext_size * BYTE_SIZE;
+
+	printf("[*] Plaintext(size %d, in bytes: %d): \n", plaintext_bit_size, plaintext_bit_size / BYTE_SIZE);
+	for (size_t plaintext_index = 0; plaintext_index < plaintext_bit_size / BYTE_SIZE; ++plaintext_index)
+	{
+		printf("%c ", plaintext[plaintext_index]);
+	}
+	printf("\n");
+
+	printf("\n[*] Searching for an invertible matrix over %d galois field in the dimentation of %d. This may take a few minutes...\n", DEFAULT_PRIME_GALOIS_FIELD, matrix_dimentation);
+	return_code = generate_encryption_matrix(&encryption_matrix, matrix_dimentation, DEFAULT_PRIME_GALOIS_FIELD, max_attempts);
+	if (STATUS_FAILED(return_code))
+	{
+		printf("[!] Couldn't generate encryption matrix. Maybe not found an invertible matrix in the requested dimentation on %d attempts...\n", max_attempts);
+		goto cleanup;
+	}
+
+	printf("[*] Encryption matrix(dimentation: %d): \n", matrix_dimentation);
+	for (size_t row = 0; row < matrix_dimentation; ++row)
+	{
+		for (size_t column = 0; column < matrix_dimentation; ++column)
 		{
 			printf("%d ", encryption_matrix[row][column]);
 		}
@@ -46,11 +58,12 @@ int main()
 	return_code = encrypt(&ciphertext, &ciphertext_bit_size, encryption_matrix, matrix_dimentation, DEFAULT_PRIME_GALOIS_FIELD, plaintext, plaintext_bit_size);
 	if (STATUS_FAILED(return_code))
 	{
+		printf("[!] Couldn't encrypt the plaintext. See status code for details.\n");
 		goto cleanup;
 	}
 
-	printf("\nCiphertext(size %d, in bytes: %d): \n", ciphertext_bit_size, ciphertext_bit_size / BYTE_SIZE);
-	for (uint32_t number = 0; number < ciphertext_bit_size / BYTE_SIZE; ++number)
+	printf("\n[*] Ciphertext(size %d, in bytes: %d): \n", ciphertext_bit_size, ciphertext_bit_size / BYTE_SIZE);
+	for (size_t number = 0; number < ciphertext_bit_size / BYTE_SIZE; ++number)
 	{
 		printf("%d ", ciphertext[number]);
 	}
@@ -59,39 +72,38 @@ int main()
 	return_code = generate_decryption_matrix(&decryption_matrix, matrix_dimentation, encryption_matrix, DEFAULT_PRIME_GALOIS_FIELD);
 	if (STATUS_FAILED(return_code))
 	{
+		printf("[!] Couldn't generate decryption matrix. Maybe not found an invertible matrix in the requested dimentation...\n");
 		goto cleanup;
 	}
 
-	printf("Decryption matrix(dimentation: %d): \n", matrix_dimentation);
-	for (uint32_t row = 0; row < matrix_dimentation; ++row)
+	printf("[*] Decryption matrix(dimentation: %d): \n", matrix_dimentation);
+	for (size_t row = 0; row < matrix_dimentation; ++row)
 	{
-		for (uint32_t column = 0; column < matrix_dimentation; ++column)
+		for (size_t column = 0; column < matrix_dimentation; ++column)
 		{
 			printf("%d ", decryption_matrix[row][column]);
 		}
 		printf("\n");
 	}
 
-	uint8_t* decrypted_text = NULL;
-	uint32_t decrypted_size = 0;
 	return_code = decrypt(&decrypted_text, &decrypted_size, decryption_matrix, matrix_dimentation, DEFAULT_PRIME_GALOIS_FIELD, ciphertext, ciphertext_bit_size);
 	if (STATUS_FAILED(return_code))
 	{
+		printf("[!] Couldn't decrypt the ciphertext. See status code for details.\n");
 		goto cleanup;
 	}
 
-	printf("\nDecrypted Plaintext(size %d, in bytes: %d): \n", decrypted_size, decrypted_size / BYTE_SIZE);
-	for (uint32_t number = 0; number < decrypted_size / BYTE_SIZE; ++number)
+	printf("\n[*] Decrypted Plaintext(size %d, in bytes: %d): \n", decrypted_size, decrypted_size / BYTE_SIZE);
+	for (size_t index = 0; index < decrypted_size / BYTE_SIZE; ++index)
 	{
-		printf("%c ", decrypted_text[number]);
+		printf("%c ", decrypted_text[index]);
 	}
-	printf("\n\n");
 
 	return_code = STATUS_CODE_SUCCESS;
 cleanup:
 	if (encryption_matrix != NULL)
 	{
-		for (uint32_t row = 0; row < matrix_dimentation; ++row)
+		for (size_t row = 0; row < matrix_dimentation; ++row)
 		{
 			free(encryption_matrix[row]);
 		}
@@ -100,7 +112,7 @@ cleanup:
 
 	if (decryption_matrix != NULL)
 	{
-		for (uint32_t row = 0; row < matrix_dimentation; ++row)
+		for (size_t row = 0; row < matrix_dimentation; ++row)
 		{
 			free(decryption_matrix[row]);
 		}

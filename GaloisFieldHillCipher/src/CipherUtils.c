@@ -306,7 +306,7 @@ STATUS_CODE divide_uint8_t_into_blocks(uint8_t*** out_blocks, uint32_t* num_bloc
 cleanup:
     if ((STATUS_FAILED(return_code)) && (NULL != out_blocks) && (NULL != *out_blocks) && (NULL != num_blocks))
     {
-        for (uint32_t i = 0; i < *num_blocks; ++i)
+        for (size_t i = 0; i < *num_blocks; ++i)
         {
             if ((*out_blocks)[i] != NULL)
             {
@@ -328,13 +328,8 @@ STATUS_CODE divide_int64_t_into_blocks(int64_t*** out_blocks, uint32_t* num_bloc
         || (NULL == num_blocks) 
         || (NULL == value)
         || (value_bit_length % block_bit_size != 0)
-        || ((sizeof(int64_t) * BYTE_SIZE) % block_bit_size != 0))
-    {
-        return_code = STATUS_CODE_INVALID_ARGUMENT;
-        goto cleanup;
-    }
-
-    if (block_bit_size == 0)
+        || (block_bit_size == 0)
+        || (block_bit_size  % BYTE_SIZE != 0))
     {
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
@@ -380,83 +375,5 @@ cleanup:
         *out_blocks = NULL;
         *num_blocks = 0;
     }
-    return return_code;
-}
-
-STATUS_CODE generate_encryption_matrix(int64_t*** out_matrix, uint32_t dimentation, uint32_t prime_field)
-{
-    STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
-    uint32_t secure_random_number = 0;
-
-    if (out_matrix == NULL)
-    {
-        return_code = STATUS_CODE_INVALID_ARGUMENT;
-        goto cleanup;
-    }
-
-    *out_matrix = (int64_t**)malloc(dimentation * sizeof(int64_t*));
-    if (*out_matrix == NULL)
-    {
-        return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
-        goto cleanup;
-    }
-
-    // Generate random numbers mod prime_field to fill the matrix
-    for (size_t row = 0; row < dimentation; ++row)
-    {
-        (*out_matrix)[row] = (int64_t*)malloc(dimentation * sizeof(int64_t) + 1);
-        if ((*out_matrix)[row] == NULL)
-        {
-            return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
-            goto cleanup;
-        }
-        for (size_t column = 0; column < dimentation; ++column)
-        {
-			secure_random_number = 0;
-            return_code = generate_secure_random_number(&secure_random_number, (uint32_t)0, prime_field - 1);
-            if (STATUS_FAILED(return_code))
-            {
-                goto cleanup;
-            }
-			(*out_matrix)[row][column] = (int64_t)(secure_random_number);
-        }
-    }
-
-    bool matrix_invertible = false;
-    return_code = is_matrix_invertible(*out_matrix, dimentation, prime_field, &matrix_invertible);
-	if (STATUS_FAILED(return_code) || !matrix_invertible)
-	{
-		return_code = STATUS_CODE_MATRIX_NOT_INVERTIBLE;
-		goto cleanup;
-	}
-
-    return_code = STATUS_CODE_SUCCESS;
-cleanup:
-    if (STATUS_FAILED(return_code) && (out_matrix != NULL) && (*out_matrix != NULL))
-    {
-        for (uint32_t row = 0; row < dimentation; ++row)
-        {
-            free((*out_matrix)[row]);
-            (*out_matrix)[row] = NULL;
-        }
-        free(*out_matrix);
-        *out_matrix = NULL;
-    }
-    return return_code;
-}
-
-STATUS_CODE generate_decryption_matrix(int64_t*** out_matrix, uint32_t dimentation, int64_t** encryption_matrix, uint32_t prime_field)
-{
-    STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
-
-    return_code = inverse_square_matrix(encryption_matrix, dimentation, prime_field, out_matrix);
-
-    if (STATUS_FAILED(return_code))
-    {
-        goto cleanup;
-    }
-
-    return_code = STATUS_CODE_SUCCESS;
-cleanup:
     return return_code;
 }

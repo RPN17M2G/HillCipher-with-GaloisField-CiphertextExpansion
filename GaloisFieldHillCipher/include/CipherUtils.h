@@ -90,25 +90,3 @@ STATUS_CODE divide_uint8_t_into_blocks(uint8_t*** out_blocks, uint32_t* num_bloc
  * @return STATUS_CODE - Status of the operation.
  */
 STATUS_CODE divide_int64_t_into_blocks(int64_t*** out_blocks, uint32_t* num_blocks, int64_t* value, uint32_t value_bit_length, uint32_t block_bit_size);
-
-
-/**
- * @brief Generates an encryption matrix with cryptography secure random values.
- *
- * @param out_matrix - Pointer to the output matrix - allocated inside the function and memory released if fails.
- * @param dimentation - Dimension of the square matrix.
- * @param prime_field - Prime field to use for generating random values.
- * @return STATUS_CODE - Status of the operation.
- */
-STATUS_CODE generate_encryption_matrix(int64_t*** out_matrix, uint32_t dimentation, uint32_t prime_field);
-
-/**
- * @brief Generates a decryption matrix from encryption matrix.
- *
- * @param out_matrix - Pointer to the output matrix - allocated inside the function and memory released if fails.
- * @param dimentation - Dimension of the square matrix.
- * @param encryption_matrix - The encryption matrix
- * @param prime_field - Prime field to use for generating random values.
- * @return STATUS_CODE - Status of the operation.
- */
-STATUS_CODE generate_decryption_matrix(int64_t*** out_matrix, uint32_t dimentation, int64_t** encryption_matrix, uint32_t prime_field);
