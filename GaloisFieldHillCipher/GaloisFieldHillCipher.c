@@ -17,7 +17,7 @@ int main(int argc, char** argv)
 	uint32_t plaintext_bit_size = 0;
 
 	ParsedArguments parsed_args = { 0 };
-	return_code = parse_arguments(argc, argv, &parsed_args);
+	return_code = parse_arguments(&parsed_args, argc, argv);
 	if (STATUS_FAILED(return_code))
 	{
 		printf("[!] Failed to parse arguments. See status code for details.\n");

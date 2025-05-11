@@ -34,7 +34,7 @@ cleanup:
     return return_code;
 }
 
-STATUS_CODE extract_arguments(int argc, char** argv, ParsedArguments* out_args)
+STATUS_CODE extract_arguments(ParsedArguments* out_args, int argc, char** argv)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
     uint32_t parse_result = 0;
@@ -142,7 +142,7 @@ parse_error:
     goto cleanup;
 }
 
-STATUS_CODE parse_arguments(int argc, char** argv, ParsedArguments* out_args) 
+STATUS_CODE parse_arguments(ParsedArguments* out_args, int argc, char** argv)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 
@@ -152,7 +152,7 @@ STATUS_CODE parse_arguments(int argc, char** argv, ParsedArguments* out_args)
         goto cleanup;
     }
         
-    return_code = extract_arguments(argc, argv, out_args);
+    return_code = extract_arguments(out_args, argc, argv);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;

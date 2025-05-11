@@ -68,9 +68,38 @@ typedef struct {
 } ParsedArguments;
 
 
+/**
+ * @brief Creates an output file if it doesn't already exist.
+ *
+ * @param path - The path to the output file to be created.
+ * @return STATUS_CODE - Status of the operation. 
+ */
 STATUS_CODE create_output_file_if_needed(const char* path);
+
+/**
+ * @brief Validates if the given file is readable.
+ *
+ * @param path - The path to the file to be validated.
+ * @return STATUS_CODE - Status of the operation.
+ */
 STATUS_CODE validate_readable_file(const char* path);
-STATUS_CODE extract_arguments(int argc, char** argv, ParsedArguments* out_args);
 
+/**
+ * @brief Extracts command-line arguments into a structured format.
+ *
+ * @param argc - The number of command-line arguments.
+ * @param argv - The command-line arguments array.
+ * @param out_args - Pointer to the structure where parsed arguments will be stored.
+ * @return STATUS_CODE - Status of the operation.
+ */
+STATUS_CODE extract_arguments(ParsedArguments* out_args, int argc, char** argv);
 
-STATUS_CODE parse_arguments(int argc, char** argv, ParsedArguments* out_args);
+/**
+ * @brief Parses command-line arguments into a structured format.
+ *
+ * @param argc - The number of command-line arguments.
+ * @param argv - The command-line arguments array.
+ * @param out_args - Pointer to the structure where parsed arguments will be stored.
+ * @return STATUS_CODE - Status of the operation.
+ */
+STATUS_CODE parse_arguments(ParsedArguments* out_args, int argc, char** argv);
