@@ -9,6 +9,7 @@
 
 #include "Modes.h"
 #include "StatusCodes.h"
+#include "FileValidation.h"
 
 #define MAX_ERROR_MSG_LEN (256)
 #define DECIMAL_BASE (10)
@@ -75,14 +76,6 @@ typedef struct {
  * @return STATUS_CODE - Status of the operation. 
  */
 STATUS_CODE create_output_file_if_needed(const char* path);
-
-/**
- * @brief Validates if the given file is readable.
- *
- * @param path - The path to the file to be validated.
- * @return STATUS_CODE - Status of the operation.
- */
-STATUS_CODE validate_readable_file(const char* path);
 
 /**
  * @brief Extracts command-line arguments into a structured format.
