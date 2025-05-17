@@ -101,6 +101,7 @@ STATUS_CODE write_int64_to_file(const char* filepath, const int64_t* data, uint3
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
     FILE* file = NULL;
     size_t size_written = 0;
+    char* reading_mode = NULL;
 
     if (!filepath || !data || (size == 0))
     {
@@ -108,7 +109,9 @@ STATUS_CODE write_int64_to_file(const char* filepath, const int64_t* data, uint3
         goto cleanup;
     }
 
-    file = fopen(filepath, "wb");
+    reading_mode = STATUS_SUCCESS(validate_file_is_binary(filepath)) ? "wb" : "w";
+
+    file = fopen(filepath, reading_mode);
     if (!file)
     {
         return_code = STATUS_CODE_COULDNT_CREATE_OUTPUT_FILE;
@@ -116,7 +119,7 @@ STATUS_CODE write_int64_to_file(const char* filepath, const int64_t* data, uint3
     }
 
     size_written = fwrite(data, sizeof(int64_t), size, file);
-    if (size_written != size)
+    if ((size_written == 0) && (size != 0))
     {
         fclose(file);
         return_code = STATUS_CODE_COULDNT_WRITE_FILE;
@@ -157,7 +160,7 @@ STATUS_CODE read_int64_from_file(int64_t** out_data, uint32_t* out_size, const c
     size = ftell(file) / sizeof(int64_t);
     fseek(file, 0, SEEK_SET);
 
-    data = (int64_t*)malloc(size * sizeof(int64_t));
+    data = (int64_t*)malloc((size + 1) * sizeof(int64_t));
     if (!data)
     {
         fclose(file);

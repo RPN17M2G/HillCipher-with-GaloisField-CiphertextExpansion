@@ -75,7 +75,10 @@ cleanup:
 		*out_ciphertext = NULL;
 		*out_ciphertext_bit_size = 0;
 	}
-	free(random_inserted_plaintext);
+	if (random_inserted_plaintext)
+	{
+		free(random_inserted_plaintext);
+	}
 	free(padded_plaintext);
 	for (size_t block_number = 0; block_number < number_of_blocks; ++block_number)
 	{

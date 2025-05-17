@@ -170,11 +170,12 @@ STATUS_CODE handle_encrypt_mode(const ParsedArguments* args)
 
     printf("[*] Encrypting data...\n");
 
-    return_code = encrypt(&ciphertext, &ciphertext_size, encryption_matrix, args->dimension, DEFAULT_PRIME_GALOIS_FIELD, plaintext, plaintext_size);
+    return_code = encrypt(&ciphertext, &ciphertext_size, encryption_matrix, args->dimension, DEFAULT_PRIME_GALOIS_FIELD, plaintext, plaintext_size * BYTE_SIZE);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
     }
+    ciphertext_size = (ciphertext_size / BYTE_SIZE); // Size is returned as bits
 
     printf("[*] Encryption completed, ciphertext size: %ld\n", ciphertext_size);
 
@@ -185,6 +186,11 @@ STATUS_CODE handle_encrypt_mode(const ParsedArguments* args)
     }
 
     return_code = write_int64_to_file(args->output_file, ciphertext, ciphertext_size);
+
+    if (args->verbose)
+    {
+        printf("[*] Ciphetext written successfully.\n");
+    }
 
 cleanup:
     if (plaintext)
@@ -263,11 +269,12 @@ STATUS_CODE handle_decrypt_mode(const ParsedArguments* args)
 
     printf("[*] Decrypting data...\n");
 
-    return_code = decrypt(&decrypted_text, &decrypted_size, decryption_matrix, args->dimension, DEFAULT_PRIME_GALOIS_FIELD, ciphertext, ciphertext_size);
+    return_code = decrypt(&decrypted_text, &decrypted_size, decryption_matrix, args->dimension, DEFAULT_PRIME_GALOIS_FIELD, ciphertext, ciphertext_size * BYTE_SIZE);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
     }
+    decrypted_size = (decrypted_size / BYTE_SIZE); // Size is returned as bits
 
     printf("Decryption completed, plaintext size: %ld\n", decrypted_size);
 
@@ -376,19 +383,20 @@ STATUS_CODE handle_generate_and_decrypt_mode(const ParsedArguments* args)
         goto cleanup;
     }
 
+    printf("[*] Decryption matrix generated.\n");
     if (args->verbose)
     {
-        printf("[*] Decryption matrix generated.\n");
         print_matrix(decryption_matrix, args->dimension);
     }
 
     printf("[*] Decrypting data...\n");
 
-    return_code = decrypt(&decrypted_text, &decrypted_size, decryption_matrix, args->dimension, DEFAULT_PRIME_GALOIS_FIELD, ciphertext, ciphertext_size);
+    return_code = decrypt(&decrypted_text, &decrypted_size, decryption_matrix, args->dimension, DEFAULT_PRIME_GALOIS_FIELD, ciphertext, ciphertext_size * BYTE_SIZE);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
     }
+    decrypted_size = (decrypted_size / BYTE_SIZE); // Size is returned as bits
 
     printf("[*] Decryption completed, plaintext size: %ld\n", decrypted_size);
 
