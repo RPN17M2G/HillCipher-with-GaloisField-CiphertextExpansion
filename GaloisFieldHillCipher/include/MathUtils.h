@@ -7,6 +7,7 @@
 #include <stdlib.h>
 
 #include "StatusCodes.h"
+#include "MatrixUtils.h"
 #include "FieldBasicOperations.h"
 
 #define MEMORY_BUFFER_FOR_PLAINTEXT_BLOCK (3)
@@ -70,15 +71,6 @@ STATUS_CODE multiply_matrix_with_uint8_t_vector(int64_t** out_vector, int64_t** 
  * @return STATUS_CODE - Status of the operation.
  */
 STATUS_CODE multiply_matrix_with_int64_t_vector(uint8_t** out_vector, int64_t** matrix, int64_t* vector, uint32_t dimentaion, uint32_t prime_field);
-
-/**
- * @brief Frees the memory allocated for a matrix.
- *
- * @param matrix - Pointer to the matrix to be freed.
- * @param dimentaion - Dimension of the square matrix.
- * @return STATUS_CODE - Status of the operation.
- */
-STATUS_CODE free_matrix(int64_t** matrix, const uint32_t dimentaion);
 
 /**
  * @brief Builds a minor matrix by removing a specified row and column from the input matrix.

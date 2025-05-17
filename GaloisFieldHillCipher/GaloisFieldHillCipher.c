@@ -1,179 +1,7 @@
 ﻿#include "GaloisFieldHillCipher.h"
 
-void print_matrix(int64_t** matrix, uint32_t dimension)
-{
-    for (size_t row = 0; row < dimension; ++row)
-    {
-        for (size_t column = 0; column < dimension; ++column)
-        {
-            printf("%ld ", matrix[row][column]);
-        }
-        printf("\n");
-    }
-}
 
-STATUS_CODE write_to_file(const char* filename, const uint8_t* data, uint32_t size)
-{
-    STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 
-    if (!filename || !data || (size == 0))
-    {
-        return_code = STATUS_CODE_INVALID_ARGUMENT;
-        goto cleanup;
-    }
-
-    FILE* file = fopen(filename, "wb");
-    if (!file)
-    {
-        return_code = STATUS_CODE_COULDNT_CREATE_OUTPUT_FILE;
-        goto cleanup;
-    }
-    fwrite(data, 1, size, file);
-    fclose(file);
-
-    return_code = STATUS_CODE_SUCCESS;
-cleanup:
-    return return_code;
-}
-
-STATUS_CODE read_from_file(uint8_t** out_data, uint32_t* out_size, const char* filename)
-{
-    STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
-    FILE* file = NULL;
-    uint8_t* data = NULL;
-    uint32_t size = 0;
-
-    if (!out_data || !out_size || !filename)
-    {
-        return_code = STATUS_CODE_INVALID_ARGUMENT;
-        goto cleanup;
-    }
-
-    file = fopen(filename, "rb");
-    if (!file)
-    {
-        return_code = STATUS_CODE_COULDNT_FILE_OPEN;
-        goto cleanup;
-    }
-
-    fseek(file, 0, SEEK_END);
-    size = ftell(file);
-    fseek(file, 0, SEEK_SET);
-
-    data = (uint8_t*)malloc(size);
-    if (!data)
-    {
-        fclose(file);
-        return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
-        goto cleanup;
-    }
-
-    if (fread(data, 1, size, file) != size)
-    {
-        fclose(file);
-        return_code = STATUS_CODE_COULDNT_READ_FILE;
-        goto cleanup;
-    }
-
-    fclose(file);
-    file = NULL;
-
-    *out_data = data;
-    *out_size = size;
-
-    return_code = STATUS_CODE_SUCCESS;
-cleanup:
-    if (STATUS_FAILED(return_code))
-    {
-        free(data);
-    }
-    return return_code;
-}
-
-STATUS_CODE serialize_matrix(uint8_t** out_data, uint32_t* out_size, int64_t** matrix, uint32_t dimension)
-{
-    STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
-    uint8_t* buffer = NULL;
-    uint32_t size = 0;
-
-    if (!out_data || !out_size || !matrix || (dimension == 0))
-    {
-        return_code = STATUS_CODE_INVALID_ARGUMENT;
-        goto cleanup;
-    }
-
-    size = dimension * dimension * sizeof(int64_t);
-    buffer = (uint8_t*)malloc(size);
-    if (!buffer)
-    {
-        return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
-        goto cleanup;
-    }
-
-    for (uint32_t row = 0; row < dimension; ++row)
-    {
-        memcpy(buffer + row * dimension * sizeof(int64_t), matrix[row], dimension * sizeof(int64_t));
-    }
-
-    *out_data = buffer;
-    *out_size = size;
-
-    return_code = STATUS_CODE_SUCCESS;
-
-cleanup:
-    if (STATUS_FAILED(return_code))
-    {
-        free(buffer);
-    }
-    return return_code;
-}
-
-STATUS_CODE deserialize_matrix(int64_t*** out_matrix, uint32_t dimension, const uint8_t* data, uint32_t size)
-{
-    STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
-    int64_t** result = NULL;
-
-    if (!out_matrix || !data || dimension == 0)
-    {
-        return_code = STATUS_CODE_INVALID_ARGUMENT;
-        goto cleanup;
-    }
-
-    uint32_t expected_size = dimension * dimension * sizeof(int64_t);
-    if (size != expected_size)
-    {
-        return_code = STATUS_CODE_ERROR_INVALID_FILE_SIZE;
-        goto cleanup;
-    }
-
-    result = (int64_t**)malloc(dimension * sizeof(int64_t*));
-    if (!result)
-    {
-        return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
-        goto cleanup;
-    }
-
-    for (uint32_t i = 0; i < dimension; ++i)
-    {
-        result[i] = (int64_t*)malloc(dimension * sizeof(int64_t));
-        if (!result[i])
-        {
-            return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
-            goto cleanup;
-        }
-        memcpy(result[i], data + i * dimension * sizeof(int64_t), dimension * sizeof(int64_t));
-    }
-
-    *out_matrix = result;
-    return_code = STATUS_CODE_SUCCESS;
-
-cleanup:
-    if (STATUS_FAILED(return_code) && result != NULL)
-    {
-        free_matrix(result, dimension);
-    }
-    return return_code;
-}
 STATUS_CODE handle_key_generation_mode(const ParsedArguments* args)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
@@ -195,7 +23,7 @@ STATUS_CODE handle_key_generation_mode(const ParsedArguments* args)
         goto cleanup;
     }
 
-    printf("[*] Encryption matrix generated:\n");
+    printf("[*] Encryption matrix generated.\n");
     if (args->verbose)
     {
         print_matrix(encryption_matrix, args->dimension);
@@ -264,7 +92,7 @@ STATUS_CODE handle_decryption_key_generation_mode(const ParsedArguments* args)
         goto cleanup;
     }
 
-    printf("[*] Decryption matrix generated:\n");
+    printf("[*] Decryption matrix generated.\n");
 
     if (args->verbose)
     {
