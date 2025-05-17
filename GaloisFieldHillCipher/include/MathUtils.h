@@ -9,6 +9,7 @@
 #include "StatusCodes.h"
 #include "MatrixUtils.h"
 #include "FieldBasicOperations.h"
+#include "CSPRNG.h"
 
 #define MEMORY_BUFFER_FOR_PLAINTEXT_BLOCK (3)
 

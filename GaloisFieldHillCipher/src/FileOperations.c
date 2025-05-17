@@ -17,9 +17,16 @@ STATUS_CODE write_to_file(const char* filename, const uint8_t* data, uint32_t si
         return_code = STATUS_CODE_COULDNT_CREATE_OUTPUT_FILE;
         goto cleanup;
     }
-    fwrite(data, 1, size, file);
-    fclose(file);
 
+    size_t written = fwrite(data, 1, size, file);
+    if (written != size)
+    {
+        fclose(file);
+        return_code = STATUS_CODE_COULDNT_WRITE_FILE;
+        goto cleanup;
+    }
+
+    fclose(file);
     return_code = STATUS_CODE_SUCCESS;
 cleanup:
     return return_code;

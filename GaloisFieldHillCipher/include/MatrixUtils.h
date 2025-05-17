@@ -15,4 +15,3 @@
  * @return STATUS_CODE - Status of the operation.
  */
 STATUS_CODE free_matrix(int64_t** matrix, const uint32_t dimentaion);
-void print_matrix(int64_t** matrix, uint32_t dimension);

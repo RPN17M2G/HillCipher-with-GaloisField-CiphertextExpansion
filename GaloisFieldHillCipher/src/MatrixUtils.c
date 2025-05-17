@@ -1,16 +1,6 @@
 #include "MatrixUtils.h"
 
-void print_matrix(int64_t** matrix, uint32_t dimension)
-{
-    for (size_t row = 0; row < dimension; ++row)
-    {
-        for (size_t column = 0; column < dimension; ++column)
-        {
-            printf("%ld ", matrix[row][column]);
-        }
-        printf("\n");
-    }
-}
+
 
 STATUS_CODE free_matrix(int64_t** matrix, uint32_t dimentaion)
 {
