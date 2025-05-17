@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "StatusCodes.h"
+#include "../StatusCodes.h"
 
 /**
  * @brief Frees the memory allocated for a matrix.

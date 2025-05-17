@@ -6,10 +6,10 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include "StatusCodes.h"
+#include "../StatusCodes.h"
 #include "MatrixUtils.h"
 #include "FieldBasicOperations.h"
-#include "CSPRNG.h"
+#include "../Cipher/CSPRNG.h"
 
 #define MEMORY_BUFFER_FOR_PLAINTEXT_BLOCK (3)
 

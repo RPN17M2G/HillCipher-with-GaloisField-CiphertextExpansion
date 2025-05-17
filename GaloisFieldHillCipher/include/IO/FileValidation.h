@@ -1,6 +1,6 @@
 #pragma once
 
-#include "StatusCodes.h"
+#include "../StatusCodes.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
@@ -16,7 +16,7 @@
 STATUS_CODE validate_file_is_readable(const char* path);
 
 /**
- * @brief Validates if the given file is readable binary.
+ * @brief Validates if the given file is a readable binary.
  *
  * @param path - The path to the file to be validated.
  * @return STATUS_CODE - Status of the operation.

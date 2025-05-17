@@ -1,7 +1,5 @@
 #pragma once
 
-#include <stdio.h>
-
 enum OPERATION_MODE
 {
 	MODE_UNINITIALIZED = -1,

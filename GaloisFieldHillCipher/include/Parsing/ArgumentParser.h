@@ -7,9 +7,9 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "Modes.h"
-#include "StatusCodes.h"
-#include "FileValidation.h"
+#include "../Modes.h"
+#include "../StatusCodes.h"
+#include "../IO/FileValidation.h"
 
 #define MAX_ERROR_MSG_LEN (256)
 #define DECIMAL_BASE (10)

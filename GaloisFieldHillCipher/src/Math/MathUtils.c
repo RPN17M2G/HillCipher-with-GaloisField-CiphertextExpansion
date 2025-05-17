@@ -1,4 +1,4 @@
-#include "MathUtils.h"
+#include "../../include/Math/MathUtils.h"
 
 STATUS_CODE matrix_determinant(int64_t* out_determinant, int64_t** matrix, uint32_t dimentaion, uint32_t prime_field)
 {

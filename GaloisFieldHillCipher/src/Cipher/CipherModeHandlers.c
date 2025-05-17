@@ -1,4 +1,4 @@
-#include "CipherModeHandlers.h"
+#include "../../include/Cipher/CipherModeHandlers.h"
 
 STATUS_CODE handle_key_generation_mode(const ParsedArguments* args)
 {
@@ -301,20 +301,6 @@ cleanup:
     }
     free_matrix(decryption_matrix, args->dimension);
     return return_code;
-}
-
-STATUS_CODE handle_generate_and_encrypt_mode(const ParsedArguments* args)
-{
-    STATUS_CODE return_code;
-
-    return_code = handle_key_generation_mode(args);
-    if (STATUS_FAILED(return_code))
-    {
-        printf("[!] Failed to generate encryption key\n");
-        return return_code;
-    }
-
-    return handle_encrypt_mode(args);
 }
 
 STATUS_CODE handle_generate_and_decrypt_mode(const ParsedArguments* args)

@@ -7,8 +7,8 @@
 #include <stdlib.h>
 
 #include "CSPRNG.h"
-#include "StatusCodes.h"
-#include "MathUtils.h"
+#include "../StatusCodes.h"
+#include "../Math/MathUtils.h"
 
 #define DEFAULT_PRIME_GALOIS_FIELD (16777619)
 #define BYTE_SIZE (8)

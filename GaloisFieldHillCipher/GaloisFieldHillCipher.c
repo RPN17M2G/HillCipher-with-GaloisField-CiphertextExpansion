@@ -1,7 +1,7 @@
 ﻿#include "GaloisFieldHillCipher.h"
 
 
-#include "CipherModeHandlers.h"
+#include "include/Cipher/CipherModeHandlers.h"
 
 int main(int argc, char** argv)
 {

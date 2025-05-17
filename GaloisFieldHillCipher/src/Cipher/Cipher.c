@@ -1,4 +1,4 @@
-#include "Cipher.h"
+#include "../../include/Cipher/Cipher.h"
 
 STATUS_CODE encrypt(int64_t** out_ciphertext, uint32_t* out_ciphertext_bit_size, int64_t** encryption_matrix, uint32_t dimension, uint32_t prime_field, uint8_t* plaintext_vector, uint32_t vector_bit_size)
 {
