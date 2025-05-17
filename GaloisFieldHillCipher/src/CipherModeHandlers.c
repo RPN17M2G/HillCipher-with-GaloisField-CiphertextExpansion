@@ -34,11 +34,11 @@ STATUS_CODE handle_key_generation_mode(const ParsedArguments* args)
 
     if (args->verbose)
     {
-        print_hex_vector(serialized_data, serialized_size, "[*] Serialized matrix data:");
+        print_uint8_vector(serialized_data, serialized_size, "[*] Serialized matrix data:");
         printf("[*] Writing to key file: %s\n", args->key);
     }
 
-    return_code = write_to_file(args->key, serialized_data, serialized_size);
+    return_code = write_uint8_to_file(args->key, serialized_data, serialized_size);
 
 cleanup:
     if (serialized_data)
@@ -67,7 +67,7 @@ STATUS_CODE handle_decryption_key_generation_mode(const ParsedArguments* args)
         printf("[*] Reading encryption key from: %s\n", args->key);
     }
 
-    return_code = read_from_file(&key_data, &key_size, args->key);
+    return_code = read_uint8_from_file(&key_data, &key_size, args->key);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
@@ -75,7 +75,7 @@ STATUS_CODE handle_decryption_key_generation_mode(const ParsedArguments* args)
 
     if (args->verbose)
     {
-        print_hex_vector(key_data, key_size, "[*] Key data:");
+        print_uint8_vector(key_data, key_size, "[*] Key data:");
     }
 
     return_code = deserialize_matrix(&encryption_matrix, args->dimension, key_data, key_size);
@@ -129,7 +129,7 @@ STATUS_CODE handle_encrypt_mode(const ParsedArguments* args)
         printf("[*] Reading plaintext from: %s\n", args->input_file);
     }
 
-    return_code = read_from_file(&plaintext, &plaintext_size, args->input_file);
+    return_code = read_uint8_from_file(&plaintext, &plaintext_size, args->input_file);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
@@ -138,7 +138,7 @@ STATUS_CODE handle_encrypt_mode(const ParsedArguments* args)
     if (args->verbose)
     {
         printf("Plaintext of size %ld\n", plaintext_size);
-        print_hex_vector(plaintext, plaintext_size, "[*] Plaintext data:");
+        print_uint8_vector(plaintext, plaintext_size, "[*] Plaintext data:");
     }
 
     if (args->verbose)
@@ -146,7 +146,7 @@ STATUS_CODE handle_encrypt_mode(const ParsedArguments* args)
         printf("[*] Reading key from: %s\n", args->key);
     }
 
-    return_code = read_from_file(&key_data, &key_size, args->key);
+    return_code = read_uint8_from_file(&key_data, &key_size, args->key);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
@@ -154,7 +154,7 @@ STATUS_CODE handle_encrypt_mode(const ParsedArguments* args)
 
     if (args->verbose)
     {
-        print_hex_vector(key_data, key_size, "[*] Key data:");
+        print_uint8_vector(key_data, key_size, "[*] Key data:");
     }
 
     return_code = deserialize_matrix(&encryption_matrix, args->dimension, key_data, key_size);
@@ -170,8 +170,7 @@ STATUS_CODE handle_encrypt_mode(const ParsedArguments* args)
 
     printf("[*] Encrypting data...\n");
 
-    return_code = encrypt(&ciphertext, &ciphertext_size, encryption_matrix, args->dimension,
-                         DEFAULT_PRIME_GALOIS_FIELD, plaintext, plaintext_size);
+    return_code = encrypt(&ciphertext, &ciphertext_size, encryption_matrix, args->dimension, DEFAULT_PRIME_GALOIS_FIELD, plaintext, plaintext_size);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
@@ -181,11 +180,11 @@ STATUS_CODE handle_encrypt_mode(const ParsedArguments* args)
 
     if (args->verbose)
     {
-        print_hex_vector((uint8_t*)ciphertext, ciphertext_size, "[*] Ciphertext data:");
+        print_int64_vector(ciphertext, ciphertext_size, "[*] Ciphertext data:");
         printf("[*] Writing ciphertext to: %s\n", args->output_file);
     }
 
-    return_code = write_to_file(args->output_file, (uint8_t*)ciphertext, ciphertext_size);
+    return_code = write_int64_to_file(args->output_file, ciphertext, ciphertext_size);
 
 cleanup:
     if (plaintext)
@@ -223,7 +222,7 @@ STATUS_CODE handle_decrypt_mode(const ParsedArguments* args)
         printf("Reading ciphertext from: %s\n", args->input_file);
     }
 
-    return_code = read_from_file((uint8_t**)&ciphertext, &ciphertext_size, args->input_file);
+    return_code = read_int64_from_file(&ciphertext, &ciphertext_size, args->input_file);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
@@ -232,7 +231,7 @@ STATUS_CODE handle_decrypt_mode(const ParsedArguments* args)
     if (args->verbose)
     {
         printf("[*] Ciphertext is of size %ld\n", ciphertext_size);
-        print_hex_vector((uint8_t*)ciphertext, ciphertext_size, "[*] Ciphertext data:");
+        print_int64_vector(ciphertext, ciphertext_size, "[*] Ciphertext data:");
     }
 
     if (args->verbose)
@@ -240,7 +239,7 @@ STATUS_CODE handle_decrypt_mode(const ParsedArguments* args)
         printf("[*] Reading key from: %s\n", args->key);
     }
 
-    return_code = read_from_file(&key_data, &key_size, args->key);
+    return_code = read_uint8_from_file(&key_data, &key_size, args->key);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
@@ -248,7 +247,7 @@ STATUS_CODE handle_decrypt_mode(const ParsedArguments* args)
 
     if (args->verbose)
     {
-        print_hex_vector(key_data, key_size, "[*] Key data:");
+        print_uint8_vector(key_data, key_size, "[*] Key data:");
     }
 
     return_code = deserialize_matrix(&decryption_matrix, args->dimension, key_data, key_size);
@@ -274,11 +273,11 @@ STATUS_CODE handle_decrypt_mode(const ParsedArguments* args)
 
     if (args->verbose)
     {
-        print_hex_vector(decrypted_text, decrypted_size, "[*] Decrypted data:");
+        print_uint8_vector(decrypted_text, decrypted_size, "[*] Decrypted data:");
         printf("[*] Writing plaintext to: %s\n", args->output_file);
     }
 
-    return_code = write_to_file(args->output_file, decrypted_text, decrypted_size);
+    return_code = write_uint8_to_file(args->output_file, decrypted_text, decrypted_size);
 
 cleanup:
     if (key_data)
@@ -331,7 +330,7 @@ STATUS_CODE handle_generate_and_decrypt_mode(const ParsedArguments* args)
         printf("[*] Reading ciphertext from: %s\n", args->input_file);
     }
 
-    return_code = read_from_file((uint8_t**)&ciphertext, &ciphertext_size, args->input_file);
+    return_code = read_int64_from_file(&ciphertext, &ciphertext_size, args->input_file);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
@@ -339,7 +338,7 @@ STATUS_CODE handle_generate_and_decrypt_mode(const ParsedArguments* args)
 
     if (args->verbose)
     {
-        print_hex_vector((uint8_t*)ciphertext, ciphertext_size, "[*] Ciphertext data:");
+        print_int64_vector(ciphertext, ciphertext_size, "[*] Ciphertext data:");
     }
 
     if (args->verbose)
@@ -347,7 +346,7 @@ STATUS_CODE handle_generate_and_decrypt_mode(const ParsedArguments* args)
         printf("[*] Reading key from: %s\n", args->key);
     }
 
-    return_code = read_from_file(&key_data, &key_size, args->key);
+    return_code = read_uint8_from_file(&key_data, &key_size, args->key);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
@@ -355,7 +354,7 @@ STATUS_CODE handle_generate_and_decrypt_mode(const ParsedArguments* args)
 
     if (args->verbose)
     {
-        print_hex_vector(key_data, key_size, "[*] Key data:");
+        print_uint8_vector(key_data, key_size, "[*] Key data:");
     }
 
     return_code = deserialize_matrix(&encryption_matrix, args->dimension, key_data, key_size);
@@ -371,8 +370,7 @@ STATUS_CODE handle_generate_and_decrypt_mode(const ParsedArguments* args)
 
     printf("[*] Generating decryption matrix...\n");
 
-    return_code = generate_decryption_matrix(&decryption_matrix, args->dimension,
-                                           encryption_matrix, DEFAULT_PRIME_GALOIS_FIELD);
+    return_code = generate_decryption_matrix(&decryption_matrix, args->dimension, encryption_matrix, DEFAULT_PRIME_GALOIS_FIELD);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
@@ -396,11 +394,11 @@ STATUS_CODE handle_generate_and_decrypt_mode(const ParsedArguments* args)
 
     if (args->verbose)
     {
-        print_hex_vector(decrypted_text, decrypted_size, "[*] Decrypted data:");
+        print_uint8_vector(decrypted_text, decrypted_size, "[*] Decrypted data:");
         printf("[*] Writing plaintext to: %s\n", args->output_file);
     }
 
-    return_code = write_to_file(args->output_file, decrypted_text, decrypted_size);
+    return_code = write_uint8_to_file(args->output_file, decrypted_text, decrypted_size);
 
 cleanup:
     if (key_data)
