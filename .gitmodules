@@ -4,3 +4,6 @@
 [submodule "GaloisFieldHillCipher/thirdparty/argparse"]
 	path = GaloisFieldHillCipher/thirdparty/argparse
 	url = https://github.com/cofyc/argparse.git
+[submodule "GaloisFieldHillCipher/thirdparty/Unity"]
+	path = GaloisFieldHillCipher/thirdparty/Unity
+	url = https://github.com/ThrowTheSwitch/Unity
