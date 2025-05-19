@@ -1,17 +1,10 @@
-#include <stdint.h>
+#include "test_FieldBasicOperations.h"
 
-#include "unity.h"
-#include "Math/FieldBasicOperations.h"
-#include "StatusCodes.h"
-#include "Math/MathUtils.h"
+void setUp() {}
+void tearDown() {}
 
-
-#define TEST_FIELD 7
-// Setup and teardown
-void setUp(void) {}
-void tearDown(void) {}
-
-void test_FieldBasicOperations_Addition_ZeroElement(void) {
+void test_FieldBasicOperations_Addition_ZeroElement()
+{
     // Arrange
     int64_t first_element = 0;
     int64_t second_element = 5;
@@ -20,10 +13,11 @@ void test_FieldBasicOperations_Addition_ZeroElement(void) {
     int64_t result = add_over_galois_field(first_element, second_element, TEST_FIELD);
 
     // Assert
-    TEST_ASSERT_EQUAL_INT64(5, result);
+    TEST_ASSERT_EQUAL_INT64(second_element, result);
 }
 
-void test_FieldBasicOperations_Addition_WrapAround(void) {
+void test_FieldBasicOperations_Addition_WrapAround()
+{
     // Arrange
     int64_t first_element = 6;
     int64_t second_element = 3;
@@ -35,19 +29,21 @@ void test_FieldBasicOperations_Addition_WrapAround(void) {
     TEST_ASSERT_EQUAL_INT64((TEST_FIELD + first_element + second_element) % TEST_FIELD, result);
 }
 
-void test_FieldBasicOperations_Multiplication_ZeroElement(void) {
+void test_FieldBasicOperations_Multiplication_ZeroElement()
+{
     // Arrange
-    int64_t first_element = 0;
+    int64_t zero_element = 0;
     int64_t second_element = 6;
 
     // Act
-    int64_t result = multiply_over_galois_field(first_element, second_element, TEST_FIELD);
+    int64_t result = multiply_over_galois_field(zero_element, second_element, TEST_FIELD);
 
     // Assert
-    TEST_ASSERT_EQUAL_INT64(0, result);
+    TEST_ASSERT_EQUAL_INT64(zero_element, result);
 }
 
-void test_FieldBasicOperations_Multiplication_WrapAround(void) {
+void test_FieldBasicOperations_Multiplication_WrapAround()
+{
     // Arrange
     int64_t first_element = 5;
     int64_t second_element = 5;
@@ -59,7 +55,8 @@ void test_FieldBasicOperations_Multiplication_WrapAround(void) {
     TEST_ASSERT_EQUAL_INT64((first_element * second_element) % TEST_FIELD, result);
 }
 
-void test_FieldBasicOperations_Negation_ZeroElement(void) {
+void test_FieldBasicOperations_Negation_ZeroElement()
+{
     // Arrange
     int64_t element = 0;
 
@@ -67,10 +64,11 @@ void test_FieldBasicOperations_Negation_ZeroElement(void) {
     int64_t result = negate_over_galois_field(element, TEST_FIELD);
 
     // Assert
-    TEST_ASSERT_EQUAL_INT64(0, result);
+    TEST_ASSERT_EQUAL_INT64(element, result);
 }
 
-void test_FieldBasicOperations_Negation_ExactMultipleOfField(void) {
+void test_FieldBasicOperations_Negation_ExactMultipleOfField()
+{
     // Arrange
     int64_t element = 14;
 
@@ -81,18 +79,21 @@ void test_FieldBasicOperations_Negation_ExactMultipleOfField(void) {
     TEST_ASSERT_EQUAL_INT64(0, result);
 }
 
-void test_FieldBasicOperations_Alignment_PositiveElement(void) {
+void test_FieldBasicOperations_Alignment_PositiveElement()
+{
     // Arrange
     int64_t element = 10;
+    int64_t expected_result = 3;
 
     // Act
     int64_t result = align_to_galois_field(element, TEST_FIELD);
 
     // Assert
-    TEST_ASSERT_EQUAL_INT64(3, result);
+    TEST_ASSERT_EQUAL_INT64(expected_result, result);
 }
 
-void test_FieldBasicOperations_Alignment_NegativeElement(void) {
+void test_FieldBasicOperations_Alignment_NegativeElement()
+{
     // Arrange
     int64_t element = -8;
 
@@ -103,19 +104,22 @@ void test_FieldBasicOperations_Alignment_NegativeElement(void) {
     TEST_ASSERT_EQUAL_INT64((TEST_FIELD + element) % TEST_FIELD, result);
 }
 
-void test_FieldBasicOperations_Power_ExponentIsZero(void) {
+void test_FieldBasicOperations_Power_ExponentIsZero()
+{
     // Arrange
     int64_t base = 5;
     int64_t exponent = 0;
+    int64_t expected_result = 1;
 
     // Act
     int64_t result = raise_power_over_galois_field(base, exponent, TEST_FIELD);
 
     // Assert
-    TEST_ASSERT_EQUAL_INT64(1, result);
+    TEST_ASSERT_EQUAL_INT64(expected_result, result);
 }
 
-void test_FieldBasicOperations_Power_BaseIsZero(void) {
+void test_FieldBasicOperations_Power_BaseIsZero()
+{
     // Arrange
     int64_t base = 0;
     int64_t exponent = 5;
@@ -127,11 +131,12 @@ void test_FieldBasicOperations_Power_BaseIsZero(void) {
     TEST_ASSERT_EQUAL_INT64(0, result);
 }
 
-void test_FieldBasicOperations_Power_BaseEqualsField(void) {
+void test_FieldBasicOperations_Power_BaseEqualsField()
+{
     // Arrange
     int64_t base = TEST_FIELD;
     int64_t exponent = 2;
-    int64_t expected_result = ((base % TEST_FIELD) * (base % TEST_FIELD)) % TEST_FIELD;
+    int64_t expected_result = 0;
 
     // Act
     int64_t result = raise_power_over_galois_field(base, exponent, TEST_FIELD);
@@ -140,7 +145,8 @@ void test_FieldBasicOperations_Power_BaseEqualsField(void) {
     TEST_ASSERT_EQUAL_INT64(expected_result, result);
 }
 
-void test_FieldBasicOperations_Power_LargeExponent(void) {
+void test_FieldBasicOperations_Power_LargeExponent()
+{
     // Arrange
     int64_t base = 2;
     int64_t exponent = 20;
@@ -155,7 +161,7 @@ void test_FieldBasicOperations_Power_LargeExponent(void) {
     TEST_ASSERT_EQUAL_INT64(expected_result, result);
 }
 
-void run_FIeldBasicOperations_tests()
+void run_all_FieldBasicOperations_tests()
 {
     RUN_TEST(test_FieldBasicOperations_Addition_ZeroElement);
     RUN_TEST(test_FieldBasicOperations_Addition_WrapAround);

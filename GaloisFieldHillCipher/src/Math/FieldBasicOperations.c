@@ -12,7 +12,7 @@ int64_t add_over_galois_field(int64_t first_element, int64_t second_element, uin
 
 int64_t negate_over_galois_field(int64_t element, uint32_t prime_field)
 {
-	return prime_field - (element % prime_field);
+	return (prime_field - (element % prime_field)) % prime_field;
 }
 
 int64_t align_to_galois_field(int64_t element, uint32_t prime_field)

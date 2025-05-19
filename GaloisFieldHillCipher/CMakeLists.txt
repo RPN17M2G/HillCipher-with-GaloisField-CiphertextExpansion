@@ -8,8 +8,10 @@ endif()
 project("GaloisFieldHillCipher" LANGUAGES C)
 
 file(GLOB_RECURSE SOURCES src/*.c GaloisFieldHillCipher.c)
+file(GLOB_RECURSE SOURCES_WITHOUT_MAIN src/*.c)
 file(GLOB_RECURSE INCLUDES include/*.h)
-file(GLOB_RECURSE TESTS tests/*.c)
+file(GLOB_RECURSE TESTS_SOURCES tests/*.c)
+file(GLOB_RECURSE TESTS_INCLUDES tests/*.h)
 
 add_executable(GaloisFieldHillCipher
         ${SOURCES}
@@ -37,7 +39,13 @@ target_include_directories(GaloisFieldHillCipher PRIVATE
         thirdparty/sodium/include
 )
 
-add_executable(UnitTests ${TESTS} ${SOURCES} ${INCLUDES})
+add_executable(UnitTests
+        ${TESTS_SOURCES}
+        ${TESTS_INCLUDES}
+        ${SOURCES_WITHOUT_MAIN}
+        ${INCLUDES}
+)
+
 target_include_directories(UnitTests PRIVATE
         include
         thirdparty/Unity/src
