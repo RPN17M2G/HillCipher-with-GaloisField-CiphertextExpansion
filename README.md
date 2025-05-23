@@ -97,9 +97,10 @@ The chosen field is GF(16,777,619)
 
 The matrix must be inversible. Meaning, it's determinant must have a gcd of 1 with the modulo base.
 
-##### Random Bits Addition
+##### Ciphertext Expansion
 
 Adding random bits inside the plaintext before encryption to remove lineary connection.
+It is called that way because the ciphertext is larger than the plaintext because of the insertion of the random bits.
 In this specific implementation the bits are added after each byte, which creates the following sequence:
 
 in case of 2 bits insertion:
