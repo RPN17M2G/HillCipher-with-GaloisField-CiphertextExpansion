@@ -105,8 +105,11 @@ In this specific implementation the bits are added after each byte, which create
 in case of 2 bits insertion:
 ! - Byte break
 
+
  1 0 1 0 1 0 1 0 !    | 0 1           | 0 0 0 0 0 0 ! 0 0     | 1 1           | 0 0 1 1 ...
+ 
  first plaintext byte | 2 random bits | second plaintext byte | 2 random bits | third plaintext byte...
+
 
 ### Thanks and Credit
 
