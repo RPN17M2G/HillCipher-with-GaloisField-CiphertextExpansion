@@ -157,10 +157,10 @@ STATUS_CODE read_int64_from_file(int64_t** out_data, uint32_t* out_size, const c
     }
 
     fseek(file, 0, SEEK_END);
-    size = ftell(file) / sizeof(int64_t);
+    size = ftell(file);
     fseek(file, 0, SEEK_SET);
 
-    data = (int64_t*)malloc((size + 1) * sizeof(int64_t));
+    data = (int64_t*)malloc(size);
     if (!data)
     {
         fclose(file);
@@ -168,7 +168,7 @@ STATUS_CODE read_int64_from_file(int64_t** out_data, uint32_t* out_size, const c
         goto cleanup;
     }
 
-    size_read = fread(data, sizeof(int64_t), size, file);
+    size_read = fread(data, sizeof(int64_t), size / sizeof(int64_t), file);
     if ((size_read == 0) && (size != 0))
     {
         fclose(file);
