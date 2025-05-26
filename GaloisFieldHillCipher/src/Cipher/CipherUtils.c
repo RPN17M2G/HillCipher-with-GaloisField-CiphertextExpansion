@@ -324,14 +324,15 @@ STATUS_CODE divide_int64_t_into_blocks(int64_t*** out_blocks, uint32_t* num_bloc
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 
-    if ((out_blocks == NULL) ||
-        (num_blocks == NULL) ||
-        (value == NULL) ||
-        (block_bit_size == 0) ||
-        (block_bit_size % (sizeof(int64_t) * BYTE_SIZE) != 0) ||
-        (value_bit_length % block_bit_size != 0))
+    if ((NULL == out_blocks)
+        || (NULL == num_blocks)
+        || (NULL == value)
+        || (block_bit_size == 0)
+        || (block_bit_size % (sizeof(int64_t) * BYTE_SIZE) != 0)
+        || (value_bit_length % block_bit_size != 0))
     {
-        return STATUS_CODE_INVALID_ARGUMENT;
+        return_code = STATUS_CODE_INVALID_ARGUMENT;
+        goto cleanup;
     }
 
     *num_blocks = value_bit_length / block_bit_size;
@@ -339,36 +340,48 @@ STATUS_CODE divide_int64_t_into_blocks(int64_t*** out_blocks, uint32_t* num_bloc
     uint32_t total_ints = value_bit_length / (sizeof(int64_t) * BYTE_SIZE);
 
     *out_blocks = (int64_t**)malloc(*num_blocks * sizeof(int64_t*));
-    if (*out_blocks == NULL) {
-        return STATUS_CODE_ERROR_MEMORY_ALLOCATION;
+    if (NULL == *out_blocks)
+    {
+        return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
+        goto cleanup;
     }
 
-    for (uint32_t block = 0; block < *num_blocks; ++block) {
-        (*out_blocks)[block] = (int64_t*)malloc(ints_per_block * sizeof(int64_t));
-        if ((*out_blocks)[block] == NULL) {
+    for (size_t block_number = 0; block_number < *num_blocks; ++block_number)
+    {
+        (*out_blocks)[block_number] = (int64_t*)malloc(ints_per_block * sizeof(int64_t));
+        if (NULL == (*out_blocks)[block_number])
+        {
             return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
             goto cleanup;
         }
 
-        uint32_t src_offset = block * ints_per_block;
-        if (src_offset + ints_per_block > total_ints) {
-            return_code = STATUS_CODE_INVALID_ARGUMENT;
-            goto cleanup;
-        }
+        memset((*out_blocks)[block_number], 0, ints_per_block * sizeof(int64_t));
 
-        memcpy((*out_blocks)[block], value + src_offset, ints_per_block * sizeof(int64_t));
+        for (size_t element_index_in_block = 0; element_index_in_block < ints_per_block; ++element_index_in_block)
+        {
+            size_t index = block_number * ints_per_block + element_index_in_block;
+            if (index < total_ints)
+            {
+                (*out_blocks)[block_number][element_index_in_block] = value[index];
+            }
+        }
     }
 
-    return STATUS_CODE_SUCCESS;
+    return_code = STATUS_CODE_SUCCESS;
 
-    cleanup:
-        if (out_blocks && *out_blocks) {
-            for (uint32_t i = 0; i < *num_blocks; ++i) {
+cleanup:
+    if ((STATUS_FAILED(return_code)) && (NULL != out_blocks) && (NULL != *out_blocks) && (NULL != num_blocks))
+    {
+        for (size_t i = 0; i < *num_blocks; ++i)
+        {
+            if ((*out_blocks)[i] != NULL)
+            {
                 free((*out_blocks)[i]);
             }
-            free(*out_blocks);
-            *out_blocks = NULL;
         }
-    *num_blocks = 0;
+        free(*out_blocks);
+        *out_blocks = NULL;
+        *num_blocks = 0;
+    }
     return return_code;
 }
