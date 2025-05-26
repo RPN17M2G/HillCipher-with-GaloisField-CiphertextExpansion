@@ -324,56 +324,51 @@ STATUS_CODE divide_int64_t_into_blocks(int64_t*** out_blocks, uint32_t* num_bloc
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 
-    if ((NULL == out_blocks) 
-        || (NULL == num_blocks) 
-        || (NULL == value)
-        || (value_bit_length % block_bit_size != 0)
-        || (block_bit_size == 0)
-        || (block_bit_size  % BYTE_SIZE != 0))
+    if ((out_blocks == NULL) ||
+        (num_blocks == NULL) ||
+        (value == NULL) ||
+        (block_bit_size == 0) ||
+        (block_bit_size % (sizeof(int64_t) * BYTE_SIZE) != 0) ||
+        (value_bit_length % block_bit_size != 0))
     {
-        return_code = STATUS_CODE_INVALID_ARGUMENT;
-        goto cleanup;
+        return STATUS_CODE_INVALID_ARGUMENT;
     }
 
-    *num_blocks = (value_bit_length / block_bit_size);
-    *out_blocks = (int64_t**)malloc(*num_blocks * sizeof(int64_t*) + 1);
-    if (NULL == *out_blocks)
-    {
-        return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
-        goto cleanup;
+    *num_blocks = value_bit_length / block_bit_size;
+    uint32_t ints_per_block = block_bit_size / (sizeof(int64_t) * BYTE_SIZE);
+    uint32_t total_ints = value_bit_length / (sizeof(int64_t) * BYTE_SIZE);
+
+    *out_blocks = (int64_t**)malloc(*num_blocks * sizeof(int64_t*));
+    if (*out_blocks == NULL) {
+        return STATUS_CODE_ERROR_MEMORY_ALLOCATION;
     }
 
-    for (size_t block_number = 0; block_number < *num_blocks; ++block_number)
-    {
-        (*out_blocks)[block_number] = (int64_t*)malloc(((block_bit_size / BYTE_SIZE) * sizeof(int64_t)) + 1);
-        if (NULL == (*out_blocks)[block_number])
-        {
+    for (uint32_t block = 0; block < *num_blocks; ++block) {
+        (*out_blocks)[block] = (int64_t*)malloc(ints_per_block * sizeof(int64_t));
+        if ((*out_blocks)[block] == NULL) {
             return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
             goto cleanup;
         }
-        memset((*out_blocks)[block_number], 0, block_bit_size / BYTE_SIZE);
 
-        // Copy the block data
-        for (size_t element_index_in_block = 0; element_index_in_block < (block_bit_size / BYTE_SIZE); ++element_index_in_block)
-        {
-			(*out_blocks)[block_number][element_index_in_block] = value[(block_number * (block_bit_size / BYTE_SIZE)) + element_index_in_block];
+        uint32_t src_offset = block * ints_per_block;
+        if (src_offset + ints_per_block > total_ints) {
+            return_code = STATUS_CODE_INVALID_ARGUMENT;
+            goto cleanup;
         }
+
+        memcpy((*out_blocks)[block], value + src_offset, ints_per_block * sizeof(int64_t));
     }
 
-    return_code = STATUS_CODE_SUCCESS;
-cleanup:
-    if ((STATUS_FAILED(return_code)) && (NULL != out_blocks) && (NULL != *out_blocks) && (NULL != num_blocks))
-    {
-        for (size_t i = 0; i < *num_blocks; ++i)
-        {
-            if ((*out_blocks)[i] != NULL)
-            {
+    return STATUS_CODE_SUCCESS;
+
+    cleanup:
+        if (out_blocks && *out_blocks) {
+            for (uint32_t i = 0; i < *num_blocks; ++i) {
                 free((*out_blocks)[i]);
             }
+            free(*out_blocks);
+            *out_blocks = NULL;
         }
-        free(*out_blocks);
-        *out_blocks = NULL;
-        *num_blocks = 0;
-    }
+    *num_blocks = 0;
     return return_code;
 }

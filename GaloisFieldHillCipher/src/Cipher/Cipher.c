@@ -112,7 +112,7 @@ STATUS_CODE decrypt(uint8_t** out_plaintext, uint32_t* out_plaintext_bit_size, i
 		goto cleanup;
 	}
 
-	if (STATUS_FAILED(divide_int64_t_into_blocks(&ciphertext_blocks, &number_of_blocks, ciphertext_vector, vector_bit_size, block_size_in_bits)))
+	if (STATUS_FAILED(divide_int64_t_into_blocks(&ciphertext_blocks, &number_of_blocks, ciphertext_vector, vector_bit_size, dimension * BYTE_SIZE * sizeof(int64_t))))
 	{
 		return_code = STATUS_CODE_COULDNT_DIVIDE_TO_BLOCKS;
 		goto cleanup;

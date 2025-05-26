@@ -6,9 +6,6 @@
 
 #define TEST_FIELD 7
 
-void setUp();
-void tearDown();
-
 void run_all_FieldBasicOperations_tests();
 
 void test_FieldBasicOperations_Addition_ZeroElement();

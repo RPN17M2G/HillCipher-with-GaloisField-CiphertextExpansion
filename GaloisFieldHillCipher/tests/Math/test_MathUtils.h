@@ -7,9 +7,6 @@
 #include "Math/MathUtils.h"
 #include "Math/MatrixUtils.h"
 
-void setUp();
-void tearDown();
-
 void run_all_MathUtils_tests();
 
 // Helper function

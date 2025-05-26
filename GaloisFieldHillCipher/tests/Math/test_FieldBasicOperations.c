@@ -1,8 +1,5 @@
 #include "test_FieldBasicOperations.h"
 
-void setUp() {}
-void tearDown() {}
-
 void test_FieldBasicOperations_Addition_ZeroElement()
 {
     // Arrange
