@@ -3,15 +3,16 @@
 void test_add_random_bits_between_bytes_sanity()
 {
     // Arrange
-    uint8_t input[] = {0xAA, 0xBB};
-    size_t input_len = 2 * BYTE_SIZE;
+    uint8_t input[] = {0xAA, 0xBB, 0xCC};
+    uint32_t input_number_of_elements = 3;
+    size_t input_len = input_number_of_elements * BYTE_SIZE;
     uint8_t lowest_six_mask = 0x3F; // 0b00111111
     uint8_t highest_six_mask = 0xFC; // 0b11111100
     uint8_t lowest_four_mask = 0x0F; // 0b00001111
     uint8_t highest_four_mask = 0xF0; // 0b11110000
     uint8_t* output = NULL;
     uint32_t output_length = 0;
-    uint32_t expected_output_length = input_len + (2 * NUMBER_OF_RANDOM_BITS_TO_ADD);
+    uint32_t expected_output_length = input_len + (input_number_of_elements * NUMBER_OF_RANDOM_BITS_TO_ADD);
 
     // Act
     STATUS_CODE status = add_random_bits_between_bytes(&output, &output_length, input, input_len);
@@ -20,8 +21,8 @@ void test_add_random_bits_between_bytes_sanity()
     TEST_ASSERT_EQUAL(STATUS_CODE_SUCCESS, status);
     TEST_ASSERT_EQUAL(expected_output_length, output_length);
     TEST_ASSERT_EQUAL(output[0], input[0]);
-    TEST_ASSERT_EQUAL(output[1] & lowest_six_mask, input[1] & highest_six_mask);
-    TEST_ASSERT_EQUAL(output[2] & lowest_four_mask, input[2] & highest_four_mask);
+    TEST_ASSERT_EQUAL(output[1] & lowest_six_mask, (input[1] & highest_six_mask) >> 2);
+    TEST_ASSERT_EQUAL(output[2] & lowest_four_mask, (input[2] & highest_four_mask >> 4));
 
     free(output);
 }
