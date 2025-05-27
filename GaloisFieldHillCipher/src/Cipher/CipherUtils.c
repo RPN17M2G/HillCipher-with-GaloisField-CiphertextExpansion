@@ -195,7 +195,6 @@ STATUS_CODE pad_to_length(uint8_t** out, uint32_t* out_bit_length, uint8_t* valu
     // Set the padding magic byte
     (*out)[value_bit_length / BYTE_SIZE] = PADDING_MAGIC;
 
-
     *out_bit_length = target_bit_length;
 
     return_code = STATUS_CODE_SUCCESS;

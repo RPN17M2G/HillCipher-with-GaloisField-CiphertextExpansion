@@ -62,7 +62,7 @@ STATUS_CODE read_uint8_from_file(uint8_t** out_data, uint32_t* out_size, const c
     }
 
     fseek(file, 0, SEEK_END);
-    size = ftell(file);
+    size = ftell(file) / BYTE_SIZE;
     fseek(file, 0, SEEK_SET);
 
     data = (uint8_t*)malloc(size);
@@ -73,8 +73,8 @@ STATUS_CODE read_uint8_from_file(uint8_t** out_data, uint32_t* out_size, const c
         goto cleanup;
     }
 
-    size_read = fread(data, 1, size, file);
-    if ((size_read == 0) && (size != 0))
+    size_read = fread(data, sizeof(uint8_t), size, file);
+    if (((size_read == 0) && (size != 0)) || (size_read != size))
     {
         fclose(file);
         return_code = STATUS_CODE_COULDNT_READ_FILE;
@@ -85,7 +85,7 @@ STATUS_CODE read_uint8_from_file(uint8_t** out_data, uint32_t* out_size, const c
     file = NULL;
 
     *out_data = data;
-    *out_size = size;
+    *out_size = size * BYTE_SIZE;
 
     return_code = STATUS_CODE_SUCCESS;
 cleanup:
@@ -119,7 +119,7 @@ STATUS_CODE write_int64_to_file(const char* filepath, const int64_t* data, uint3
     }
 
     size_written = fwrite(data, sizeof(int64_t), size, file);
-    if ((size_written == 0) && (size != 0))
+    if (((size_written == 0) && (size != 0)) || (size_written != size))
     {
         fclose(file);
         return_code = STATUS_CODE_COULDNT_WRITE_FILE;
@@ -137,7 +137,7 @@ STATUS_CODE read_int64_from_file(int64_t** out_data, uint32_t* out_size, const c
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
     FILE* file = NULL;
     int64_t* data = NULL;
-    uint32_t size = 0;
+    uint32_t size_in_int64_t = 0;
     size_t size_read = 0;
     char* reading_mode = NULL;
 
@@ -157,10 +157,10 @@ STATUS_CODE read_int64_from_file(int64_t** out_data, uint32_t* out_size, const c
     }
 
     fseek(file, 0, SEEK_END);
-    size = ftell(file);
+    size_in_int64_t = ftell(file) / (BYTE_SIZE * sizeof(int64_t));
     fseek(file, 0, SEEK_SET);
 
-    data = (int64_t*)malloc(size);
+    data = (int64_t*)malloc(size_in_int64_t * sizeof(int64_t));
     if (!data)
     {
         fclose(file);
@@ -168,8 +168,8 @@ STATUS_CODE read_int64_from_file(int64_t** out_data, uint32_t* out_size, const c
         goto cleanup;
     }
 
-    size_read = fread(data, sizeof(int64_t), size / sizeof(int64_t), file);
-    if ((size_read == 0) && (size != 0))
+    size_read = fread(data, sizeof(int64_t), size_in_int64_t, file);
+    if (((size_read == 0) && (size_in_int64_t != 0)) || (size_read != size_in_int64_t))
     {
         fclose(file);
         return_code = STATUS_CODE_COULDNT_READ_FILE;
@@ -180,7 +180,7 @@ STATUS_CODE read_int64_from_file(int64_t** out_data, uint32_t* out_size, const c
     file = NULL;
 
     *out_data = data;
-    *out_size = size;
+    *out_size = size_in_int64_t * BYTE_SIZE * sizeof(int64_t);
 
     return_code = STATUS_CODE_SUCCESS;
 cleanup:

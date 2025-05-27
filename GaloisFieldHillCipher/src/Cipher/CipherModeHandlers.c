@@ -170,12 +170,12 @@ STATUS_CODE handle_encrypt_mode(const ParsedArguments* args)
 
     printf("[*] Encrypting data...\n");
 
-    return_code = encrypt(&ciphertext, &ciphertext_size, encryption_matrix, args->dimension, DEFAULT_PRIME_GALOIS_FIELD, plaintext, plaintext_size * BYTE_SIZE);
+    return_code = encrypt(&ciphertext, &ciphertext_size, encryption_matrix, args->dimension, DEFAULT_PRIME_GALOIS_FIELD, plaintext, plaintext_size);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
     }
-    ciphertext_size = (ciphertext_size / BYTE_SIZE); // Size is returned as bits
+    ciphertext_size = (ciphertext_size / (BYTE_SIZE * sizeof(int64_t))); // Size is returned as bits
 
     printf("[*] Encryption completed, ciphertext size: %ld\n", ciphertext_size);
 
@@ -237,7 +237,7 @@ STATUS_CODE handle_decrypt_mode(const ParsedArguments* args)
     if (args->verbose)
     {
         printf("[*] Ciphertext is of size %ld\n", ciphertext_size);
-        print_int64_vector(ciphertext, ciphertext_size, "[*] Ciphertext data:");
+        print_int64_vector(ciphertext, ciphertext_size / (sizeof(int64_t) * BYTE_SIZE), "[*] Ciphertext data:");
     }
 
     if (args->verbose)
@@ -269,7 +269,7 @@ STATUS_CODE handle_decrypt_mode(const ParsedArguments* args)
 
     printf("[*] Decrypting data...\n");
 
-    return_code = decrypt(&decrypted_text, &decrypted_size, decryption_matrix, args->dimension, DEFAULT_PRIME_GALOIS_FIELD, ciphertext, ciphertext_size * BYTE_SIZE);
+    return_code = decrypt(&decrypted_text, &decrypted_size, decryption_matrix, args->dimension, DEFAULT_PRIME_GALOIS_FIELD, ciphertext, ciphertext_size);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
@@ -331,7 +331,7 @@ STATUS_CODE handle_generate_and_decrypt_mode(const ParsedArguments* args)
 
     if (args->verbose)
     {
-        print_int64_vector(ciphertext, ciphertext_size, "[*] Ciphertext data:");
+        print_int64_vector(ciphertext, ciphertext_size / (sizeof(int64_t) * BYTE_SIZE), "[*] Ciphertext data:");
     }
 
     if (args->verbose)
@@ -377,7 +377,7 @@ STATUS_CODE handle_generate_and_decrypt_mode(const ParsedArguments* args)
 
     printf("[*] Decrypting data...\n");
 
-    return_code = decrypt(&decrypted_text, &decrypted_size, decryption_matrix, args->dimension, DEFAULT_PRIME_GALOIS_FIELD, ciphertext, ciphertext_size * BYTE_SIZE);
+    return_code = decrypt(&decrypted_text, &decrypted_size, decryption_matrix, args->dimension, DEFAULT_PRIME_GALOIS_FIELD, ciphertext, ciphertext_size);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;

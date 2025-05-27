@@ -47,7 +47,7 @@ STATUS_CODE encrypt(int64_t** out_ciphertext, uint32_t* out_ciphertext_bit_size,
 	}
 
 	*out_ciphertext = (int64_t*)malloc(((block_size_in_bits * number_of_blocks) / BYTE_SIZE) * sizeof(int64_t));
-	*out_ciphertext_bit_size = block_size_in_bits * number_of_blocks;
+	*out_ciphertext_bit_size = block_size_in_bits * number_of_blocks * sizeof(int64_t);
 	if (*out_ciphertext == NULL)
 	{
 		return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
@@ -132,7 +132,6 @@ STATUS_CODE decrypt(uint8_t** out_plaintext, uint32_t* out_plaintext_bit_size, i
 			return_code = STATUS_CODE_COULDNT_MULTIPLY_MATRIX_WITH_CIPHERTEXT;
 			goto cleanup;
 		}
-
 
 		for (size_t block_index = 0; block_index < (block_size_in_bits / BYTE_SIZE); ++block_index)
 		{
