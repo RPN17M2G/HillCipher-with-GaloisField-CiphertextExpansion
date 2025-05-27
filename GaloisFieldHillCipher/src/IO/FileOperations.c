@@ -62,7 +62,7 @@ STATUS_CODE read_uint8_from_file(uint8_t** out_data, uint32_t* out_size, const c
     }
 
     fseek(file, 0, SEEK_END);
-    size = ftell(file) / BYTE_SIZE;
+    size = ftell(file);
     fseek(file, 0, SEEK_SET);
 
     data = (uint8_t*)malloc(size);

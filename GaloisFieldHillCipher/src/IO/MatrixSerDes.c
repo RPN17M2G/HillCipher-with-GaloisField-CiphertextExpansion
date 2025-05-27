@@ -1,5 +1,7 @@
 #include "../../include/IO/MatrixSerDes.h"
 
+#include "Cipher/CipherUtils.h"
+
 
 STATUS_CODE serialize_matrix(uint8_t** out_data, uint32_t* out_size, int64_t** matrix, uint32_t dimension)
 {
@@ -50,7 +52,7 @@ STATUS_CODE deserialize_matrix(int64_t*** out_matrix, uint32_t dimension, const 
         goto cleanup;
     }
 
-    uint32_t expected_size = dimension * dimension * sizeof(int64_t);
+    uint32_t expected_size = dimension * dimension * sizeof(int64_t) * BYTE_SIZE;
     if (size != expected_size)
     {
         return_code = STATUS_CODE_ERROR_INVALID_FILE_SIZE;

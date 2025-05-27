@@ -75,7 +75,7 @@ STATUS_CODE handle_decryption_key_generation_mode(const ParsedArguments* args)
 
     if (args->verbose)
     {
-        print_uint8_vector(key_data, key_size, "[*] Key data:");
+        print_uint8_vector(key_data, key_size / BYTE_SIZE, "[*] Key data:");
     }
 
     return_code = deserialize_matrix(&encryption_matrix, args->dimension, key_data, key_size);
@@ -154,7 +154,7 @@ STATUS_CODE handle_encrypt_mode(const ParsedArguments* args)
 
     if (args->verbose)
     {
-        print_uint8_vector(key_data, key_size, "[*] Key data:");
+        print_uint8_vector(key_data, key_size / BYTE_SIZE, "[*] Key data:");
     }
 
     return_code = deserialize_matrix(&encryption_matrix, args->dimension, key_data, key_size);
@@ -253,7 +253,7 @@ STATUS_CODE handle_decrypt_mode(const ParsedArguments* args)
 
     if (args->verbose)
     {
-        print_uint8_vector(key_data, key_size, "[*] Key data:");
+        print_uint8_vector(key_data, key_size / BYTE_SIZE, "[*] Key data:");
     }
 
     return_code = deserialize_matrix(&decryption_matrix, args->dimension, key_data, key_size);
@@ -347,7 +347,7 @@ STATUS_CODE handle_generate_and_decrypt_mode(const ParsedArguments* args)
 
     if (args->verbose)
     {
-        print_uint8_vector(key_data, key_size, "[*] Key data:");
+        print_uint8_vector(key_data, key_size / BYTE_SIZE, "[*] Key data:");
     }
 
     return_code = deserialize_matrix(&encryption_matrix, args->dimension, key_data, key_size);
