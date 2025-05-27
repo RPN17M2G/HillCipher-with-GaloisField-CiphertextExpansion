@@ -157,7 +157,7 @@ STATUS_CODE read_int64_from_file(int64_t** out_data, uint32_t* out_size, const c
     }
 
     fseek(file, 0, SEEK_END);
-    size_in_int64_t = ftell(file) / (BYTE_SIZE * sizeof(int64_t));
+    size_in_int64_t = ftell(file) / sizeof(int64_t);
     fseek(file, 0, SEEK_SET);
 
     data = (int64_t*)malloc(size_in_int64_t * sizeof(int64_t));

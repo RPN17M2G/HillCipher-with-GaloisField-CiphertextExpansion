@@ -384,7 +384,7 @@ STATUS_CODE multiply_matrix_with_int64_t_vector(uint8_t** out_vector, int64_t** 
 		temp_result = 0;
 		for (size_t column = 0; column < dimension; ++column)
 		{
-			product = multiply_over_galois_field(matrix[row][column], (int64_t)vector[column], prime_field);
+			product = multiply_over_galois_field(matrix[row][column], vector[column], prime_field);
 			temp_result = add_over_galois_field(temp_result, product, prime_field);
 		}
 
