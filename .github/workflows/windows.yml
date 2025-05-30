@@ -29,5 +29,4 @@ jobs:
         with:
           name: build-windows
           path: .\GaloisFieldHillCipher\build-tests
-      - run: 
       - run: .\GaloisFieldHillCipher\build-tests\UnitTests.exe
