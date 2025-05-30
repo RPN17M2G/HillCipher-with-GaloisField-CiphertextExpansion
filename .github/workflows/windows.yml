@@ -14,11 +14,12 @@ jobs:
         with:
           submodules: recursive
       - run: cmake -S GaloisFieldHillCipher -B GaloisFieldHillCipher/build
-      - run: cmake --build GaloisFieldHillCipher/build
+      - run: cmake --build GaloisFieldHillCipher/build-cipher --target GaloisFieldHillCipher
+      - run: cmake --build GaloisFieldHillCipher/build-tests --target UnitTests
       - uses: actions/upload-artifact@v4
         with:
           name: build-windows
-          path: GaloisFieldHillCipher/build/**  
+          path: GaloisFieldHillCipher/build-tests/**  
   
   test-windows:
     needs: build-windows
@@ -27,5 +28,6 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: build-windows
-          path: .\GaloisFieldHillCipher\build
-      - run: .\GaloisFieldHillCipher\build\UnitTests\UnitTests.exe
+          path: .\GaloisFieldHillCipher\build-tests
+      - run: 
+      - run: .\GaloisFieldHillCipher\build-tests\UnitTests.exe

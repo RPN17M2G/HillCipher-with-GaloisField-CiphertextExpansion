@@ -15,11 +15,14 @@ jobs:
           submodules: recursive
       - run: sudo apt-get update && sudo apt-get install -y cmake build-essential
       - run: sudo cmake -S GaloisFieldHillCipher -B GaloisFieldHillCipher/build
-      - run: sudo cmake --build GaloisFieldHillCipher/build -- -j$(nproc)
+      - run: sudo cmake --build GaloisFieldHillCipher/build-cipher --target GaloisFieldHillCipher -- -j$(nproc) 
+      - run: sudo cmake --build GaloisFieldHillCipher/build-tests --target UnitTests -- -j$(nproc) 
       - uses: actions/upload-artifact@v4
         with:
           name: build-linux
-          path: GaloisFieldHillCipher/build/**
+          path: |
+            GaloisFieldHillCipher/build-cipher/**
+            GaloisFieldHillCipher/build-tests/**
 
   test-linux:
     needs: build-linux
@@ -28,9 +31,9 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: build-linux
-          path: ./GaloisFieldHillCipher/build
-      - run: chmod +x ./GaloisFieldHillCipher/build/UnitTests
-      - run: ./GaloisFieldHillCipher/build/UnitTests
+          path: ./GaloisFieldHillCipher/build-tests
+      - run: chmod +x ./GaloisFieldHillCipher/build-tests/UnitTests
+      - run: ./GaloisFieldHillCipher/build-tests/UnitTests
 
   valgrind-memory-test:
     needs: build-linux
@@ -41,8 +44,9 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: build-linux
-          path: ./GaloisFieldHillCipher/build
-      - run: chmod +x ./GaloisFieldHillCipher/build/GaloisFieldHillCipher
+          path: ./GaloisFieldHillCipher/build-cipher
+      - run: ls -l ./GaloisFieldHillCipher/build-cipher
+      - run: chmod +x ./GaloisFieldHillCipher/build-cipher/GaloisFieldHillCipher
       - run: echo "Example plaintext" > plaintext.txt
       - name: Valgrind - Generate encryption key (ek)
         run: |
@@ -50,9 +54,9 @@ jobs:
                    --show-leak-kinds=all \
                    --track-origins=yes \
                    --verbose \
-                   --error-exitcode=1 \
+                   --error-exitcode=6 \
                    --log-file=valgrind-ek.txt \
-                   ./GaloisFieldHillCipher/build/GaloisFieldHillCipher -m ek -o encryption_key.bin -d 3
+                   ./GaloisFieldHillCipher/build-cipher/GaloisFieldHillCipher -m ek -o encryption_key.bin -d 3
       - name: Valgrind - Generate decryption key (dk)
         run: |
           valgrind --leak-check=full \
@@ -61,7 +65,7 @@ jobs:
                    --verbose \
                    --error-exitcode=1 \
                    --log-file=valgrind-dk.txt \
-                   ./GaloisFieldHillCipher/build/GaloisFieldHillCipher -m dk -k encryption_key.bin -o decryption_key.bin -d 3
+                   ./GaloisFieldHillCipher/build-cipher/GaloisFieldHillCipher -m dk -k encryption_key.bin -o decryption_key.bin -d 3
       - name: Valgrind - Encrypt (e)
         run: |
           valgrind --leak-check=full \
@@ -70,7 +74,7 @@ jobs:
                    --verbose \
                    --error-exitcode=1 \
                    --log-file=valgrind-e.txt \
-                   ./GaloisFieldHillCipher/build/GaloisFieldHillCipher -m e -i plaintext.txt -o encrypted.bin -k encryption_key.bin -d 3
+                   ./GaloisFieldHillCipher/build-cipher/GaloisFieldHillCipher -m e -i plaintext.txt -o encrypted.bin -k encryption_key.bin -d 3
       - name: Valgrind - Decrypt (d)
         run: |
           valgrind --leak-check=full \
@@ -79,7 +83,7 @@ jobs:
                    --verbose \
                    --error-exitcode=1 \
                    --log-file=valgrind-d.txt \
-                   ./GaloisFieldHillCipher/build/GaloisFieldHillCipher -m d -i encrypted.bin -o decrypted.txt -k decryption_key.bin -d 3
+                   ./GaloisFieldHillCipher/build-cipher/GaloisFieldHillCipher -m d -i encrypted.bin -o decrypted.txt -k decryption_key.bin -d 3
       - name: Valgrind - Generate and encrypt (ge)
         run: |
           valgrind --leak-check=full \
@@ -88,7 +92,7 @@ jobs:
                    --verbose \
                    --error-exitcode=1 \
                    --log-file=valgrind-ge.txt \
-                   ./GaloisFieldHillCipher/build/GaloisFieldHillCipher -m ge -i plaintext.txt -o ge_encrypted.bin -k ge_key.bin -d 3
+                   ./GaloisFieldHillCipher/build-cipher/GaloisFieldHillCipher -m ge -i plaintext.txt -o ge_encrypted.bin -k ge_key.bin -d 3
       - name: Valgrind - Generate and decrypt (gd)
         run: |
           valgrind --leak-check=full \
@@ -97,4 +101,4 @@ jobs:
                    --verbose \
                    --error-exitcode=1 \
                    --log-file=valgrind-gd.txt \
-                   ./GaloisFieldHillCipher/build/GaloisFieldHillCipher -m gd -i encrypted.bin -o gd_decrypted.txt -k encryption_key.bin -d 3
+                   ./GaloisFieldHillCipher/build-cipher/GaloisFieldHillCipher -m gd -i encrypted.bin -o gd_decrypted.txt -k encryption_key.bin -d 3
