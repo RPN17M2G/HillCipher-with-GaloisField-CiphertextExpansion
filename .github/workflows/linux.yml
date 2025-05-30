@@ -1,13 +1,39 @@
-name: memory-check-linux
+name: Linux Workflow
 
 on:
-  workflow_run:
-    workflows: ["build-linux"]
-    types:
-      - completed
+  push:
+    branches: [main]
+  pull_request:
+    branches: [ main ]
 
 jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - run: sudo apt-get update && sudo apt-get install -y cmake build-essential
+      - run: cmake -S GaloisFieldHillCipher -B GaloisFieldHillCipher/build
+      - run: cmake --build GaloisFieldHillCipher/build -- -j$(nproc)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-build
+          path: GaloisFieldHillCipher/build/UnitTests
+
+  test-linux:
+    needs: build-linux
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: linux-build
+          path: ./GaloisFieldHillCipher/build
+      - run: ./GaloisFieldHillCipher/build/UnitTests
+
   valgrind-test:
+    needs: build-linux
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 

@@ -1,4 +1,4 @@
-name: build-windows
+name: Windows Workflow
 
 on:
   push:
@@ -18,4 +18,15 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: windows-build
-          path: GaloisFieldHillCipher/build/UnitTests
+          path: GaloisFieldHillCipher/build/UnitTests  
+  
+  test-windows:
+    needs: build-windows
+    runs-on: windows-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows-build
+          path: .\GaloisFieldHillCipher\build
+      - run: .\GaloisFieldHillCipher\build\UnitTests.exe
