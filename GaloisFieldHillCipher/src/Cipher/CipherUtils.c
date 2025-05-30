@@ -109,7 +109,7 @@ STATUS_CODE remove_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_si
 
     memset(*out, 0, *out_bit_size);
 
-    for (size_t bit_number = 0; bit_number < value_bit_length + NUMBER_OF_RANDOM_BITS_TO_ADD; ++bit_number)
+    for (size_t bit_number = 0; bit_number < value_bit_length; ++bit_number)
     {
         // Skip the random bits
         if ((output_bit % BYTE_SIZE == 0) && (output_bit != 0))
