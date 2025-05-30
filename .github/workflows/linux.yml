@@ -18,7 +18,7 @@ jobs:
       - run: cmake --build GaloisFieldHillCipher/build -- -j$(nproc)
       - uses: actions/upload-artifact@v4
         with:
-          name: linux-build
+          name: build-linux
           path: GaloisFieldHillCipher/build/UnitTests
 
   test-linux:
@@ -27,7 +27,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: linux-build
+          name: build-linux
           path: ./GaloisFieldHillCipher/build
       - run: chmod +x ./GaloisFieldHillCipher/build/UnitTests
       - run: ./GaloisFieldHillCipher/build/UnitTests
@@ -40,8 +40,10 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y valgrind
       - uses: actions/download-artifact@v4
         with:
-          name: linux-build
+          name: build-linux
           path: ./GaloisFieldHillCipher/build
+      - run: ls
+      - run: ls ./GaloisFieldHillCipher/build
       - run: chmod +x ./GaloisFieldHillCipher/build/GaloisFieldHillCipher
       - run: echo "Example plaintext" > plaintext.txt
       - name: Valgrind - Generate encryption key (ek)
