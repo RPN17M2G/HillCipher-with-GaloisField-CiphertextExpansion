@@ -155,7 +155,7 @@ STATUS_CODE pad_to_length(uint8_t** out, uint32_t* out_bit_length, uint8_t* valu
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 
-    if ((NULL == out) || (NULL == value))
+    if ((NULL == out) || (NULL == value) || (NULL == out_bit_length))
     {
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;

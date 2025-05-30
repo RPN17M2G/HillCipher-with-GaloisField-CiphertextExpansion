@@ -93,8 +93,11 @@ STATUS_CODE decrypt(uint8_t** out_plaintext, uint32_t* out_plaintext_bit_size, i
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 
-	uint32_t block_size_in_bits = (sizeof(int64_t) * BYTE_SIZE * dimension);
-	uint32_t number_of_blocks = vector_bit_size / block_size_in_bits;
+	uint32_t vector_bit_size_aligned_to_uint8_t = vector_bit_size / sizeof(int64_t);
+
+	uint32_t block_size_in_bits_aligned_to_uint8_t = (BYTE_SIZE * dimension);
+	uint32_t block_size_in_bits_aligned_to_int64_t = block_size_in_bits_aligned_to_uint8_t * sizeof(int64_t);
+	uint32_t number_of_blocks = vector_bit_size / block_size_in_bits_aligned_to_int64_t;
 	int64_t** ciphertext_blocks = NULL;
 
 	uint8_t* decrypted_plaintext_blocks = NULL;
@@ -112,13 +115,13 @@ STATUS_CODE decrypt(uint8_t** out_plaintext, uint32_t* out_plaintext_bit_size, i
 		goto cleanup;
 	}
 
-	if (STATUS_FAILED(divide_int64_t_into_blocks(&ciphertext_blocks, &number_of_blocks, ciphertext_vector, vector_bit_size, block_size_in_bits)))
+	if (STATUS_FAILED(divide_int64_t_into_blocks(&ciphertext_blocks, &number_of_blocks, ciphertext_vector, vector_bit_size, block_size_in_bits_aligned_to_int64_t)))
 	{
 		return_code = STATUS_CODE_COULDNT_DIVIDE_TO_BLOCKS;
 		goto cleanup;
 	}
 
-	decrypted_plaintext_blocks = (uint8_t*)malloc((vector_bit_size / BYTE_SIZE) + 1);
+	decrypted_plaintext_blocks = (uint8_t*)malloc(vector_bit_size_aligned_to_uint8_t / BYTE_SIZE);
 	if (decrypted_plaintext_blocks == NULL)
 	{
 		return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
@@ -133,7 +136,7 @@ STATUS_CODE decrypt(uint8_t** out_plaintext, uint32_t* out_plaintext_bit_size, i
 			goto cleanup;
 		}
 
-		for (size_t block_index = 0; block_index < (block_size_in_bits / BYTE_SIZE); ++block_index)
+		for (size_t block_index = 0; block_index < (block_size_in_bits_aligned_to_uint8_t / BYTE_SIZE); ++block_index)
 		{
 			decrypted_plaintext_blocks[(block_number * dimension) + block_index] = plaintext_block[block_index];
 		}
@@ -141,7 +144,7 @@ STATUS_CODE decrypt(uint8_t** out_plaintext, uint32_t* out_plaintext_bit_size, i
 		free(plaintext_block);
 	}
 
-	if (STATUS_FAILED(remove_padding(&unpadded_plaintext, &unpadded_plaintext_bit_size, decrypted_plaintext_blocks, vector_bit_size)))
+	if (STATUS_FAILED(remove_padding(&unpadded_plaintext, &unpadded_plaintext_bit_size, decrypted_plaintext_blocks, vector_bit_size_aligned_to_uint8_t)))
 	{	
 		return_code = STATUS_CODE_COULDNT_REMOVE_PADDING;
 		goto cleanup;
