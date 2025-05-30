@@ -47,12 +47,12 @@ jobs:
     strategy:
       matrix:
         test:
-          - { name: ek, args: "-m ek -o GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -d 3" }
-          - { name: dk, args: "-m dk -k GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -o GaloisFieldHillCipher/Examples/Samples/decryption_key.bin -d 3" }
-          - { name: e,  args: "-m e -i GaloisFieldHillCipher/Examples/Samples/example_plaintext.txt -o GaloisFieldHillCipher/Examples/Samples/encrypted.bin -k GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -d 3" }
-          - { name: d,  args: "-m d -i GaloisFieldHillCipher/Examples/Samples/encrypted.bin -o decrypted.txt -k GaloisFieldHillCipher/Examples/Samples/decryption_key.bin -d 3" }
-          - { name: ge, args: "-m ge -i GaloisFieldHillCipher/Examples/Samples/example_plaintext.txt -o ge_encrypted.bin -k GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -d 3" }
-          - { name: gd, args: "-m gd -i GaloisFieldHillCipher/Examples/Samples/encrypted.bin -o gd_decrypted.txt -k GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -d 3" }
+          - { name: ek, args: "-m ek -o ./GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -d 3" }
+          - { name: dk, args: "-m dk -k ./GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -o ./GaloisFieldHillCipher/Examples/Samples/decryption_key.bin -d 3" }
+          - { name: e,  args: "-m e -i ./GaloisFieldHillCipher/Examples/Samples/example_plaintext.txt -o ./GaloisFieldHillCipher/Examples/Samples/encrypted.bin -k ./GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -d 3" }
+          - { name: d,  args: "-m d -i ./GaloisFieldHillCipher/Examples/Samples/encrypted.bin -o decrypted.txt -k ./GaloisFieldHillCipher/Examples/Samples/decryption_key.bin -d 3" }
+          - { name: ge, args: "-m ge -i ./GaloisFieldHillCipher/Examples/Samples/example_plaintext.txt -o ge_encrypted.bin -k ./GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -d 3" }
+          - { name: gd, args: "-m gd -i ./GaloisFieldHillCipher/Examples/Samples/encrypted.bin -o gd_decrypted.txt -k ./GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -d 3" }
           
     steps:
       - run: sudo apt-get update && sudo apt-get install -y valgrind
