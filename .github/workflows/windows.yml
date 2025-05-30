@@ -23,7 +23,6 @@ jobs:
   test-windows:
     needs: build-windows
     runs-on: windows-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - uses: actions/download-artifact@v4
         with:

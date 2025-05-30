@@ -24,7 +24,6 @@ jobs:
   test-linux:
     needs: build-linux
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -32,9 +31,8 @@ jobs:
           path: ./GaloisFieldHillCipher/build
       - run: ./GaloisFieldHillCipher/build/UnitTests
 
-  valgrind-test:
+  valgrind-memory-test:
     needs: build-linux
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -52,6 +50,7 @@ jobs:
                    --show-leak-kinds=all \
                    --track-origins=yes \
                    --verbose \
+                   --error-exitcode=1 \
                    --log-file=valgrind-ek.txt \
                    ./build/GaloisFieldHillCipher -m ek -o encryption_key.bin -d 3
       - name: Valgrind - Generate decryption key (dk)
@@ -60,6 +59,7 @@ jobs:
                    --show-leak-kinds=all \
                    --track-origins=yes \
                    --verbose \
+                   --error-exitcode=1 \
                    --log-file=valgrind-dk.txt \
                    ./build/GaloisFieldHillCipher -m dk -k encryption_key.bin -o decryption_key.bin -d 3
       - name: Valgrind - Encrypt (e)
@@ -68,6 +68,7 @@ jobs:
                    --show-leak-kinds=all \
                    --track-origins=yes \
                    --verbose \
+                   --error-exitcode=1 \
                    --log-file=valgrind-e.txt \
                    ./build/GaloisFieldHillCipher -m e -i plaintext.txt -o encrypted.bin -k encryption_key.bin -d 3
       - name: Valgrind - Decrypt (d)
@@ -76,6 +77,7 @@ jobs:
                    --show-leak-kinds=all \
                    --track-origins=yes \
                    --verbose \
+                   --error-exitcode=1 \
                    --log-file=valgrind-d.txt \
                    ./build/GaloisFieldHillCipher -m d -i encrypted.bin -o decrypted.txt -k decryption_key.bin -d 3
       - name: Valgrind - Generate and encrypt (ge)
@@ -84,6 +86,7 @@ jobs:
                    --show-leak-kinds=all \
                    --track-origins=yes \
                    --verbose \
+                   --error-exitcode=1 \
                    --log-file=valgrind-ge.txt \
                    ./build/GaloisFieldHillCipher -m ge -i plaintext.txt -o ge_encrypted.bin -k ge_key.bin -d 3
       - name: Valgrind - Generate and decrypt (gd)
@@ -92,5 +95,6 @@ jobs:
                    --show-leak-kinds=all \
                    --track-origins=yes \
                    --verbose \
+                   --error-exitcode=1 \
                    --log-file=valgrind-gd.txt \
                    ./build/GaloisFieldHillCipher -m gd -i encrypted.bin -o gd_decrypted.txt -k encryption_key.bin -d 3
