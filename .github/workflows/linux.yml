@@ -72,7 +72,6 @@ jobs:
         run: |
           grep "definitely lost:" valgrind-${{ matrix.test.name }}.txt | grep -vq " 0 bytes" \
             && (echo "Leaks found!" && exit 1) || echo "No leaks"
-
       - name: Print Valgrind log on failure - ${{ matrix.test.name }}
         if: failure()
         run: cat valgrind-${{ matrix.test.name }}.txt
