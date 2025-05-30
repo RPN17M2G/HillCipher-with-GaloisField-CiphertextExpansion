@@ -1,8 +1,8 @@
-name: Windows Test
+name: test-windows
 
 on:
   workflow_run:
-    workflows: ["Windows Build"]
+    workflows: ["build-windows"]
     types:
       - completed
 

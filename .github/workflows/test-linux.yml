@@ -1,8 +1,8 @@
-name: Linux Test
+name: test-linux
 
 on:
   workflow_run:
-    workflows: ["Linux Build"]
+    workflows: ["build-linux"]
     types:
       - completed
 

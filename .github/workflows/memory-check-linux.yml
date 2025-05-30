@@ -1,8 +1,8 @@
-name: Linux Memory Leak Test
+name: memory-check-linux
 
 on:
   workflow_run:
-    workflows: ["Linux Build"]
+    workflows: ["build-linux"]
     types:
       - completed
 
