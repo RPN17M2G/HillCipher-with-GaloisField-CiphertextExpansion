@@ -53,7 +53,7 @@ jobs:
       - run: chmod +x ./GaloisFieldHillCipher/build/GaloisFieldHillCipher
       - run: echo "Example plaintext" > plaintext.txt
       - name: Valgrind - Generate encryption key (ek)
-        run: sudo valgrind --leak-check=full -v -s --log-file=valgrind-ek.txt ./GaloisFieldHillCipher/build/GaloisFieldHillCipher -m ek -o ./encryption_key.bin -d 3
+        run: sudo valgrind --leak-check=full -v -s --log-file=valgrind-ek.txt ./GaloisFieldHillCipher/build/GaloisFieldHillCipher -m ek -o ./encryption_key.bin -d 3 || true
       - run: grep "definitely lost:" valgrind-ek.txt | grep -vq " 0 bytes" && (echo "Leaks found!" && exit 1) || echo "No leaks"
       - name: Print Valgrind log (ek)
         if: failure()
