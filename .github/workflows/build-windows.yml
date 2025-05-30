@@ -11,9 +11,9 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3
-      - run: cmake -S . -B build
-      - run: cmake --build build -- -j$(nproc)
+      - run: cmake -S GaloisFieldHillCipher -B GaloisFieldHillCipher/build
+      - run: cmake --build GaloisFieldHillCipher/build -- -j$(nproc)
       - uses: actions/upload-artifact@v3
         with:
           name: windows-build
-          path: build/UnitTests
+          path: GaloisFieldHillCipher/build/UnitTests

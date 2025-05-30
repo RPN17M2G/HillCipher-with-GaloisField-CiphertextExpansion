@@ -12,9 +12,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - run: sudo apt-get update && sudo apt-get install -y cmake build-essential
-      - run: cmake -S . -B build
-      - run: cmake --build build -- -j$(nproc)
+      - run: cmake -S GaloisFieldHillCipher -B GaloisFieldHillCipher/build
+      - run: cmake --build GaloisFieldHillCipher/build -- -j$(nproc)
       - uses: actions/upload-artifact@v3
         with:
           name: linux-build
-          path: build/UnitTests
+          path: GaloisFieldHillCipher/build/UnitTests

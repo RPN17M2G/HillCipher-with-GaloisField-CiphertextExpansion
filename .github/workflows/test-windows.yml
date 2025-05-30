@@ -15,5 +15,5 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: windows-build
-          path: .\build
-      - run: .\build\UnitTests.exe
+          path: .\GaloisFieldHillCipher\build
+      - run: .\GaloisFieldHillCipher\build\UnitTests.exe
