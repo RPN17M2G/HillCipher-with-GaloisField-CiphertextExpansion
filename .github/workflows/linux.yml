@@ -14,8 +14,9 @@ jobs:
         with:
           submodules: recursive
       - run: sudo apt-get update && sudo apt-get install -y cmake build-essential
-      - run: sudo cmake -S GaloisFieldHillCipher -B GaloisFieldHillCipher/build
+      - run: sudo cmake -S GaloisFieldHillCipher -B GaloisFieldHillCipher/build-cipher
       - run: sudo cmake --build GaloisFieldHillCipher/build-cipher --target GaloisFieldHillCipher -- -j$(nproc) 
+      - run: sudo cmake -S GaloisFieldHillCipher -B GaloisFieldHillCipher/build-tests
       - run: sudo cmake --build GaloisFieldHillCipher/build-tests --target UnitTests -- -j$(nproc) 
       - uses: actions/upload-artifact@v4
         with:

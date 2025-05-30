@@ -13,8 +13,9 @@ jobs:
       - uses: actions/checkout@v4  
         with:
           submodules: recursive
-      - run: cmake -S GaloisFieldHillCipher -B GaloisFieldHillCipher/build
+      - run: cmake -S GaloisFieldHillCipher -B GaloisFieldHillCipher/build-cipher
       - run: cmake --build GaloisFieldHillCipher/build-cipher --target GaloisFieldHillCipher
+      - run: cmake -S GaloisFieldHillCipher -B GaloisFieldHillCipher/build-tests
       - run: cmake --build GaloisFieldHillCipher/build-tests --target UnitTests
       - uses: actions/upload-artifact@v4
         with:
