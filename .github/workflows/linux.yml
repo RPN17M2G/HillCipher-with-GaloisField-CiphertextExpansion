@@ -14,12 +14,12 @@ jobs:
         with:
           submodules: recursive
       - run: sudo apt-get update && sudo apt-get install -y cmake build-essential
-      - run: cmake -S GaloisFieldHillCipher -B GaloisFieldHillCipher/build
-      - run: cmake --build GaloisFieldHillCipher/build -- -j$(nproc)
+      - run: sudo cmake -S GaloisFieldHillCipher -B GaloisFieldHillCipher/build
+      - run: sudo cmake --build GaloisFieldHillCipher/build -- -j$(nproc)
       - uses: actions/upload-artifact@v4
         with:
           name: build-linux
-          path: GaloisFieldHillCipher/build/UnitTests
+          path: GaloisFieldHillCipher/build
 
   test-linux:
     needs: build-linux
@@ -29,7 +29,7 @@ jobs:
         with:
           name: build-linux
           path: ./GaloisFieldHillCipher/build
-      - run: chmod +x ./GaloisFieldHillCipher/build/UnitTests
+      - run: chmod +x ./GaloisFieldHillCipher/build
       - run: ./GaloisFieldHillCipher/build/UnitTests
 
   valgrind-memory-test:
@@ -42,8 +42,6 @@ jobs:
         with:
           name: build-linux
           path: ./GaloisFieldHillCipher/build
-      - run: ls
-      - run: ls ./GaloisFieldHillCipher/build
       - run: chmod +x ./GaloisFieldHillCipher/build/GaloisFieldHillCipher
       - run: echo "Example plaintext" > plaintext.txt
       - name: Valgrind - Generate encryption key (ek)
