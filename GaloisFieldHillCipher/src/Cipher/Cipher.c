@@ -62,7 +62,10 @@ STATUS_CODE encrypt(int64_t** out_ciphertext, uint32_t* out_ciphertext_bit_size,
 			goto cleanup;
 		}
 
-		memcpy_s(*out_ciphertext + (block_number * dimension), block_size_in_bits, ciphertext_block, block_size_in_bits);
+		for (size_t copy_index = 0; copy_index < block_size_in_bits; ++copy_index)
+		{
+			(*out_ciphertext + (block_number * dimension))[copy_index] = ciphertext_block[copy_index];
+		}
 
 		free(ciphertext_block);
 	}

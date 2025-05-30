@@ -1,11 +1,17 @@
 ﻿cmake_minimum_required(VERSION 3.11)
 
+project("GaloisFieldHillCipher" LANGUAGES C)
+
+# Platform-specific debug info for MSVC
 if (POLICY CMP0141)
   cmake_policy(SET CMP0141 NEW)
-  set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
+  if (MSVC)
+    set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>")
+  endif()
 endif()
 
-project("GaloisFieldHillCipher" LANGUAGES C)
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED ON)
 
 file(GLOB_RECURSE SOURCES src/*.c GaloisFieldHillCipher.c)
 file(GLOB_RECURSE SOURCES_WITHOUT_MAIN src/*.c)
@@ -52,9 +58,12 @@ target_include_directories(UnitTests PRIVATE
         thirdparty/argparse
         thirdparty/sodium/include
 )
-target_link_libraries(UnitTests PRIVATE unity)
-target_link_libraries(UnitTests PRIVATE sodium)
-target_link_libraries(UnitTests PRIVATE argparse_static)
+
+target_link_libraries(UnitTests PRIVATE
+        unity
+        sodium
+        argparse_static
+)
 
 enable_testing()
 add_test(NAME AllUnitTests COMMAND UnitTests)
