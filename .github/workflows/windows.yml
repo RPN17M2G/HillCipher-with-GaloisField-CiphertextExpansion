@@ -18,7 +18,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: build-windows
-          path: GaloisFieldHillCipher/build  
+          path: GaloisFieldHillCipher/build/**  
   
   test-windows:
     needs: build-windows
@@ -28,7 +28,4 @@ jobs:
         with:
           name: build-windows
           path: .\GaloisFieldHillCipher\build
-      - run: dir
-      - run: dir .\GaloisFieldHillCipher\build 
-      - run: dir .\GaloisFieldHillCipher\build\UnitTests
-      - run: .\GaloisFieldHillCipher\build\UnitTests.exe
+      - run: .\GaloisFieldHillCipher\build\UnitTests\UnitTests.exe
