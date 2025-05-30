@@ -58,6 +58,7 @@ jobs:
       - name: Print Valgrind log (ek)
         if: failure()
         run: cat valgrind-ek.txt
+      - run: cat valgrind-ek.txt
       
       - name: Valgrind - Generate decryption key (dk)
         run: sudo valgrind --leak-check=full -v -s --log-file=valgrind-dk.txt ./GaloisFieldHillCipher/build/GaloisFieldHillCipher -m dk -k ./encryption_key.bin -o ./decryption_key.bin -d 3 || true

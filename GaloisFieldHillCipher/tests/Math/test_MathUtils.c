@@ -439,7 +439,7 @@ void run_all_MathUtils_tests()
 
     RUN_TEST(test_MathUtils_gcd_sanity);
     RUN_TEST(test_MathUtils_gcd_large_numbers);
-    //RUN_TEST(test_MathUtils_gcd_multiple_edge_cases);
+    RUN_TEST(test_MathUtils_gcd_multiple_edge_cases);
 
     RUN_TEST(test_MathUtils_is_matrix_invertible_true);
     RUN_TEST(test_MathUtils_is_matrix_invertible_false);
