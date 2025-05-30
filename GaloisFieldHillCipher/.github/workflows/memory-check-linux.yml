@@ -19,51 +19,52 @@ jobs:
           name: linux-build
           path: ./build
       - run: chmod +x ./build/GaloisFieldHillCipher
-      - name: Valgrind - ek
+      - run: echo "Example plaintext" > plaintext.txt
+      - name: Valgrind - Generate encryption key (ek)
         run: |
           valgrind --leak-check=full \
                    --show-leak-kinds=all \
                    --track-origins=yes \
                    --verbose \
                    --log-file=valgrind-ek.txt \
-                   ./build/GaloisFieldHillCipher -m ek -o out.key -d 3
-      - name: Valgrind - dk
+                   ./build/GaloisFieldHillCipher -m ek -o encryption_key.bin -d 3
+      - name: Valgrind - Generate decryption key (dk)
         run: |
           valgrind --leak-check=full \
                    --show-leak-kinds=all \
                    --track-origins=yes \
                    --verbose \
                    --log-file=valgrind-dk.txt \
-                   ./build/GaloisFieldHillCipher -m dk -k test.key -o out_dk.key -d 3
-      - name: Valgrind - e
+                   ./build/GaloisFieldHillCipher -m dk -k encryption_key.bin -o decryption_key.bin -d 3
+      - name: Valgrind - Encrypt (e)
         run: |
           valgrind --leak-check=full \
                    --show-leak-kinds=all \
                    --track-origins=yes \
                    --verbose \
                    --log-file=valgrind-e.txt \
-                   ./build/GaloisFieldHillCipher -m e -i plain.txt -o enc.txt -k test.key -d 3
-      - name: Valgrind - d
+                   ./build/GaloisFieldHillCipher -m e -i plaintext.txt -o encrypted.bin -k encryption_key.bin -d 3
+      - name: Valgrind - Decrypt (d)
         run: |
           valgrind --leak-check=full \
                    --show-leak-kinds=all \
                    --track-origins=yes \
                    --verbose \
                    --log-file=valgrind-d.txt \
-                   ./build/GaloisFieldHillCipher -m d -i enc.txt -o dec.txt -k test.key -d 3
-      - name: Valgrind - ge
+                   ./build/GaloisFieldHillCipher -m d -i encrypted.bin -o decrypted.txt -k decryption_key.bin -d 3
+      - name: Valgrind - Generate and encrypt (ge)
         run: |
           valgrind --leak-check=full \
                    --show-leak-kinds=all \
                    --track-origins=yes \
                    --verbose \
                    --log-file=valgrind-ge.txt \
-                   ./build/GaloisFieldHillCipher -m ge -i plain.txt -o ge_enc.txt -k ge.key -d 3
-      - name: Valgrind - gd
+                   ./build/GaloisFieldHillCipher -m ge -i plaintext.txt -o ge_encrypted.bin -k ge_key.bin -d 3
+      - name: Valgrind - Generate and decrypt (gd)
         run: |
           valgrind --leak-check=full \
                    --show-leak-kinds=all \
                    --track-origins=yes \
                    --verbose \
                    --log-file=valgrind-gd.txt \
-                   ./build/GaloisFieldHillCipher -m gd -i ge_enc.txt -o gd_dec.txt -k ge.key -d 3
+                   ./build/GaloisFieldHillCipher -m gd -i encrypted.bin -o gd_decrypted.txt -k encryption_key.bin -d 3
