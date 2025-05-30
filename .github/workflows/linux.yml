@@ -47,13 +47,13 @@ jobs:
     strategy:
       matrix:
         test:
-          - { name: ek, args: "-m ek -o encryption_key.bin -d 3" }
-          - { name: dk, args: "-m dk -k encryption_key.bin -o ./decryption_key.bin -d 3" }
-          - { name: e,  args: "-m e -i plaintext.txt -o encrypted.bin -k encryption_key.bin -d 3" }
-          - { name: d,  args: "-m d -i encrypted.bin -o decrypted.txt -k decryption_key.bin -d 3" }
-          - { name: ge, args: "-m ge -i plaintext.txt -o ge_encrypted.bin -k encryption_key.bin -d 3" }
-          - { name: gd, args: "-m gd -i encrypted.bin -o gd_decrypted.txt -k encryption_key.bin -d 3" }
-
+          - { name: ek, args: "-m ek -o GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -d 3" }
+          - { name: dk, args: "-m dk -k GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -o GaloisFieldHillCipher/Examples/Samples/decryption_key.bin -d 3" }
+          - { name: e,  args: "-m e -i GaloisFieldHillCipher/Examples/Samples/example_plaintext.txt -o GaloisFieldHillCipher/Examples/Samples/encrypted.bin -k GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -d 3" }
+          - { name: d,  args: "-m d -i GaloisFieldHillCipher/Examples/Samples/encrypted.bin -o decrypted.txt -k GaloisFieldHillCipher/Examples/Samples/decryption_key.bin -d 3" }
+          - { name: ge, args: "-m ge -i GaloisFieldHillCipher/Examples/Samples/example_plaintext.txt -o ge_encrypted.bin -k GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -d 3" }
+          - { name: gd, args: "-m gd -i GaloisFieldHillCipher/Examples/Samples/encrypted.bin -o gd_decrypted.txt -k GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -d 3" }
+          
     steps:
       - run: sudo apt-get update && sudo apt-get install -y valgrind
       - uses: actions/download-artifact@v4
@@ -61,13 +61,12 @@ jobs:
           name: build-release
           path: ./GaloisFieldHillCipher/build
       - run: chmod +x ./GaloisFieldHillCipher/build/GaloisFieldHillCipher
-      - run: echo "Example plaintext" > plaintext.txt
 
       - name: Valgrind - Run mode ${{ matrix.test.name }}
         run: |
           sudo valgrind --leak-check=full -v -s \
             --log-file=valgrind-${{ matrix.test.name }}.txt \
-            ./GaloisFieldHillCipher/build/GaloisFieldHillCipher ${{ matrix.test.args }} -d 3 || true
+            ./GaloisFieldHillCipher/build/GaloisFieldHillCipher ${{ matrix.test.args }}
 
       - name: Check leaks - ${{ matrix.test.name }}
         run: |
@@ -77,8 +76,4 @@ jobs:
       - name: Print Valgrind log on failure - ${{ matrix.test.name }}
         if: failure()
         run: cat valgrind-${{ matrix.test.name }}.txt
-
-      - name: REMOVE THIS - Always show Valgrind log - ${{ matrix.test.name }}
-        run: cat valgrind-${{ matrix.test.name }}.txt
-
     
