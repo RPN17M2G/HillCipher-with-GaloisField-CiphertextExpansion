@@ -26,6 +26,6 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: windows-build
+          name: build-windows
           path: .\GaloisFieldHillCipher\build
       - run: .\GaloisFieldHillCipher\build\UnitTests.exe
