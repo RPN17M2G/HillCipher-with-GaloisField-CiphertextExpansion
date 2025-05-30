@@ -12,7 +12,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
       - run: cd GaloisFieldHillCipher
       - run: sudo apt-get update && sudo apt-get install -y valgrind
       - uses: actions/download-artifact@v4
