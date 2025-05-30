@@ -1,0 +1,20 @@
+name: Linux Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: sudo apt-get update && sudo apt-get install -y cmake build-essential
+      - run: cmake -S . -B build
+      - run: cmake --build build -- -j$(nproc)
+      - uses: actions/upload-artifact@v3
+        with:
+          name: linux-build
+          path: build/UnitTests

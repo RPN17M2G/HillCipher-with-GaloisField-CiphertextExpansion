@@ -1,0 +1,69 @@
+name: Linux Memory Leak Test
+
+on:
+  workflow_run:
+    workflows: ["Linux Build"]
+    types:
+      - completed
+
+jobs:
+  valgrind-test:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - run: sudo apt-get update && sudo apt-get install -y valgrind
+      - uses: actions/download-artifact@v3
+        with:
+          name: linux-build
+          path: ./build
+      - run: chmod +x ./build/GaloisFieldHillCipher
+      - name: Valgrind - ek
+        run: |
+          valgrind --leak-check=full \
+                   --show-leak-kinds=all \
+                   --track-origins=yes \
+                   --verbose \
+                   --log-file=valgrind-ek.txt \
+                   ./build/GaloisFieldHillCipher -m ek -o out.key -d 3
+      - name: Valgrind - dk
+        run: |
+          valgrind --leak-check=full \
+                   --show-leak-kinds=all \
+                   --track-origins=yes \
+                   --verbose \
+                   --log-file=valgrind-dk.txt \
+                   ./build/GaloisFieldHillCipher -m dk -k test.key -o out_dk.key -d 3
+      - name: Valgrind - e
+        run: |
+          valgrind --leak-check=full \
+                   --show-leak-kinds=all \
+                   --track-origins=yes \
+                   --verbose \
+                   --log-file=valgrind-e.txt \
+                   ./build/GaloisFieldHillCipher -m e -i plain.txt -o enc.txt -k test.key -d 3
+      - name: Valgrind - d
+        run: |
+          valgrind --leak-check=full \
+                   --show-leak-kinds=all \
+                   --track-origins=yes \
+                   --verbose \
+                   --log-file=valgrind-d.txt \
+                   ./build/GaloisFieldHillCipher -m d -i enc.txt -o dec.txt -k test.key -d 3
+      - name: Valgrind - ge
+        run: |
+          valgrind --leak-check=full \
+                   --show-leak-kinds=all \
+                   --track-origins=yes \
+                   --verbose \
+                   --log-file=valgrind-ge.txt \
+                   ./build/GaloisFieldHillCipher -m ge -i plain.txt -o ge_enc.txt -k ge.key -d 3
+      - name: Valgrind - gd
+        run: |
+          valgrind --leak-check=full \
+                   --show-leak-kinds=all \
+                   --track-origins=yes \
+                   --verbose \
+                   --log-file=valgrind-gd.txt \
+                   ./build/GaloisFieldHillCipher -m gd -i ge_enc.txt -o gd_dec.txt -k ge.key -d 3
