@@ -50,22 +50,23 @@ jobs:
           - { name: ek, args: "-m ek -o $(pwd)/GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -d 3" }
           - { name: dk, args: "-m dk -k $(pwd)/GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -o $(pwd)/GaloisFieldHillCipher/Examples/Samples/decryption_key.bin -d 3" }
           - { name: e,  args: "-m e -i $(pwd)/GaloisFieldHillCipher/Examples/Samples/example_plaintext.txt -o $(pwd)/GaloisFieldHillCipher/Examples/Samples/encrypted.bin -k $(pwd)/GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -d 3" }
-          - { name: d,  args: "-m d -i $(pwd)/GaloisFieldHillCipher/Examples/Samples/encrypted.bin -o $(pwd)/decrypted.txt -k $(pwd)/GaloisFieldHillCipher/Examples/Samples/decryption_key.bin -d 3" }
-          - { name: ge, args: "-m ge -i $(pwd)/GaloisFieldHillCipher/Examples/Samples/example_plaintext.txt -o $(pwd)/ge_encrypted.bin -k $(pwd)/GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -d 3" }
-          - { name: gd, args: "-m gd -i $(pwd)/GaloisFieldHillCipher/Examples/Samples/encrypted.bin -o $(pwd)/gd_decrypted.txt -k $(pwd)/GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -d 3" }
+          - { name: d,  args: "-m d -i $(pwd)/GaloisFieldHillCipher/Examples/Samples/encrypted.bin -o decrypted.txt -k $(pwd)/GaloisFieldHillCipher/Examples/Samples/decryption_key.bin -d 3" }
+          - { name: ge, args: "-m ge -i $(pwd)/GaloisFieldHillCipher/Examples/Samples/example_plaintext.txt -o ge_encrypted.bin -k $(pwd)/GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -d 3" }
+          - { name: gd, args: "-m gd -i $(pwd)/GaloisFieldHillCipher/Examples/Samples/encrypted.bin -o gd_decrypted.txt -k $(pwd)/GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -d 3" }
+          
     steps:
       - run: sudo apt-get update && sudo apt-get install -y valgrind
       - uses: actions/download-artifact@v4
         with:
           name: build-release
-          path: $(pwd)/GaloisFieldHillCipher/build
-      - run: chmod +x $(pwd)/GaloisFieldHillCipher/build/GaloisFieldHillCipher
+          path: ./GaloisFieldHillCipher/build
+      - run: chmod +x ./GaloisFieldHillCipher/build/GaloisFieldHillCipher
 
       - name: Valgrind - Run mode ${{ matrix.test.name }}
         run: |
           sudo valgrind --leak-check=full -v -s \
             --log-file=valgrind-${{ matrix.test.name }}.txt \
-            $(pwd)/GaloisFieldHillCipher/build/GaloisFieldHillCipher ${{ matrix.test.args }}
+            ./GaloisFieldHillCipher/build/GaloisFieldHillCipher ${{ matrix.test.args }}
 
       - name: Check leaks - ${{ matrix.test.name }}
         run: |
@@ -74,3 +75,4 @@ jobs:
       - name: Print Valgrind log on failure - ${{ matrix.test.name }}
         if: failure()
         run: cat valgrind-${{ matrix.test.name }}.txt
+    
