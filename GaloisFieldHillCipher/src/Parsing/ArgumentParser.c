@@ -59,7 +59,7 @@ STATUS_CODE extract_arguments(ParsedArguments* out_args, int argc, char** argv)
         break;
 
     case DECRYPTION_KEY_GENERATION_MODE:
-        if (!key || (dimension == 0) ||
+        if (!key || !output_file || (dimension == 0) ||
             STATUS_FAILED(validate_file_is_readable(key)) ||
             STATUS_FAILED(validate_file_is_binary(key)))
         {

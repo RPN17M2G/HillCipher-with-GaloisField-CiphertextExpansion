@@ -47,12 +47,12 @@ jobs:
     strategy:
       matrix:
         test:
-          - { name: ek, args: "-m ek -o encryption_key.bin" }
-          - { name: dk, args: "-m dk -k encryption_key.bin -o ./decryption_key.bin" }
-          - { name: e,  args: "-m e -i plaintext.txt -o encrypted.bin -k encryption_key.bin" }
-          - { name: d,  args: "-m d -i encrypted.bin -o decrypted.txt -k decryption_key.bin" }
-          - { name: ge, args: "-m ge -i plaintext.txt -o ge_encrypted.bin -k encryption_key.bin" }
-          - { name: gd, args: "-m gd -i encrypted.bin -o gd_decrypted.txt -k encryption_key.bin" }
+          - { name: ek, args: "-m ek -o encryption_key.bin -d 3" }
+          - { name: dk, args: "-m dk -k encryption_key.bin -o ./decryption_key.bin -d 3" }
+          - { name: e,  args: "-m e -i plaintext.txt -o encrypted.bin -k encryption_key.bin -d 3" }
+          - { name: d,  args: "-m d -i encrypted.bin -o decrypted.txt -k decryption_key.bin -d 3" }
+          - { name: ge, args: "-m ge -i plaintext.txt -o ge_encrypted.bin -k encryption_key.bin -d 3" }
+          - { name: gd, args: "-m gd -i encrypted.bin -o gd_decrypted.txt -k encryption_key.bin -d 3" }
 
     steps:
       - run: sudo apt-get update && sudo apt-get install -y valgrind

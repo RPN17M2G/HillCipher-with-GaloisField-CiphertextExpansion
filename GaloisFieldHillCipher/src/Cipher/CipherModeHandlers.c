@@ -7,7 +7,7 @@ STATUS_CODE handle_key_generation_mode(const ParsedArguments* args)
     uint8_t* serialized_data = NULL;
     uint32_t serialized_size = 0;
 
-    if (!args || !args->key || (args->dimension == 0))
+    if (!args || !args->output_file || (args->dimension == 0))
     {
         return STATUS_CODE_INVALID_ARGUMENT;
     }
@@ -35,10 +35,10 @@ STATUS_CODE handle_key_generation_mode(const ParsedArguments* args)
     if (args->verbose)
     {
         print_uint8_vector(serialized_data, serialized_size, "[*] Serialized matrix data:");
-        printf("[*] Writing to key file: %s\n", args->key);
+        printf("[*] Writing to key file: %s\n", args->output_file);
     }
 
-    return_code = write_uint8_to_file(args->key, serialized_data, serialized_size);
+    return_code = write_uint8_to_file(args->output_file, serialized_data, serialized_size);
 
 cleanup:
     if (serialized_data)
@@ -56,8 +56,10 @@ STATUS_CODE handle_decryption_key_generation_mode(const ParsedArguments* args)
     int64_t** encryption_matrix = NULL;
     int64_t** decryption_matrix = NULL;
     uint32_t key_size = 0;
+    uint8_t* serialized_data = NULL;
+    uint32_t serialized_size = 0;
 
-    if (!args || !args->key || (args->dimension == 0))
+    if (!args || !args->key || !args->output_file || (args->dimension == 0))
     {
         return STATUS_CODE_INVALID_ARGUMENT;
     }
@@ -99,6 +101,20 @@ STATUS_CODE handle_decryption_key_generation_mode(const ParsedArguments* args)
     {
         print_matrix(decryption_matrix, args->dimension);
     }
+
+    return_code = serialize_matrix(&serialized_data, &serialized_size, decryption_matrix, args->dimension);
+    if (STATUS_FAILED(return_code))
+    {
+        goto cleanup;
+    }
+
+    if (args->verbose)
+    {
+        print_uint8_vector(serialized_data, serialized_size, "[*] Serialized matrix data:");
+        printf("[*] Writing to key file: %s\n", args->output_file);
+    }
+
+    return_code = write_uint8_to_file(args->output_file, serialized_data, serialized_size);
 
 cleanup:
     free_matrix(encryption_matrix, args->dimension);
