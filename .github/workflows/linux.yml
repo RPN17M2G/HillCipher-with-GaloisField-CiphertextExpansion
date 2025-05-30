@@ -53,42 +53,42 @@ jobs:
       - run: chmod +x ./GaloisFieldHillCipher/build/GaloisFieldHillCipher
       - run: echo "Example plaintext" > plaintext.txt
       - name: Valgrind - Generate encryption key (ek)
-        run: valgrind --leak-check=full --log-file=valgrind-ek.txt "./GaloisFieldHillCipher/build/GaloisFieldHillCipher -m ek -o encryption_key.bin -d 3" || true 
+        run: valgrind --leak-check=full --log-file=valgrind-ek.txt ./GaloisFieldHillCipher/build/GaloisFieldHillCipher -m ek -o encryption_key.bin -d 3
       - run: grep "definitely lost:" valgrind-ek.txt | grep -vq " 0 bytes" && (echo "Leaks found!" && exit 1) || echo "No leaks"
       - name: Print Valgrind log (ek)
         if: failure()
         run: cat valgrind-ek.txt
       
       - name: Valgrind - Generate decryption key (dk)
-        run: valgrind --leak-check=full --log-file=valgrind-dk.txt "./GaloisFieldHillCipher/build/GaloisFieldHillCipher -m dk -k encryption_key.bin -o decryption_key.bin -d 3" || true
+        run: valgrind --leak-check=full --log-file=valgrind-dk.txt ./GaloisFieldHillCipher/build/GaloisFieldHillCipher -m dk -k encryption_key.bin -o decryption_key.bin -d 3 || true
       - run: grep "definitely lost:" valgrind-dk.txt | grep -vq " 0 bytes" && (echo "Leaks found!" && exit 1) || echo "No leaks"
       - name: Print Valgrind log (dk)
         if: failure()
         run: cat valgrind-dk.txt
       
       - name: Valgrind - Encrypt (e)
-        run: valgrind --leak-check=full --log-file=valgrind-e.txt "./GaloisFieldHillCipher/build/GaloisFieldHillCipher -m e -i plaintext.txt -o encrypted.bin -k encryption_key.bin -d 3" || true
+        run: valgrind --leak-check=full --log-file=valgrind-e.txt ./GaloisFieldHillCipher/build/GaloisFieldHillCipher -m e -i plaintext.txt -o encrypted.bin -k encryption_key.bin -d 3 || true
       - run: grep "definitely lost:" valgrind-e.txt | grep -vq " 0 bytes" && (echo "Leaks found!" && exit 1) || echo "No leaks"
       - name: Print Valgrind log (e)
         if: failure()
         run: cat valgrind-e.txt
       
       - name: Valgrind - Decrypt (d)
-        run: valgrind --leak-check=full --log-file=valgrind-d.txt "./GaloisFieldHillCipher/build/GaloisFieldHillCipher -m d -i encrypted.bin -o decrypted.txt -k decryption_key.bin -d 3" || true
+        run: valgrind --leak-check=full --log-file=valgrind-d.txt ./GaloisFieldHillCipher/build/GaloisFieldHillCipher -m d -i encrypted.bin -o decrypted.txt -k decryption_key.bin -d 3 || true
       - run: grep "definitely lost:" valgrind-d.txt | grep -vq " 0 bytes" && (echo "Leaks found!" && exit 1) || echo "No leaks"
       - name: Print Valgrind log (d)
         if: failure()
         run: cat valgrind-d.txt
       
       - name: Valgrind - Generate and encrypt (ge)
-        run: valgrind --leak-check=full --log-file=valgrind-ge.txt "./GaloisFieldHillCipher/build/GaloisFieldHillCipher -m ge -i plaintext.txt -o ge_encrypted.bin -k ge_key.bin -d 3" || true
+        run: valgrind --leak-check=full --log-file=valgrind-ge.txt ./GaloisFieldHillCipher/build/GaloisFieldHillCipher -m ge -i plaintext.txt -o ge_encrypted.bin -k ge_key.bin -d 3 || true
       - run: grep "definitely lost:" valgrind-ge.txt | grep -vq " 0 bytes" && (echo "Leaks found!" && exit 1) || echo "No leaks"
       - name: Print Valgrind log (ge)
         if: failure()
         run: cat valgrind-ge.txt
       
       - name: Valgrind - Generate and decrypt (gd)
-        run: valgrind --leak-check=full --log-file=valgrind-gd.txt "./GaloisFieldHillCipher/build/GaloisFieldHillCipher -m gd -i encrypted.bin -o gd_decrypted.txt -k encryption_key.bin -d 3" || true
+        run: valgrind --leak-check=full --log-file=valgrind-gd.txt ./GaloisFieldHillCipher/build/GaloisFieldHillCipher -m gd -i encrypted.bin -o gd_decrypted.txt -k encryption_key.bin -d 3 || true
       - run: grep "definitely lost:" valgrind-gd.txt | grep -vq " 0 bytes" && (echo "Leaks found!" && exit 1) || echo "No leaks"
       - name: Print Valgrind log (gd)
         if: failure()
