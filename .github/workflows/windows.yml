@@ -4,30 +4,37 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
-  build-windows:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4  
-        with:
-          submodules: recursive
-      - run: cmake -S GaloisFieldHillCipher -B GaloisFieldHillCipher/build-cipher
-      - run: cmake --build GaloisFieldHillCipher/build-cipher --target GaloisFieldHillCipher
-      - run: cmake -S GaloisFieldHillCipher -B GaloisFieldHillCipher/build-tests
-      - run: cmake --build GaloisFieldHillCipher/build-tests --target UnitTests
-      - uses: actions/upload-artifact@v4
-        with:
-          name: build-windows
-          path: GaloisFieldHillCipher/build-tests/**  
-  
-  test-windows:
-    needs: build-windows
+  build-debug:
+    uses: ./.github/workflows/windows-build-template.yml
+    with:
+      config: Debug
+      artifact-name: build-debug
+
+  build-release:
+    uses: ./.github/workflows/windows-build-template.yml
+    with:
+      config: Release
+      artifact-name: build-release
+
+  test-debug:
+    needs: build-debug
     runs-on: windows-latest
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: build-windows
-          path: .\GaloisFieldHillCipher\build-tests
-      - run: .\GaloisFieldHillCipher\build-tests\UnitTests.exe
+          name: build-debug
+          path: GaloisFieldHillCipher/build
+      - run: GaloisFieldHillCipher\build\Debug\UnitTests.exe
+
+  test-release:
+    needs: build-release
+    runs-on: windows-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: build-release
+          path: GaloisFieldHillCipher/build
+      - run: GaloisFieldHillCipher\build\Release\GaloisFieldHillCipher.exe --version  # or another check
