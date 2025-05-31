@@ -4,7 +4,7 @@
 STATUS_CODE write_uint8_to_file(const char* filepath, const uint8_t* data, uint32_t size)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
-    char* reading_mode = NULL;
+    char* writing_mode = NULL;
     FILE* file = NULL;
     size_t size_written = 0;
 
@@ -14,9 +14,9 @@ STATUS_CODE write_uint8_to_file(const char* filepath, const uint8_t* data, uint3
         goto cleanup;
     }
 
-    reading_mode = STATUS_FAILED(validate_file_is_binary(filepath)) ? "rb" : "r";
+    writing_mode = STATUS_FAILED(validate_file_is_binary(filepath)) ? "wb" : "w";
 
-    file = fopen(filepath, "wb");
+    file = fopen(filepath, writing_mode);
     if (!file)
     {
         return_code = STATUS_CODE_COULDNT_CREATE_OUTPUT_FILE;
@@ -101,7 +101,7 @@ STATUS_CODE write_int64_to_file(const char* filepath, const int64_t* data, uint3
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
     FILE* file = NULL;
     size_t size_written = 0;
-    char* reading_mode = NULL;
+    char* writing_mode = NULL;
 
     if (!filepath || !data || (size == 0))
     {
@@ -109,9 +109,9 @@ STATUS_CODE write_int64_to_file(const char* filepath, const int64_t* data, uint3
         goto cleanup;
     }
 
-    reading_mode = STATUS_SUCCESS(validate_file_is_binary(filepath)) ? "wb" : "w";
+    writing_mode = STATUS_SUCCESS(validate_file_is_binary(filepath)) ? "wb" : "w";
 
-    file = fopen(filepath, reading_mode);
+    file = fopen(filepath, writing_mode);
     if (!file)
     {
         return_code = STATUS_CODE_COULDNT_CREATE_OUTPUT_FILE;

@@ -1,6 +1,5 @@
 name: Linux Workflow
 
-
 on:
   push:
     branches: [main]
