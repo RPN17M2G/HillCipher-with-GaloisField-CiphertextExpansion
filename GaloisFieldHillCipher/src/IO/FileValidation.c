@@ -2,7 +2,9 @@
 
 STATUS_CODE validate_file_is_readable(const char* path) {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
-    FILE* file = fopen(path, "rb");
+    char* reading_mode = STATUS_SUCCESS(validate_file_is_binary(path)) ? "rb" : "r";
+
+    FILE* file = fopen(path, reading_mode);
     if (!file)
     {
         return_code = STATUS_CODE_INPUT_FILE_DOESNT_EXISTS_OR_NOT_READBLE;
