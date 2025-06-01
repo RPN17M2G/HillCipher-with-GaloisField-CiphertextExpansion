@@ -65,7 +65,7 @@ jobs:
           path: ./GaloisFieldHillCipher/build
       - run: chmod +x ./GaloisFieldHillCipher/build/GaloisFieldHillCipher
       - run: chmod -R a+r ./GaloisFieldHillCipher/Examples/Samples
-      - run: chmod +w .
+      - run: chmod +rw .
 
       - name: Valgrind - Run mode ${{ matrix.test.name }}
         run: |
