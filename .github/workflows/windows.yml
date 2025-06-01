@@ -27,8 +27,8 @@ jobs:
         with:
           name: build-debug
           path: GaloisFieldHillCipher/build
-      - run: Start-Process -Wait "GaloisFieldHillCipher\build\Debug\UnitTests.exe"
-        shell: pwsh
+      - run: GaloisFieldHillCipher\\build\\Debug\\UnitTests.exe
+        shell: cmd
         timeout-minutes: 10
 
   test-release:
@@ -39,6 +39,6 @@ jobs:
         with:
           name: build-release
           path: GaloisFieldHillCipher/build
-      - run: Start-Process -Wait "GaloisFieldHillCipher\build\Release\UnitTests.exe"
-        shell: pwsh
+      - run: GaloisFieldHillCipher\\build\\Release\\UnitTests.exe
+        shell: cmd
         timeout-minutes: 10
