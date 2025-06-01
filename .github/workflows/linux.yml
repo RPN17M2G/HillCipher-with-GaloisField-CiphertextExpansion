@@ -47,12 +47,12 @@ jobs:
     strategy:
       matrix:
         test:
-          - { name: ek, args: "-m ek -o ./encryption_key.bin -d 3" }
-          - { name: dk, args: "-m dk -k ./GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -o ./decryption_key.bin -d 3" }
-          - { name: e,  args: "-m e -i ./GaloisFieldHillCipher/Examples/Samples/example_plaintext.txt -o ./encrypted.bin -k ./GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -d 3" }
-          - { name: d,  args: "-m d -i ./GaloisFieldHillCipher/Examples/Samples/encrypted.bin -o ./decrypted.txt -k ./GaloisFieldHillCipher/Examples/Samples/decryption_key.bin -d 3" }
-          - { name: ge, args: "-m ge -i ./GaloisFieldHillCipher/Examples/Samples/example_plaintext.txt -o ./ge_encrypted.bin -k ./encryption_key.bin -d 3" }
-          - { name: gd, args: "-m gd -i ./GaloisFieldHillCipher/Examples/Samples/encrypted.bin -o ./gd_decrypted.txt -k ./GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -d 3" }
+          - { name: ek, args: "-m ek -v -o ./encryption_key.bin -d 3" }
+          - { name: dk, args: "-m dk -v -k ./GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -o ./decryption_key.bin -d 3" }
+          - { name: e,  args: "-m e -v -i ./GaloisFieldHillCipher/Examples/Samples/example_plaintext.txt -o ./encrypted.bin -k ./GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -d 3" }
+          - { name: d,  args: "-m d -v -i ./GaloisFieldHillCipher/Examples/Samples/encrypted.bin -o ./decrypted.txt -k ./GaloisFieldHillCipher/Examples/Samples/decryption_key.bin -d 3" }
+          - { name: ge, args: "-m ge -v -i ./GaloisFieldHillCipher/Examples/Samples/example_plaintext.txt -o ./ge_encrypted.bin -k ./encryption_key.bin -d 3" }
+          - { name: gd, args: "-m gd -v -i ./GaloisFieldHillCipher/Examples/Samples/encrypted.bin -o ./gd_decrypted.txt -k ./GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -d 3" }
           
     steps:
       - uses: actions/checkout@v4
@@ -64,12 +64,10 @@ jobs:
           name: build-release
           path: ./GaloisFieldHillCipher/build
       - run: chmod +x ./GaloisFieldHillCipher/build/GaloisFieldHillCipher
-      - run: chmod -R a+r ./GaloisFieldHillCipher/Examples/Samples
-      - run: chmod +rw .
 
       - name: Valgrind - Run mode ${{ matrix.test.name }}
         run: |
-          sudo valgrind --leak-check=full -v -s \
+          valgrind --leak-check=full -v -s \
             --log-file=valgrind-${{ matrix.test.name }}.txt \
             ./GaloisFieldHillCipher/build/GaloisFieldHillCipher ${{ matrix.test.args }}
 
