@@ -48,3 +48,11 @@ STATUS_CODE handle_decrypt_mode(const ParsedArguments* args);
  * @return STATUS_CODE - Status of the operation.
  */
 STATUS_CODE handle_generate_and_decrypt_mode(const ParsedArguments* args);
+
+/**
+ * @brief Handle generate and encrypt mode - Generate an encryption key and then encrypt.
+ *
+ * @param args - The parsed main arguments
+ * @return STATUS_CODE - Status of the operation.
+ */
+STATUS_CODE handle_generate_and_encrypt_mode(const ParsedArguments* args);

@@ -38,13 +38,7 @@ int main(int argc, char** argv)
         return_code = handle_decrypt_mode(&parsed_args);
         break;
     case GENERATE_AND_ENCRYPT_MODE:
-        return_code = handle_key_generation_mode(&parsed_args);
-		if (STATUS_FAILED(return_code))
-		{
-			printf("[!] Failed to generate key for encryption.\n");
-            goto cleanup;
-		}
-        return_code = handle_encrypt_mode(&parsed_args);
+        return_code = handle_generate_and_encrypt_mode(&parsed_args);
         break;
     case GENERATE_AND_DECRYPT_MODE:
         return_code = handle_generate_and_decrypt_mode(&parsed_args);
