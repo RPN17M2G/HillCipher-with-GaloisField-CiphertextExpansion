@@ -14,7 +14,5 @@ int main()
     run_all_MathUtils_tests();
     run_all_CipherUtils_tests();
 
-    UNITY_END();
-
-    return 0;
+    return UNITY_END();
 }
