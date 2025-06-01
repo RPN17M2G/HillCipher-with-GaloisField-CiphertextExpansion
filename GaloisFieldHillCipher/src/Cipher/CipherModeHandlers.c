@@ -61,8 +61,7 @@ STATUS_CODE handle_generate_and_encrypt_mode(const ParsedArguments* args)
 
     if (args->verbose)
     {
-        printf("Plaintext of size %ld\n", plaintext_size);
-        print_uint8_vector(plaintext, plaintext_size, "[*] Plaintext data:");
+        print_uint8_vector(plaintext, plaintext_size / BYTE_SIZE, "[*] Plaintext data:");
     }
 
     printf("[*] Encrypting data...\n");
@@ -263,8 +262,7 @@ STATUS_CODE handle_encrypt_mode(const ParsedArguments* args)
 
     if (args->verbose)
     {
-        printf("Plaintext of size %ld\n", plaintext_size);
-        print_uint8_vector(plaintext, plaintext_size, "[*] Plaintext data:");
+        print_uint8_vector(plaintext, plaintext_size / BYTE_SIZE, "[*] Plaintext data:");
     }
 
     if (args->verbose)
@@ -362,7 +360,6 @@ STATUS_CODE handle_decrypt_mode(const ParsedArguments* args)
 
     if (args->verbose)
     {
-        printf("[*] Ciphertext is of size %ld\n", ciphertext_size);
         print_int64_vector(ciphertext, ciphertext_size / (sizeof(int64_t) * BYTE_SIZE), "[*] Ciphertext data:");
     }
 
