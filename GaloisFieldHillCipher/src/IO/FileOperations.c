@@ -57,7 +57,8 @@ STATUS_CODE read_uint8_from_file(uint8_t** out_data, uint32_t* out_size, const c
     file = fopen(filepath, reading_mode);
     if (!file)
     {
-        return_code = STATUS_CODE_COULDNT_FILE_OPEN;
+        printf("[!] Could not open file: %s\n", filepath);
+        return_code = STATUS_CODE_COULDNT_OPEN_FILE;
         goto cleanup;
     }
 
@@ -152,7 +153,8 @@ STATUS_CODE read_int64_from_file(int64_t** out_data, uint32_t* out_size, const c
     file = fopen(filepath, reading_mode);
     if (!file)
     {
-        return_code = STATUS_CODE_COULDNT_FILE_OPEN;
+        printf("[!] Could not open file: %s\n", filepath);
+        return_code = STATUS_CODE_COULDNT_OPEN_FILE;
         goto cleanup;
     }
 
