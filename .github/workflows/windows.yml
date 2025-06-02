@@ -28,7 +28,6 @@ jobs:
           name: build-debug
           path: GaloisFieldHillCipher/build
       - run: GaloisFieldHillCipher\\build\\Debug\\UnitTests.exe
-        shell: cmd
         timeout-minutes: 10
 
   test-release:
@@ -40,5 +39,4 @@ jobs:
           name: build-release
           path: GaloisFieldHillCipher/build
       - run: GaloisFieldHillCipher\\build\\Release\\UnitTests.exe
-        shell: cmd
         timeout-minutes: 10
