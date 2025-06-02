@@ -3,7 +3,6 @@
 STATUS_CODE add_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_size, uint8_t* value, uint32_t value_bit_length)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
-
     uint32_t output_byte = 0;
     uint8_t current_working_byte = 0;
     uint32_t random_bit = 0;
@@ -20,9 +19,9 @@ STATUS_CODE add_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_size,
     }
 
     // Calculate the size of the output vector
-    number_of_random_bits = NUMBER_OF_RANDOM_BITS_TO_ADD * (uint32_t)(value_bit_length / BYTE_SIZE);
+    number_of_random_bits = NUMBER_OF_RANDOM_BITS_TO_ADD * (value_bit_length / BYTE_SIZE);
     total_bits = value_bit_length + number_of_random_bits;
-    total_bytes = (uint32_t)(total_bits / BYTE_SIZE);
+    total_bytes = total_bits / BYTE_SIZE;
 
     *out = (uint8_t*)malloc(total_bytes);
     *out_bit_size = total_bits;
@@ -31,8 +30,6 @@ STATUS_CODE add_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_size,
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
         goto cleanup;
     }
-
-    memset(*out, 0, total_bytes);
 
     for (size_t bit_number = 0; bit_number < total_bits; ++bit_number)
     {
@@ -43,13 +40,13 @@ STATUS_CODE add_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_size,
 
         if (bit_number % (BYTE_SIZE + NUMBER_OF_RANDOM_BITS_TO_ADD) < BYTE_SIZE)
         {
-            current_working_byte = value[(uint32_t)value_bit / BYTE_SIZE];
+            current_working_byte = value[value_bit / BYTE_SIZE];
             current_working_byte_bit_index = value_bit % BYTE_SIZE;
             ++value_bit;
         }
         else
         {
-            return_code = generate_secure_random_number(&random_bit, (uint32_t)0, (uint32_t)2);
+            return_code = generate_secure_random_number(&random_bit, 0, 2);
             if (STATUS_FAILED(return_code))
             {
                 goto cleanup;
@@ -76,7 +73,9 @@ cleanup:
         free(*out);
         *out = NULL;
         if (NULL != out_bit_size)
+        {
             *out_bit_size = 0;
+        }
     }
     return return_code;
 }
