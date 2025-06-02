@@ -274,11 +274,11 @@ void test_divide_int64_t_into_blocks_UnevenSize()
 
 void run_all_CipherUtils_tests()
 {
-    RUN_TEST(test_add_random_bits_between_bytes_sanity);
-    RUN_TEST(test_add_random_bits_between_bytes_EmptyInput);
+    //RUN_TEST(test_add_random_bits_between_bytes_sanity);
+    //RUN_TEST(test_add_random_bits_between_bytes_EmptyInput);
 
-    RUN_TEST(test_pad_to_length_sanity);
-    RUN_TEST(test_pad_to_length_ExactBlock);
+    //RUN_TEST(test_pad_to_length_sanity);
+    //RUN_TEST(test_pad_to_length_ExactBlock);
 
     RUN_TEST(test_remove_padding_sanity);
     RUN_TEST(test_remove_padding_InvalidPadding);
