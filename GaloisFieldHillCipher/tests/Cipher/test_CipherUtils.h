@@ -6,7 +6,7 @@
 #include "unity.h"
 #include "Cipher/CipherUtils.h"
 
-void test_add_random_bits_between_bytes_sanity();
+void test_add_random_bits_between_bytes_Sanity();
 void test_add_random_bits_between_bytes_EmptyInput();
 void test_pad_to_length_sanity();
 void test_pad_to_length_ExactBlock();
