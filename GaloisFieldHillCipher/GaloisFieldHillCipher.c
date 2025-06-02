@@ -11,7 +11,8 @@ int main(int argc, char** argv)
     if (STATUS_FAILED(return_code))
     {
         printf("[!] Failed to parse arguments. Command line: ");
-        for (int i = 0; i < argc; ++i) {
+        for (int i = 0; i < argc; ++i)
+        {
             printf("%s ", argv[i]);
         }
         printf("\n");

@@ -17,7 +17,7 @@ jobs:
         with:
           submodules: recursive
       - run: cmake -S GaloisFieldHillCipher -B GaloisFieldHillCipher/build -DCMAKE_BUILD_TYPE=${{ inputs.config }}
-      - run: cmake --build GaloisFieldHillCipher/build --target UnitTests --config ${{ inputs.config }}
+      - run: cmake --build GaloisFieldHillCipher/build --config ${{ inputs.config }}
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.artifact-name }}

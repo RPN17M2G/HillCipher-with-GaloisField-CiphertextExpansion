@@ -1,1 +1,1 @@
-Example
+This is an example plaintext file.
