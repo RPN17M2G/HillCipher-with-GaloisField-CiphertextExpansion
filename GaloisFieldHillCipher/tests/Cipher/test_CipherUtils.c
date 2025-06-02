@@ -275,7 +275,7 @@ void test_divide_int64_t_into_blocks_UnevenSize()
 void run_all_CipherUtils_tests()
 {
     #ifdef NDEBUG
-        // Release mode - Only on CI in Windows Debug this test makes the CI job stuck
+        // In release mode -  This test makes the CI job stuck only on CI in Windows Debug
         RUN_TEST(test_add_random_bits_between_bytes_Sanity);
     #endif
 
