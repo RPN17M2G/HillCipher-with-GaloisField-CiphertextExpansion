@@ -31,6 +31,8 @@ STATUS_CODE add_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_size,
         goto cleanup;
     }
 
+    memset(*out, 0, total_bytes);
+
     for (size_t bit_number = 0; bit_number < total_bits; ++bit_number)
     {
         if ((bit_number % BYTE_SIZE == 0) && (bit_number != 0))
