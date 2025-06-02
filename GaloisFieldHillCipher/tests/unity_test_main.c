@@ -12,7 +12,7 @@ int main()
 
     run_all_FieldBasicOperations_tests();
     run_all_MathUtils_tests();
-    //run_all_CipherUtils_tests();
+    run_all_CipherUtils_tests();
 
     return UNITY_END();
 }
