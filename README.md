@@ -1,11 +1,14 @@
 # Galois Field Hill Cipher
 
 
+**This implementation is for EDUCATIONAL PURPOSES ONLY and should NOT be used in any real-world environment.**
+
+
 ## Overview 
 
 An implimentation of the Hill cipher extended by the use of Galois fields as described by Rodney Cooper in 1980.
 
-Based on internet search and the article "An interesting example at the intersection
+Based on the article "An interesting example at the intersection
 of Matrix Mathematics and Cryptography" by Tony Patti.
 
 I strongly recommand reading the article, here is a link for the article in glassblower: [An interesting example at the intersection of Matrix Mathematics and Cryptography, by Tony Patti](https://www.glassblower.info/crypto/an-interesting-example-at-the-intersection-of-matrix-mathematics-and-cryptography-April-23-2024.pdf)
@@ -92,34 +95,25 @@ The chosen field is GF(16,777,619)
 ###### Requirements
 
 - Prime Number for defined modulo P, and exactly P number of elements.
-- log2(P) < 32: That's for fitting the blocks inside an integer(32bit).
 
 ##### Encryption Matrix must be Inversible 
 
 The matrix must be inversible. Meaning, it's determinant must have a gcd of 1 with the modulo base.
 
-##### Random Bits Addition
+##### Ciphertext Expansion
 
 Adding random bits inside the plaintext before encryption to remove lineary connection.
+It is called that way because the ciphertext is larger than the plaintext because of the insertion of the random bits.
+In this specific implementation the bits are added after each byte, which creates the following sequence:
 
-##### Digit to ASCII Mapping
+in case of 2 bits insertion:
+! - Byte break
 
-For each digit we choose 6 different letters in the alphabet so it would be tougher to spot patterns in the ciphertext.
 
-###### The Mapping:
+ 1 0 1 0 1 0 1 0 !    | 0 1           | 0 0 0 0 0 0 ! 0 0     | 1 1           | 0 0 1 1 ...
+ 
+ first plaintext byte | 2 random bits | second plaintext byte | 2 random bits | third plaintext byte...
 
-| Digit | Letters                      |
-|-------|------------------------------|
-| 0     | b, M, Z, t, F, d             |
-| 1     | w, A, i, Y, f, n             |
-| 2     | h, p, G, k, s, D             |
-| 3     | l, c, V, x, j, r             |
-| 4     | q, L, U, e, y, P             |
-| 5     | o, K, z, T, S, g             |
-| 6     | J, W, v, a, R, H             |
-| 7     | X, N, m, C, B, I             |
-| 8     | Y, b, P, e, O, w             |
-| 9     | F, d, V, u, Z, L             |
 
 ### Thanks and Credit
 

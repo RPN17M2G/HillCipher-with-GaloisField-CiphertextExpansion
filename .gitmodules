@@ -1,0 +1,9 @@
+[submodule "GaloisFieldHillCipher/thirdparty/libsodium-cmake"]
+	path = GaloisFieldHillCipher/thirdparty/libsodium-cmake
+	url = https://github.com/robinlinden/libsodium-cmake.git
+[submodule "GaloisFieldHillCipher/thirdparty/argparse"]
+	path = GaloisFieldHillCipher/thirdparty/argparse
+	url = https://github.com/cofyc/argparse.git
+[submodule "GaloisFieldHillCipher/thirdparty/Unity"]
+	path = GaloisFieldHillCipher/thirdparty/Unity
+	url = https://github.com/ThrowTheSwitch/Unity
