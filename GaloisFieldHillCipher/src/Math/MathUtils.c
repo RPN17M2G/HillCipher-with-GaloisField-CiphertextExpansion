@@ -9,7 +9,7 @@ STATUS_CODE matrix_determinant_laplace_expansion(int64_t* out_determinant, int64
 	int64_t matrix_element = 0;
 	int64_t cofactor = 0;
 
-	if (matrix == NULL || out_determinant == NULL)
+	if ((NULL == matrix) || (NULL == out_determinant))
 	{
 		return_code = STATUS_CODE_INVALID_ARGUMENT;
 		goto cleanup;
@@ -25,11 +25,11 @@ STATUS_CODE matrix_determinant_laplace_expansion(int64_t* out_determinant, int64
 
 	*out_determinant = 0;
 
-	// Expand along the first row (row 0)
+	// Expand along the first row
 	row = 0;
 	for (size_t column = 0; column < dimension; ++column)
 	{
-		if (matrix[row][column] == 0)
+		if (0 == matrix[row][column])
 		{
 			continue;
 		}
@@ -73,7 +73,7 @@ STATUS_CODE matrix_determinant_over_galois_field_laplace_expansion(int64_t* out_
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 	int64_t determinant = 0;
 
-	if ((matrix == NULL) || (out_determinant == NULL))
+	if ((NULL == matrix) || (NULL == out_determinant) || (0 == dimension) || (0 == prime_field))
 	{
 		return_code = STATUS_CODE_INVALID_ARGUMENT;
 		goto cleanup;
@@ -124,7 +124,7 @@ STATUS_CODE inverse_square_matrix_adjugate_method(int64_t*** out_inverse_matrix,
 
 	// Calculate the adjugate matrix
 	adjugate_matrix = (int64_t**)malloc(dimension * sizeof(int64_t*));
-	if (adjugate_matrix == NULL)
+	if (NULL == adjugate_matrix)
 	{
 		return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
 		goto cleanup;
@@ -133,7 +133,7 @@ STATUS_CODE inverse_square_matrix_adjugate_method(int64_t*** out_inverse_matrix,
 	for (size_t row = 0; row < dimension; ++row)
 	{
 		adjugate_matrix[row] = (int64_t*)malloc(dimension * sizeof(int64_t));
-		if (adjugate_matrix[row] == NULL)
+		if (NULL == adjugate_matrix[row])
 		{
 			return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
 			goto cleanup;
@@ -171,7 +171,7 @@ STATUS_CODE inverse_square_matrix_adjugate_method(int64_t*** out_inverse_matrix,
 
 	// Calculate the inverse matrix
 	*out_inverse_matrix = (int64_t**)malloc(dimension * sizeof(int64_t*));
-	if (*out_inverse_matrix == NULL)
+	if (NULL == *out_inverse_matrix)
 	{
 		return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
 		goto cleanup;
@@ -180,7 +180,7 @@ STATUS_CODE inverse_square_matrix_adjugate_method(int64_t*** out_inverse_matrix,
 	for (size_t row = 0; row < dimension; ++row)
 	{
 		(*out_inverse_matrix)[row] = (int64_t*)malloc(dimension * sizeof(int64_t));
-		if ((*out_inverse_matrix)[row] == NULL)
+		if (NULL == (*out_inverse_matrix)[row])
 		{
 			return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
 			goto cleanup;
@@ -225,7 +225,7 @@ STATUS_CODE multiply_matrix_with_uint8_t_vector(int64_t** out_vector, int64_t** 
 	int64_t temp_result = 0;
 
 	*out_vector = (int64_t*)malloc(dimension * sizeof(int64_t));
-	if (*out_vector == NULL)
+	if (NULL == *out_vector)
 	{
 		return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
 		goto cleanup;
@@ -257,7 +257,7 @@ STATUS_CODE gcd(int64_t* out_gcd, int64_t first_element, int64_t second_element)
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 	int64_t temp = 0;
 
-	if ((first_element == 0) && (second_element == 0))
+	if ((0 == first_element) && (0 == second_element))
 	{
 		return_code = STATUS_CODE_INVALID_ARGUMENT;
 		goto cleanup;
@@ -311,14 +311,14 @@ STATUS_CODE generate_square_matrix_over_field(int64_t*** out_matrix, uint32_t di
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 	uint32_t secure_random_number = 0;
 
-	if (out_matrix == NULL)
+	if (NULL == out_matrix)
 	{
 		return_code = STATUS_CODE_INVALID_ARGUMENT;
 		goto cleanup;
 	}
 
 	*out_matrix = (int64_t**)malloc(dimension * sizeof(int64_t*));
-	if (*out_matrix == NULL)
+	if (NULL == *out_matrix)
 	{
 		return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
 		goto cleanup;
@@ -328,7 +328,7 @@ STATUS_CODE generate_square_matrix_over_field(int64_t*** out_matrix, uint32_t di
 	for (size_t row = 0; row < dimension; ++row)
 	{
 		(*out_matrix)[row] = (int64_t*)malloc(dimension * sizeof(int64_t));
-		if ((*out_matrix)[row] == NULL)
+		if (NULL == (*out_matrix)[row])
 		{
 			return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
 			goto cleanup;
@@ -373,7 +373,7 @@ STATUS_CODE multiply_matrix_with_int64_t_vector(uint8_t** out_vector, int64_t** 
 	}
 	
 	*out_vector = (uint8_t*)malloc(dimension + MEMORY_BUFFER_FOR_PLAINTEXT_BLOCK);
-	if (*out_vector == NULL)
+	if (NULL == *out_vector)
 	{
 		return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
 		goto cleanup;
@@ -413,7 +413,7 @@ STATUS_CODE build_minor_matrix(int64_t*** out_matrix, int64_t** matrix, uint32_t
 	uint32_t minor_matrix_column = 0;
 
 	int64_t** minor_matrix = (int64_t**)malloc((dimension - 1) * sizeof(int64_t*));
-	if (minor_matrix == NULL)
+	if (NULL == minor_matrix)
 	{
 		return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
 		goto cleanup;
@@ -422,7 +422,7 @@ STATUS_CODE build_minor_matrix(int64_t*** out_matrix, int64_t** matrix, uint32_t
 	for (size_t sub_row = 0; sub_row < dimension - 1; ++sub_row)
 	{
 		minor_matrix[sub_row] = (int64_t*)malloc((dimension - 1) * sizeof(int64_t));
-		if (minor_matrix[sub_row] == NULL)
+		if (NULL == minor_matrix[sub_row])
 		{
 			return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
 			goto cleanup;
@@ -475,7 +475,7 @@ STATUS_CODE matrix_determinant_over_galois_field_gauss_jordan(int64_t* out_deter
 	int64_t factor = 0;
 	int64_t product = 0;
 
-	if (matrix == NULL || out_determinant == NULL)
+	if ((NULL == matrix) || (NULL == out_determinant) || (0 == dimension) || (0 == prime_field))
     {
 		return_code = STATUS_CODE_INVALID_ARGUMENT;
     	goto cleanup;
@@ -515,7 +515,7 @@ STATUS_CODE matrix_determinant_over_galois_field_gauss_jordan(int64_t* out_deter
             }
         }
 
-        if (matrix_copy[pivot_row][row_iteration] == 0)
+        if (0 == matrix_copy[pivot_row][row_iteration])
         {
             determinant = 0;
             break;
@@ -555,11 +555,14 @@ STATUS_CODE matrix_determinant_over_galois_field_gauss_jordan(int64_t* out_deter
 
     return_code = STATUS_CODE_SUCCESS;
 cleanup:
-	for (uint32_t i = 0; i < dimension; i++)
+	if (matrix_copy)
 	{
-		free(matrix_copy[i]);
+		for (uint32_t i = 0; i < dimension; i++)
+		{
+			free(matrix_copy[i]);
+		}
+		free(matrix_copy);
 	}
-	free(matrix_copy);
 
 	return return_code;
 }
@@ -575,7 +578,7 @@ STATUS_CODE inverse_square_matrix_gauss_jordan(int64_t*** out_inverse_matrix, in
 	int64_t factor = 0;
 	int64_t product = 0;
 
-    if (matrix == NULL || out_inverse_matrix == NULL)
+    if ((NULL == matrix) || (NULL == out_inverse_matrix))
     {
 		return_code = STATUS_CODE_INVALID_ARGUMENT;
     	goto cleanup;
@@ -621,7 +624,7 @@ STATUS_CODE inverse_square_matrix_gauss_jordan(int64_t*** out_inverse_matrix, in
             }
         }
 
-        if (augmented_matrix[pivot_row][row_iteration] == 0)
+        if (0 == augmented_matrix[pivot_row][row_iteration])
         {
             return_code = STATUS_CODE_MATRIX_NOT_INVERTIBLE;
 			goto cleanup;

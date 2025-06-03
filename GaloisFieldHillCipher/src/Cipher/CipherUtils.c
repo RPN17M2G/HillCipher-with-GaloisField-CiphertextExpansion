@@ -275,7 +275,7 @@ STATUS_CODE divide_uint8_t_into_blocks(uint8_t*** out_blocks, uint32_t* num_bloc
         goto cleanup;
     }
 
-    if (block_bit_size == 0)
+    if (0 == block_bit_size)
     {
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
@@ -327,7 +327,7 @@ STATUS_CODE divide_int64_t_into_blocks(int64_t*** out_blocks, uint32_t* num_bloc
     if ((NULL == out_blocks)
         || (NULL == num_blocks)
         || (NULL == value)
-        || (block_bit_size == 0)
+        || (0 == block_bit_size)
         || (block_bit_size % (sizeof(int64_t) * BYTE_SIZE) != 0)
         || (value_bit_length % block_bit_size != 0))
     {

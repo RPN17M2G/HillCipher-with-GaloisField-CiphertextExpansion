@@ -52,14 +52,14 @@ STATUS_CODE extract_arguments(ParsedArguments* out_args, int argc, char** argv)
     switch (mode)
     {
     case KEY_GENERATION_MODE:
-        if (!output_file || (dimension == 0))
+        if (!output_file || (0 == dimension))
         {
             goto parse_error;
         }
         break;
 
     case DECRYPTION_KEY_GENERATION_MODE:
-        if (!key || !output_file || (dimension == 0) ||
+        if (!key || !output_file || (0 == dimension) ||
             STATUS_FAILED(validate_file_is_readable(key)) ||
             STATUS_FAILED(validate_file_is_binary(key)))
         {
@@ -68,7 +68,7 @@ STATUS_CODE extract_arguments(ParsedArguments* out_args, int argc, char** argv)
         break;
 
     case DECRYPT_MODE:
-        if (!input_file || !output_file || !key || (dimension == 0) ||
+        if (!input_file || !output_file || !key || (0 == dimension) ||
             STATUS_FAILED(validate_file_is_readable(input_file)) ||
             STATUS_FAILED(validate_file_is_binary(input_file)) ||
             STATUS_FAILED(validate_file_is_readable(key)) ||
@@ -79,7 +79,7 @@ STATUS_CODE extract_arguments(ParsedArguments* out_args, int argc, char** argv)
         break;
 
     case ENCRYPT_MODE:
-        if (!input_file || !output_file || !key || (dimension == 0) ||
+        if (!input_file || !output_file || !key || (0 == dimension) ||
             STATUS_FAILED(validate_file_is_readable(key)) ||
             STATUS_FAILED(validate_file_is_binary(key)) || 
             STATUS_FAILED(validate_file_is_readable(input_file)))
@@ -89,7 +89,7 @@ STATUS_CODE extract_arguments(ParsedArguments* out_args, int argc, char** argv)
         break;
 
     case GENERATE_AND_ENCRYPT_MODE:
-        if (!input_file || !output_file || !key || (dimension == 0) ||
+        if (!input_file || !output_file || !key || (0 == dimension) ||
             STATUS_FAILED(validate_file_is_readable(input_file)) ||
             STATUS_FAILED(validate_file_is_binary(key)))
         {
@@ -98,7 +98,7 @@ STATUS_CODE extract_arguments(ParsedArguments* out_args, int argc, char** argv)
         break;
 
     case GENERATE_AND_DECRYPT_MODE:
-        if (!input_file || !output_file || !key || (dimension == 0) ||
+        if (!input_file || !output_file || !key || (0 == dimension) ||
             STATUS_FAILED(validate_file_is_readable(key)) ||
             STATUS_FAILED(validate_file_is_binary(key)) ||
             STATUS_FAILED(validate_file_is_readable(input_file)) ||

@@ -10,60 +10,74 @@ static int64_t** allocate_matrix(uint32_t dimension)
     return matrix;
 }
 
-void test_MathUtils_matrix_determinant_1x1() 
+void test_MathUtils_matrix_determinant_1x1()
 {
-    // Arrange
     uint32_t dimension = 1;
-    uint32_t prime_field = 7;
-    int64_t expected = 5;
+    uint32_t prime_field = 101;
     int64_t** matrix = allocate_matrix(dimension);
-    matrix[0][0] = expected;
-    int64_t actual = 0;
+    matrix[0][0] = 42;
 
-    // Act
-    STATUS_CODE status = matrix_determinant_laplace_expansion(&actual, matrix, dimension, prime_field);
+    int64_t actual_laplace_expansion = 0;
+    int64_t actual_gauss_jordan = 0;
+    int64_t expected = 42;
 
-    // Assert
-    TEST_ASSERT_EQUAL(STATUS_CODE_SUCCESS, status);
-    TEST_ASSERT_EQUAL_INT64(expected, actual);
+    STATUS_CODE laplace_status = matrix_determinant_over_galois_field_laplace_expansion(&actual_laplace_expansion, matrix, dimension, prime_field);
+    STATUS_CODE gauss_status = matrix_determinant_over_galois_field_gauss_jordan(&actual_gauss_jordan, matrix, dimension, prime_field);
+
+    TEST_ASSERT_EQUAL(STATUS_CODE_SUCCESS, laplace_status);
+    TEST_ASSERT_EQUAL(STATUS_CODE_SUCCESS, gauss_status);
+    TEST_ASSERT_EQUAL_INT64(expected, actual_laplace_expansion);
+    TEST_ASSERT_EQUAL_INT64(expected, actual_gauss_jordan);
 
     free_matrix(matrix, dimension);
 }
 
-void test_MathUtils_matrix_determinant_2x2() 
+void test_MathUtils_matrix_determinant_2x2()
 {
-    // Arrange
     uint32_t dimension = 2;
-    uint32_t prime_field = 7;
+    uint32_t prime_field = 11;
     int64_t** matrix = allocate_matrix(dimension);
     matrix[0][0] = 1; matrix[0][1] = 2;
     matrix[1][0] = 3; matrix[1][1] = 4;
-    int64_t actual = 0;
-    // Determinant mod 7: (1*4 - 2*3) mod 7 = (4 - 6) mod 7 = 5 mod 7
-    int64_t expected = 5;
 
-    // Act
-    STATUS_CODE status = matrix_determinant_laplace_expansion(&actual, matrix, dimension, prime_field);
+    int64_t actual_laplace_expansion = 0;
+    int64_t actual_gauss_jordan = 0;
+    int64_t expected = 9;
 
-    // Assert
-    TEST_ASSERT_EQUAL(STATUS_CODE_SUCCESS, status);
-    TEST_ASSERT_EQUAL_INT64(expected, actual);
+    STATUS_CODE laplace_status = matrix_determinant_over_galois_field_laplace_expansion(&actual_laplace_expansion, matrix, dimension, prime_field);
+    STATUS_CODE gauss_status = matrix_determinant_over_galois_field_gauss_jordan(&actual_gauss_jordan, matrix, dimension, prime_field);
+
+    TEST_ASSERT_EQUAL(STATUS_CODE_SUCCESS, laplace_status);
+    TEST_ASSERT_EQUAL(STATUS_CODE_SUCCESS, gauss_status);
+    TEST_ASSERT_EQUAL_INT64(expected, actual_laplace_expansion);
+    TEST_ASSERT_EQUAL_INT64(expected, actual_gauss_jordan);
 
     free_matrix(matrix, dimension);
 }
 
-void test_MathUtils_matrix_determinant_invalidArguments() 
+void test_MathUtils_matrix_determinant_invalidArguments()
 {
-    // Arrange
-    STATUS_CODE status;
-    int64_t determinant = 0;
+    uint32_t dimension = 2;
+    uint32_t prime_field = 7;
+    int64_t actual_laplace_expansion = 0;
+    int64_t actual_gauss_jordan = 0;
+    int64_t** matrix = allocate_matrix(dimension);
+    matrix[0][0] = 1; matrix[0][1] = 2;
+    matrix[1][0] = 3; matrix[1][1] = 4;
 
-    // Act & Assert
-    status = matrix_determinant_laplace_expansion(NULL, NULL, 0, 0);
-    TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGUMENT, status);
+    // Act
+    STATUS_CODE laplace_expansion_null_status = matrix_determinant_over_galois_field_laplace_expansion(NULL, NULL, dimension, prime_field);
+    STATUS_CODE gauss_jordan_null_status = matrix_determinant_over_galois_field_gauss_jordan(NULL, NULL, dimension, prime_field);
+    STATUS_CODE laplace_expansion_invalid_dimension_status = matrix_determinant_over_galois_field_laplace_expansion(&actual_laplace_expansion, matrix, 0, prime_field);
+    STATUS_CODE gauss_jordan_invalid_dimension_status = matrix_determinant_over_galois_field_gauss_jordan(&actual_gauss_jordan, matrix, 0, prime_field);
 
-    status = matrix_determinant_laplace_expansion(&determinant, NULL, 1, 1);
-    TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGUMENT, status);
+    // Assert
+    TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGUMENT, laplace_expansion_null_status);
+    TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGUMENT, gauss_jordan_null_status);
+    TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGUMENT, laplace_expansion_invalid_dimension_status);
+    TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGUMENT, gauss_jordan_invalid_dimension_status);
+
+    free_matrix(matrix, dimension);
 }
 
 void test_MathUtils_matrix_determinant_sanity() 
@@ -76,16 +90,21 @@ void test_MathUtils_matrix_determinant_sanity()
     matrix[0][1] = 2;
     matrix[1][0] = 3;
     matrix[1][1] = 4;
-    int64_t actual = 0;
+    int64_t actual_laplace_expansion = 0;
+    int64_t actual_gauss_jordan = 0;
+
     // Determinant mod 11: (1*4 - 2*3) = (4 - 6) mod 11 = 9
     int64_t expected = 9;
 
     // Act
-    STATUS_CODE status = matrix_determinant_over_galois_field_laplace_expansion(&actual, matrix, dimension, prime_field);
+    STATUS_CODE laplace_expansion_status = matrix_determinant_over_galois_field_laplace_expansion(&actual_laplace_expansion, matrix, dimension, prime_field);
+    STATUS_CODE gauss_jordan_status = matrix_determinant_over_galois_field_gauss_jordan(&actual_gauss_jordan, matrix, dimension, prime_field);
 
     // Assert
-    TEST_ASSERT_EQUAL(STATUS_CODE_SUCCESS, status);
-    TEST_ASSERT_EQUAL_INT64(expected, actual);
+    TEST_ASSERT_EQUAL(STATUS_CODE_SUCCESS, laplace_expansion_status);
+    TEST_ASSERT_EQUAL(STATUS_CODE_SUCCESS, gauss_jordan_status);
+    TEST_ASSERT_EQUAL_INT64(expected, actual_laplace_expansion);
+    TEST_ASSERT_EQUAL_INT64(expected, actual_gauss_jordan);
 
     free_matrix(matrix, dimension);
 }

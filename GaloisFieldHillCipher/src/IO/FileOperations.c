@@ -8,7 +8,7 @@ STATUS_CODE write_uint8_to_file(const char* filepath, const uint8_t* data, uint3
     FILE* file = NULL;
     size_t size_written = 0;
 
-    if (!filepath || !data || (size == 0))
+    if (!filepath || !data || (0 == size))
     {
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
@@ -75,7 +75,7 @@ STATUS_CODE read_uint8_from_file(uint8_t** out_data, uint32_t* out_size, const c
     }
 
     size_read = fread(data, sizeof(uint8_t), size, file);
-    if (((size_read == 0) && (size != 0)) || (size_read != size))
+    if (((0 == size_read) && (size != 0)) || (size_read != size))
     {
         fclose(file);
         return_code = STATUS_CODE_COULDNT_READ_FILE;
@@ -104,7 +104,7 @@ STATUS_CODE write_int64_to_file(const char* filepath, const int64_t* data, uint3
     size_t size_written = 0;
     char* writing_mode = NULL;
 
-    if (!filepath || !data || (size == 0))
+    if (!filepath || !data || (0 == size))
     {
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
@@ -120,7 +120,7 @@ STATUS_CODE write_int64_to_file(const char* filepath, const int64_t* data, uint3
     }
 
     size_written = fwrite(data, sizeof(int64_t), size, file);
-    if (((size_written == 0) && (size != 0)) || (size_written != size))
+    if (((0 == size_written) && (size != 0)) || (size_written != size))
     {
         fclose(file);
         return_code = STATUS_CODE_COULDNT_WRITE_FILE;
@@ -171,7 +171,7 @@ STATUS_CODE read_int64_from_file(int64_t** out_data, uint32_t* out_size, const c
     }
 
     size_read = fread(data, sizeof(int64_t), size_in_int64_t, file);
-    if (((size_read == 0) && (size_in_int64_t != 0)) || (size_read != size_in_int64_t))
+    if (((0 == size_read) && (size_in_int64_t != 0)) || (size_read != size_in_int64_t))
     {
         fclose(file);
         return_code = STATUS_CODE_COULDNT_READ_FILE;

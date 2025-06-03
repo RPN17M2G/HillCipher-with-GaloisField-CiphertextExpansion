@@ -11,7 +11,7 @@ STATUS_CODE handle_generate_and_encrypt_mode(const ParsedArguments* args)
     int64_t* ciphertext = NULL;
     uint32_t plaintext_size = 0, ciphertext_size = 0;
 
-    if (!args || !args->output_file || (args->dimension == 0) || !args->input_file || !args->key)
+    if (!args || !args->output_file || (0 == args->dimension) || !args->input_file || !args->key)
     {
         return STATUS_CODE_INVALID_ARGUMENT;
     }
@@ -116,7 +116,7 @@ STATUS_CODE handle_key_generation_mode(const ParsedArguments* args)
     uint8_t* serialized_data = NULL;
     uint32_t serialized_size = 0;
 
-    if (!args || !args->output_file || (args->dimension == 0))
+    if (!args || !args->output_file || (0 == args->dimension))
     {
         return STATUS_CODE_INVALID_ARGUMENT;
     }
@@ -168,7 +168,7 @@ STATUS_CODE handle_decryption_key_generation_mode(const ParsedArguments* args)
     uint8_t* serialized_data = NULL;
     uint32_t serialized_size = 0;
 
-    if (!args || !args->key || !args->output_file || (args->dimension == 0))
+    if (!args || !args->key || !args->output_file || (0 == args->dimension))
     {
         return STATUS_CODE_INVALID_ARGUMENT;
     }
@@ -244,7 +244,7 @@ STATUS_CODE handle_encrypt_mode(const ParsedArguments* args)
     int64_t* ciphertext = NULL;
     uint32_t plaintext_size = 0, ciphertext_size = 0, key_size = 0;
 
-    if (!args || !args->input_file || !args->key || !args->output_file || (args->dimension == 0))
+    if (!args || !args->input_file || !args->key || !args->output_file || (0 == args->dimension))
     {
         return STATUS_CODE_INVALID_ARGUMENT;
     }
@@ -342,7 +342,7 @@ STATUS_CODE handle_decrypt_mode(const ParsedArguments* args)
     int64_t** decryption_matrix = NULL;
     uint32_t ciphertext_size = 0, decrypted_size = 0, key_size = 0;
 
-    if (!args || !args->input_file || !args->key || !args->output_file || (args->dimension == 0))
+    if (!args || !args->input_file || !args->key || !args->output_file || (0 == args->dimension))
     {
         return STATUS_CODE_INVALID_ARGUMENT;
     }
@@ -436,7 +436,7 @@ STATUS_CODE handle_generate_and_decrypt_mode(const ParsedArguments* args)
     int64_t** decryption_matrix = NULL;
     uint32_t ciphertext_size = 0, decrypted_size = 0, key_size = 0;
 
-    if (!args || !args->input_file || !args->key || !args->output_file || (args->dimension == 0))
+    if (!args || !args->input_file || !args->key || !args->output_file || (0 == args->dimension))
     {
         return STATUS_CODE_INVALID_ARGUMENT;
     }

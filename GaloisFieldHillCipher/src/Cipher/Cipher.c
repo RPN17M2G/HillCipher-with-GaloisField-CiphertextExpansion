@@ -30,10 +30,10 @@ STATUS_CODE encrypt(int64_t** out_ciphertext, uint32_t* out_ciphertext_bit_size,
 	}
 
 	if (STATUS_FAILED(pad_to_length(&padded_plaintext,
-		&padded_plaintext_bit_size, 
-		random_inserted_plaintext, 
-		random_inserted_plaintext_bit_size, 
-		random_inserted_plaintext_bit_size + (block_size_in_bits - (random_inserted_plaintext_bit_size % block_size_in_bits)), 
+		&padded_plaintext_bit_size,
+		random_inserted_plaintext,
+		random_inserted_plaintext_bit_size,
+		random_inserted_plaintext_bit_size + (block_size_in_bits - (random_inserted_plaintext_bit_size % block_size_in_bits)),
 		block_size_in_bits)))
 	{
 		return_code = STATUS_CODE_COULDNT_PAD_VECTOR;
@@ -48,7 +48,7 @@ STATUS_CODE encrypt(int64_t** out_ciphertext, uint32_t* out_ciphertext_bit_size,
 
 	*out_ciphertext = (int64_t*)malloc(((block_size_in_bits * number_of_blocks) / BYTE_SIZE) * sizeof(int64_t));
 	*out_ciphertext_bit_size = block_size_in_bits * number_of_blocks * sizeof(int64_t);
-	if (*out_ciphertext == NULL)
+	if (NULL == *out_ciphertext)
 	{
 		return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
 		goto cleanup;
@@ -125,14 +125,14 @@ STATUS_CODE decrypt(uint8_t** out_plaintext, uint32_t* out_plaintext_bit_size, i
 	}
 
 	decrypted_plaintext_blocks = (uint8_t*)malloc(vector_bit_size_aligned_to_uint8_t / BYTE_SIZE);
-	if (decrypted_plaintext_blocks == NULL)
+	if (NULL == decrypted_plaintext_blocks)
 	{
 		return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
 		goto cleanup;
 	}
 
 	for (size_t block_number = 0; block_number < number_of_blocks; ++block_number)
-	{	
+	{
 		if (STATUS_FAILED(multiply_matrix_with_int64_t_vector(&plaintext_block, decryption_matrix, ciphertext_blocks[block_number], dimension, prime_field)))
 		{
 			return_code = STATUS_CODE_COULDNT_MULTIPLY_MATRIX_WITH_CIPHERTEXT;
@@ -148,7 +148,7 @@ STATUS_CODE decrypt(uint8_t** out_plaintext, uint32_t* out_plaintext_bit_size, i
 	}
 
 	if (STATUS_FAILED(remove_padding(&unpadded_plaintext, &unpadded_plaintext_bit_size, decrypted_plaintext_blocks, vector_bit_size_aligned_to_uint8_t)))
-	{	
+	{
 		return_code = STATUS_CODE_COULDNT_REMOVE_PADDING;
 		goto cleanup;
 	}
@@ -191,7 +191,7 @@ STATUS_CODE generate_encryption_matrix(int64_t*** out_matrix, uint32_t dimension
 	bool matrix_invertible = false;
 	uint32_t attempt_number = 0;
 
-	if (out_matrix == NULL)
+	if (NULL == out_matrix)
 	{
 		return_code = STATUS_CODE_INVALID_ARGUMENT;
 		goto cleanup;

@@ -5,7 +5,7 @@
 STATUS_CODE free_matrix(int64_t** matrix, uint32_t dimentaion)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
-	if (matrix == NULL)
+	if (NULL == matrix)
 	{
 		return_code = STATUS_CODE_INVALID_ARGUMENT;
 		goto cleanup;

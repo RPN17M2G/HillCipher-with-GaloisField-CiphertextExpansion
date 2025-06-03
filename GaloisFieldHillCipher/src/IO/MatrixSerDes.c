@@ -9,7 +9,7 @@ STATUS_CODE serialize_matrix(uint8_t** out_data, uint32_t* out_size, int64_t** m
     uint8_t* buffer = NULL;
     uint32_t size = 0;
 
-    if (!out_data || !out_size || !matrix || (dimension == 0))
+    if (!out_data || !out_size || !matrix || (0 == dimension))
     {
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
@@ -57,7 +57,7 @@ STATUS_CODE deserialize_matrix(int64_t*** out_matrix, uint32_t dimension, const 
     uint32_t expected_size = 0;
     size_t index = 0;
 
-    if (!out_matrix || !data || dimension == 0)
+    if (!out_matrix || !data || (0 == dimension))
     {
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
