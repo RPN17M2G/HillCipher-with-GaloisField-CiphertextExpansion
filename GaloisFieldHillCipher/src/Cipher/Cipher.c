@@ -237,7 +237,7 @@ STATUS_CODE generate_decryption_matrix(int64_t*** out_matrix, uint32_t dimension
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 
-	return_code = inverse_square_matrix(out_matrix, encryption_matrix, dimension, prime_field);
+	return_code = inverse_square_matrix_gauss_jordan(out_matrix, encryption_matrix, dimension, prime_field);
 
 	if (STATUS_FAILED(return_code))
 	{

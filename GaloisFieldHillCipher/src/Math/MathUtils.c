@@ -1,6 +1,6 @@
 #include "../../include/Math/MathUtils.h"
 
-STATUS_CODE matrix_determinant(int64_t* out_determinant, int64_t** matrix, uint32_t dimension, uint32_t prime_field)
+STATUS_CODE matrix_determinant_laplace_expansion(int64_t* out_determinant, int64_t** matrix, uint32_t dimension, uint32_t prime_field)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 	int64_t** minor_matrix = NULL;
@@ -41,7 +41,7 @@ STATUS_CODE matrix_determinant(int64_t* out_determinant, int64_t** matrix, uint3
 		}
 
 		minor_matrix_determinant = 0;
-		return_code = matrix_determinant(&minor_matrix_determinant, minor_matrix, dimension - 1, prime_field);
+		return_code = matrix_determinant_laplace_expansion(&minor_matrix_determinant, minor_matrix, dimension - 1, prime_field);
 
 		if (STATUS_FAILED(return_code))
 		{
@@ -68,7 +68,7 @@ cleanup:
 	return return_code;
 }
 
-STATUS_CODE matrix_determinant_over_galois_field(int64_t* out_determinant, int64_t** matrix, uint32_t dimension, uint32_t prime_field)
+STATUS_CODE matrix_determinant_over_galois_field_laplace_expansion(int64_t* out_determinant, int64_t** matrix, uint32_t dimension, uint32_t prime_field)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 	int64_t determinant = 0;
@@ -79,7 +79,7 @@ STATUS_CODE matrix_determinant_over_galois_field(int64_t* out_determinant, int64
 		goto cleanup;
 	}
 
-	return_code = matrix_determinant(&determinant, matrix, dimension, prime_field);
+	return_code = matrix_determinant_laplace_expansion(&determinant, matrix, dimension, prime_field);
 	if (STATUS_FAILED(return_code))
 	{
 		goto cleanup;
@@ -92,7 +92,7 @@ cleanup:
 	return return_code;
 }
 
-STATUS_CODE inverse_square_matrix(int64_t*** out_inverse_matrix, int64_t** matrix, uint32_t dimension, uint32_t prime_field)
+STATUS_CODE inverse_square_matrix_adjugate_method(int64_t*** out_inverse_matrix, int64_t** matrix, uint32_t dimension, uint32_t prime_field)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 	int64_t determinant = 0;
@@ -115,7 +115,7 @@ STATUS_CODE inverse_square_matrix(int64_t*** out_inverse_matrix, int64_t** matri
 	}
 
 
-	return_code = matrix_determinant_over_galois_field(&determinant, matrix, dimension, prime_field);
+	return_code = matrix_determinant_over_galois_field_laplace_expansion(&determinant, matrix, dimension, prime_field);
 	if (STATUS_FAILED(return_code))
 	{
 		goto cleanup;
@@ -151,7 +151,7 @@ STATUS_CODE inverse_square_matrix(int64_t*** out_inverse_matrix, int64_t** matri
 				goto cleanup;
 			}
 			minor_matrix_determinant = 0;
-			return_code = matrix_determinant_over_galois_field(&minor_matrix_determinant, minor_matrix, dimension - 1, prime_field);
+			return_code = matrix_determinant_over_galois_field_laplace_expansion(&minor_matrix_determinant, minor_matrix, dimension - 1, prime_field);
 			if (STATUS_FAILED(return_code))
 			{
 				goto cleanup;
@@ -285,7 +285,7 @@ STATUS_CODE is_matrix_invertible(bool* out_is_invertible, int64_t** matrix, uint
 	int64_t determinant = 0;
 	int64_t gcd_result = 0;
 	
-	return_code = matrix_determinant_over_galois_field(&determinant, matrix, dimension, prime_field);
+	return_code = matrix_determinant_over_galois_field_gauss_jordan(&determinant, matrix, dimension, prime_field);
 	if (STATUS_FAILED(return_code))
 	{
 		goto cleanup;
@@ -461,4 +461,243 @@ cleanup:
 		*out_matrix = minor_matrix;
 	}
 	return return_code;
+}
+
+
+STATUS_CODE matrix_determinant_over_galois_field_gauss_jordan(int64_t* out_determinant, int64_t** matrix, uint32_t dimension, uint32_t prime_field)
+{
+	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
+	int64_t** matrix_copy = NULL;
+	int64_t determinant = 1;
+	uint32_t pivot_row = 0;
+	int64_t inverse_pivot = 0;
+	int64_t* temp_row = NULL;
+	int64_t factor = 0;
+	int64_t product = 0;
+
+	if (matrix == NULL || out_determinant == NULL)
+    {
+		return_code = STATUS_CODE_INVALID_ARGUMENT;
+    	goto cleanup;
+    }
+
+    matrix_copy = (int64_t**)malloc(dimension * sizeof(int64_t*));
+    if (!matrix_copy)
+    {
+		return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
+    	goto cleanup;
+    }
+
+    for (uint32_t copy_row_index = 0; copy_row_index < dimension; copy_row_index++)
+    {
+        matrix_copy[copy_row_index] = (int64_t*)malloc(dimension * sizeof(int64_t));
+        if (!matrix_copy[copy_row_index])
+        {
+            return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
+        	goto cleanup;
+        }
+        for (uint32_t copy_column_index = 0; copy_column_index < dimension; copy_column_index++)
+        {
+            matrix_copy[copy_row_index][copy_column_index] = matrix[copy_row_index][copy_column_index];
+        }
+    }
+
+    for (uint32_t row_iteration = 0; row_iteration < dimension; row_iteration++)
+    {
+        pivot_row = row_iteration;
+        // Find pivot row with non-zero element
+        for (uint32_t row = row_iteration + 1; row < dimension; row++)
+        {
+            if (matrix_copy[row][row_iteration] != 0)
+            {
+                pivot_row = row;
+                break;
+            }
+        }
+
+        if (matrix_copy[pivot_row][row_iteration] == 0)
+        {
+            determinant = 0;
+            break;
+        }
+
+        // Swap rows if needed
+        if (pivot_row != row_iteration) {
+            temp_row = matrix_copy[row_iteration];
+            matrix_copy[row_iteration] = matrix_copy[pivot_row];
+            matrix_copy[pivot_row] = temp_row;
+            determinant = negate_over_galois_field(determinant, prime_field);
+        }
+
+    	// Multiply the diagonal element into the determinant
+        determinant = multiply_over_galois_field(determinant, matrix_copy[row_iteration][row_iteration], prime_field);
+
+        inverse_pivot = raise_power_over_galois_field(matrix_copy[row_iteration][row_iteration], prime_field - 2, prime_field);
+
+        // Normalize pivot row
+        for (uint32_t column = row_iteration; column < dimension; column++)
+        {
+            matrix_copy[row_iteration][column] = multiply_over_galois_field(matrix_copy[row_iteration][column], inverse_pivot, prime_field);
+        }
+        // Eliminate other rows
+        for (uint32_t row = 0; row < dimension; row++) {
+            if (row != row_iteration && matrix_copy[row][row_iteration] != 0) {
+                factor = matrix_copy[row][row_iteration];
+                for (uint32_t column = row_iteration; column < dimension; column++) {
+                    product = multiply_over_galois_field(factor, matrix_copy[row_iteration][column], prime_field);
+                    matrix_copy[row][column] = add_over_galois_field(matrix_copy[row][column], negate_over_galois_field(product, prime_field), prime_field);
+                }
+            }
+        }
+    }
+
+    *out_determinant = align_to_galois_field(determinant, prime_field);
+
+    return_code = STATUS_CODE_SUCCESS;
+cleanup:
+	for (uint32_t i = 0; i < dimension; i++)
+	{
+		free(matrix_copy[i]);
+	}
+	free(matrix_copy);
+
+	return return_code;
+}
+
+STATUS_CODE inverse_square_matrix_gauss_jordan(int64_t*** out_inverse_matrix, int64_t** matrix, uint32_t dimension, uint32_t prime_field)
+{
+	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
+	int64_t** augmented_matrix = NULL;
+	int64_t* temp_row = NULL;
+	uint32_t pivot_row = 0;
+	int64_t pivot_inverse = 0;
+	int64_t pivot_element = 0;
+	int64_t factor = 0;
+	int64_t product = 0;
+
+    if (matrix == NULL || out_inverse_matrix == NULL)
+    {
+		return_code = STATUS_CODE_INVALID_ARGUMENT;
+    	goto cleanup;
+    }
+
+    augmented_matrix = (int64_t**)malloc(dimension * sizeof(int64_t*));
+    if (!augmented_matrix)
+    {
+		return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
+		goto cleanup;
+    }
+
+    for (uint32_t i = 0; i < dimension; i++)
+    {
+        augmented_matrix[i] = (int64_t*)malloc(2 * dimension * sizeof(int64_t));
+        if (!augmented_matrix[i])
+        {
+            return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
+			goto cleanup;
+        }
+    }
+
+    // Initialize augmented matrix: [matrix | identity]
+    for (uint32_t row = 0; row < dimension; row++)
+    {
+        for (uint32_t column = 0; column < dimension; column++)
+        {
+            augmented_matrix[row][column] = matrix[row][column];
+            augmented_matrix[row][column + dimension] = (row == column) ? 1 : 0;
+        }
+    }
+
+    // Perform Gauss-Jordan elimination
+    for (uint32_t row_iteration = 0; row_iteration < dimension; row_iteration++) {
+        // Find pivot
+        pivot_row = row_iteration;
+        for (uint32_t row = row_iteration + 1; row < dimension; row++)
+        {
+            if (augmented_matrix[row][row_iteration] != 0)
+            {
+                pivot_row = row;
+                break;
+            }
+        }
+
+        if (augmented_matrix[pivot_row][row_iteration] == 0)
+        {
+            return_code = STATUS_CODE_MATRIX_NOT_INVERTIBLE;
+			goto cleanup;
+        }
+
+        // Swap rows if needed
+        if (pivot_row != row_iteration)
+        {
+            temp_row = augmented_matrix[row_iteration];
+            augmented_matrix[row_iteration] = augmented_matrix[pivot_row];
+            augmented_matrix[pivot_row] = temp_row;
+        }
+
+    	// Normalize pivot row
+        pivot_element = augmented_matrix[row_iteration][row_iteration];
+        pivot_inverse = raise_power_over_galois_field(pivot_element, prime_field - 2, prime_field);
+
+        for (uint32_t column = 0; column < 2 * dimension; column++) {
+            augmented_matrix[row_iteration][column] = multiply_over_galois_field(augmented_matrix[row_iteration][column], pivot_inverse, prime_field);
+        }
+        // Eliminate other rows
+        for (uint32_t row = 0; row < dimension; row++)
+        {
+            if (row != row_iteration && augmented_matrix[row][row_iteration] != 0)
+            {
+                factor = augmented_matrix[row][row_iteration];
+                for (uint32_t column = 0; column < 2 * dimension; column++)
+                {
+                    product = multiply_over_galois_field(factor, augmented_matrix[row_iteration][column], prime_field);
+                    augmented_matrix[row][column] = add_over_galois_field(augmented_matrix[row][column], negate_over_galois_field(product, prime_field), prime_field);
+                }
+            }
+        }
+    }
+
+    *out_inverse_matrix = (int64_t**)malloc(dimension * sizeof(int64_t*));
+    if (!*out_inverse_matrix)
+    {
+        return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
+    	goto cleanup;
+    }
+    for (uint32_t row = 0; row < dimension; row++)
+    {
+        (*out_inverse_matrix)[row] = (int64_t*)malloc(dimension * sizeof(int64_t));
+		if (!(*out_inverse_matrix)[row])
+		{
+    		return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
+			goto cleanup;
+		}
+    }
+
+    // Copy right half of augmented matrix as inverse
+    for (uint32_t row = 0; row < dimension; row++)
+    {
+        for (uint32_t column = 0; column < dimension; column++)
+        {
+            (*out_inverse_matrix)[row][column] = align_to_galois_field(augmented_matrix[row][column + dimension], prime_field);
+        }
+    }
+
+	return_code = STATUS_CODE_SUCCESS;
+cleanup:
+    for (uint32_t i = 0; i < dimension; i++)
+    {
+	    free(augmented_matrix[i]);
+    }
+    free(augmented_matrix);
+
+	if (STATUS_FAILED(return_code) && (out_inverse_matrix != NULL))
+	{
+		for (uint32_t i = 0; i < dimension; i++)
+		{
+			free((*out_inverse_matrix)[i]);
+		}
+		free((*out_inverse_matrix));
+	}
+
+    return return_code;
 }

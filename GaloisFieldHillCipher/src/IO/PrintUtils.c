@@ -1,20 +1,24 @@
 #include "../../include/IO/PrintUtils.h"
 
-void print_uint8_vector(const uint8_t* data, size_t size, const char* prefix) {
+void print_uint8_vector(const uint8_t* data, size_t size, const char* prefix)
+{
     if (!data || !prefix) return;
 
     printf("%s\n", prefix);
-    for (size_t i = 0; i < size; ++i) {
+    for (size_t i = 0; i < size; ++i)
+    {
         printf("%02x ", data[i]);
     }
     printf("\n");
 }
 
-void print_int64_vector(const int64_t* data, size_t size, const char* prefix) {
+void print_int64_vector(const int64_t* data, size_t size, const char* prefix)
+{
     if (!data || !prefix) return;
 
     printf("%s\n", prefix);
-    for (size_t i = 0; i < size; ++i) {
+    for (size_t i = 0; i < size; ++i)
+    {
         if (data[i] > 0)
         {
             printf("%02x ", data[i]);

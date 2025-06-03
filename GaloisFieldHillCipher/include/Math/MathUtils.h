@@ -17,7 +17,7 @@
 #define IS_ODD(number) ((number) % 2 != 0)
 
 /**
- * @brief Calculates the determinant of a square matrix.
+ * @brief Calculates the determinant of a square matrix using laplace expansion.
  *
  * @param out_determinant - Pointer to the output determinant value.
  * @param matrix - Pointer to the input matrix.
@@ -25,10 +25,10 @@
  * @param prime_field - The galois prime field.
  * @return STATUS_CODE - Status of the operation.
  */
-STATUS_CODE matrix_determinant(int64_t* out_determinant, int64_t** matrix, uint32_t dimension, uint32_t prime_field);
+STATUS_CODE matrix_determinant_laplace_expansion(int64_t* out_determinant, int64_t** matrix, uint32_t dimension, uint32_t prime_field);
 
 /**
- * @brief Calculates the determinant of a square matrix over a finite field.
+ * @brief Calculates the determinant of a square matrix over a finite field using laplace expansion.
  *
  * @param out_determinant - Pointer to the output determinant value.
  * @param matrix - Pointer to the input matrix.
@@ -36,10 +36,10 @@ STATUS_CODE matrix_determinant(int64_t* out_determinant, int64_t** matrix, uint3
  * @param prime_field - The galois field to calculate on.
  * @return STATUS_CODE - Status of the operation.
  */
-STATUS_CODE matrix_determinant_over_galois_field(int64_t* out_determinant, int64_t** matrix, uint32_t dimension, uint32_t prime_field);
+STATUS_CODE matrix_determinant_over_galois_field_laplace_expansion(int64_t* out_determinant, int64_t** matrix, uint32_t dimension, uint32_t prime_field);
 
 /**
- * @brief Calculates the inverse of a square matrix.
+ * @brief Calculates the inverse of a square matrix using adjugate method.
  *
  * @param out_inverse_matrix - Pointer to the output inverse matrix - allocated inside the function and memory released if fails.
  * @param matrix - Pointer to the input matrix.
@@ -47,7 +47,7 @@ STATUS_CODE matrix_determinant_over_galois_field(int64_t* out_determinant, int64
  * @param prime_field - Prime field to use for calculations.
  * @return STATUS_CODE - Status of the operation.
  */
-STATUS_CODE inverse_square_matrix(int64_t*** out_inverse_matrix, int64_t** matrix, uint32_t dimension, uint32_t prime_field);
+STATUS_CODE inverse_square_matrix_adjugate_method(int64_t*** out_inverse_matrix, int64_t** matrix, uint32_t dimension, uint32_t prime_field);
 
 /**
  * @brief Multiplies a square matrix with a vector.
@@ -115,3 +115,26 @@ STATUS_CODE is_matrix_invertible(bool* out_is_invertible, int64_t** matrix, uint
  * @return STATUS_CODE - Status of the operation.
  */
 STATUS_CODE generate_square_matrix_over_field(int64_t*** out_matrix, uint32_t dimension, uint32_t prime_field);
+
+/**
+ * @brief Calculates the determinant of a square matrix using Gauss-Jordan elimination.
+ *
+ * @param out_determinant - Pointer to the output determinant value.
+ * @param matrix - Pointer to the input matrix.
+ * @param dimension - Dimension of the square matrix.
+ * @param prime_field - The Galois prime field.
+ * @return STATUS_CODE - Status of the operation.
+ */
+STATUS_CODE matrix_determinant_over_galois_field_gauss_jordan(int64_t* out_determinant, int64_t** matrix, uint32_t dimension, uint32_t prime_field);
+
+/**
+ * @brief Calculates the inverse of a square matrix using Gauss-Jordan elimination.
+ *
+ * @param out_inverse_matrix - Pointer to the output inverse matrix (allocated inside function).
+ * @param matrix - Pointer to the input matrix.
+ * @param dimension - Dimension of the square matrix.
+ * @param prime_field - The Galois prime field.
+ * @return STATUS_CODE - Status of the operation.
+ */
+STATUS_CODE inverse_square_matrix_gauss_jordan(int64_t*** out_inverse_matrix, int64_t** matrix, uint32_t dimension, uint32_t prime_field);
+

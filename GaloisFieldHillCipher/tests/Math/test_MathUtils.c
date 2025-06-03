@@ -21,7 +21,7 @@ void test_MathUtils_matrix_determinant_1x1()
     int64_t actual = 0;
 
     // Act
-    STATUS_CODE status = matrix_determinant(&actual, matrix, dimension, prime_field);
+    STATUS_CODE status = matrix_determinant_laplace_expansion(&actual, matrix, dimension, prime_field);
 
     // Assert
     TEST_ASSERT_EQUAL(STATUS_CODE_SUCCESS, status);
@@ -43,7 +43,7 @@ void test_MathUtils_matrix_determinant_2x2()
     int64_t expected = 5;
 
     // Act
-    STATUS_CODE status = matrix_determinant(&actual, matrix, dimension, prime_field);
+    STATUS_CODE status = matrix_determinant_laplace_expansion(&actual, matrix, dimension, prime_field);
 
     // Assert
     TEST_ASSERT_EQUAL(STATUS_CODE_SUCCESS, status);
@@ -59,10 +59,10 @@ void test_MathUtils_matrix_determinant_invalidArguments()
     int64_t determinant = 0;
 
     // Act & Assert
-    status = matrix_determinant(NULL, NULL, 0, 0);
+    status = matrix_determinant_laplace_expansion(NULL, NULL, 0, 0);
     TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGUMENT, status);
 
-    status = matrix_determinant(&determinant, NULL, 1, 1);
+    status = matrix_determinant_laplace_expansion(&determinant, NULL, 1, 1);
     TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGUMENT, status);
 }
 
@@ -81,7 +81,7 @@ void test_MathUtils_matrix_determinant_sanity()
     int64_t expected = 9;
 
     // Act
-    STATUS_CODE status = matrix_determinant_over_galois_field(&actual, matrix, dimension, prime_field);
+    STATUS_CODE status = matrix_determinant_over_galois_field_laplace_expansion(&actual, matrix, dimension, prime_field);
 
     // Assert
     TEST_ASSERT_EQUAL(STATUS_CODE_SUCCESS, status);
@@ -188,7 +188,7 @@ void test_MathUtils_inverse_square_matrix_2x2()
     int64_t** inverse_matrix = NULL;
 
     // Act
-    STATUS_CODE status = inverse_square_matrix(&inverse_matrix, matrix, dimension, prime_field);
+    STATUS_CODE status = inverse_square_matrix_adjugate_method(&inverse_matrix, matrix, dimension, prime_field);
 
     // Assert
     TEST_ASSERT_EQUAL(STATUS_CODE_SUCCESS, status);
@@ -319,7 +319,7 @@ void test_MathUtils_inverse_square_matrix_noninvertible_matrix()
     int64_t** inverse = NULL;
 
     // Act
-    STATUS_CODE status = inverse_square_matrix(&inverse, matrix, 2, 7);
+    STATUS_CODE status = inverse_square_matrix_adjugate_method(&inverse, matrix, 2, 7);
 
     // Assert
     TEST_ASSERT_EQUAL(STATUS_CODE_MATRIX_NOT_INVERTIBLE, status);
