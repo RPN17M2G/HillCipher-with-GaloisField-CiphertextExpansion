@@ -8,6 +8,8 @@
 #include "../StatusCodes.h"
 #include "../Math/MatrixUtils.h"
 
+#define NUMBER_OF_BYTES_PER_ELEMENT (3)
+
 /**
  * @brief Serialize matrix to binary.
  *

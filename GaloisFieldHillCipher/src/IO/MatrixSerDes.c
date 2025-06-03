@@ -15,7 +15,7 @@ STATUS_CODE serialize_matrix(uint8_t** out_data, uint32_t* out_size, int64_t** m
         goto cleanup;
     }
 
-    size = dimension * dimension * sizeof(int64_t);
+    size = dimension * dimension * NUMBER_OF_BYTES_PER_ELEMENT;
     buffer = (uint8_t*)malloc(size);
     if (!buffer)
     {
@@ -25,14 +25,23 @@ STATUS_CODE serialize_matrix(uint8_t** out_data, uint32_t* out_size, int64_t** m
 
     for (size_t row = 0; row < dimension; ++row)
     {
-        memcpy(buffer + row * dimension * sizeof(int64_t), matrix[row], dimension * sizeof(int64_t));
+        for (size_t column = 0; column < dimension; ++column)
+        {
+            int64_t value = matrix[row][column];
+
+            // Store each value big endian
+            for (size_t byte_index = 0; byte_index < NUMBER_OF_BYTES_PER_ELEMENT; ++byte_index)
+            {
+                buffer[(row * dimension + column) * NUMBER_OF_BYTES_PER_ELEMENT + byte_index] =
+                    (value >> (BYTE_SIZE * (NUMBER_OF_BYTES_PER_ELEMENT - 1 - byte_index))) & 0xFF;
+            }
+        }
     }
 
     *out_data = buffer;
     *out_size = size;
 
     return_code = STATUS_CODE_SUCCESS;
-
 cleanup:
     if (STATUS_FAILED(return_code))
     {
@@ -45,6 +54,8 @@ STATUS_CODE deserialize_matrix(int64_t*** out_matrix, uint32_t dimension, const 
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
     int64_t** result = NULL;
+    uint32_t expected_size = 0;
+    size_t index = 0;
 
     if (!out_matrix || !data || dimension == 0)
     {
@@ -52,7 +63,7 @@ STATUS_CODE deserialize_matrix(int64_t*** out_matrix, uint32_t dimension, const 
         goto cleanup;
     }
 
-    uint32_t expected_size = dimension * dimension * sizeof(int64_t) * BYTE_SIZE;
+    expected_size = dimension * dimension * NUMBER_OF_BYTES_PER_ELEMENT * BYTE_SIZE;
     if (size != expected_size)
     {
         return_code = STATUS_CODE_ERROR_INVALID_FILE_SIZE;
@@ -66,15 +77,25 @@ STATUS_CODE deserialize_matrix(int64_t*** out_matrix, uint32_t dimension, const 
         goto cleanup;
     }
 
-    for (size_t i = 0; i < dimension; ++i)
+    for (size_t row = 0; row < dimension; ++row)
     {
-        result[i] = (int64_t*)malloc(dimension * sizeof(int64_t));
-        if (!result[i])
+        result[row] = (int64_t*)malloc(dimension * sizeof(int64_t));
+        if (!result[row])
         {
             return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
             goto cleanup;
         }
-        memcpy(result[i], data + i * dimension * sizeof(int64_t), dimension * sizeof(int64_t));
+
+        for (size_t column = 0; column < dimension; ++column)
+        {
+            index = (row * dimension + column) * NUMBER_OF_BYTES_PER_ELEMENT;
+            result[row][column] = 0;
+            // Read key data as big endian
+            for (size_t byte_index = 0; byte_index < NUMBER_OF_BYTES_PER_ELEMENT; ++byte_index)
+            {
+                result[row][column] |= ((int64_t)data[index + byte_index]) << (BYTE_SIZE * (NUMBER_OF_BYTES_PER_ELEMENT - 1 - byte_index));
+            }
+        }
     }
 
     *out_matrix = result;
