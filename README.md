@@ -4,6 +4,31 @@
 **This implementation is for EDUCATIONAL PURPOSES ONLY and should NOT be used in any real-world environment.**
 
 
+## Usage
+
+### Modes
+
+| Mode | Description | Required Flags |
+|------|-------------|----------------|
+| `ek` | Key generation | `-o <output_file> -d <dimension>` `[-v]` |
+| `dk` | Decryption key generation | `-k <key> -o <output_file> -d <dimension>` `[-v]` |
+| `e`  | Encrypt | `-i <input_file> -o <output_file> -k <key> -d <dimension>` `[-v]` |
+| `d`  | Decrypt | `-i <input_file> -o <output_file> -k <key> -d <dimension>` `[-v]` |
+| `ge` | Generate key and encrypt | `-i <input_file> -o <output_file> -k <key> -d <dimension>` `[-v]` |
+| `gd` | Generate key and decrypt | `-i <input_file> -o <output_file> -k <key> -d <dimension>` `[-v]` |
+
+### Flags
+
+| Flag | Description |
+|------|-------------|
+| `-i`, `--input_file`    | Path to input file |
+| `-o`, `--output_file`   | Path to output file |
+| `-d`, `--dimension`     | Matrix/key dimension (`uint32_t`) |
+| `-v`, `--verbose`       | Enable verbose output |
+| `-m`, `--mode`          | Cipher mode of operation |
+| `-k`, `--key`           | Path to key file |
+
+
 ## Overview 
 
 An implimentation of the Hill cipher extended by the use of Galois fields as described by Rodney Cooper in 1980.
