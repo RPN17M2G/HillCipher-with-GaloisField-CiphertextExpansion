@@ -12,9 +12,7 @@
 
 #define DEFAULT_PRIME_GALOIS_FIELD (16777619)
 #define BYTE_SIZE (8)
-#define NUMBER_OF_RANDOM_BITS_TO_ADD (2)
 #define PADDING_MAGIC (0x17)
-#define TWO_BITS_MAX_VALUE (3)
 
 #define IS_BIT_SET(byte, bit_number) ((byte & (1 << (BYTE_SIZE - 1 - (bit_number % BYTE_SIZE)))) != 0)
 #define SET_BIT(byte, bit_number) (byte |= (1 << (BYTE_SIZE - 1 - (bit_number % BYTE_SIZE))))
@@ -27,9 +25,10 @@
  * @param out_bit_size - Size of the output vector in bits.
  * @param value - Pointer to the input vector.
  * @param value_bit_length - Length of the input vector in bits.
+ * @param number_of_random_bits_to_add - Number of random bits to add between each byte of the input vector.
  * @return STATUS_CODE - Status of the operation.
  */
-STATUS_CODE add_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_size, uint8_t* value, uint32_t value_bit_length);
+STATUS_CODE add_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_size, uint8_t* value, uint32_t value_bit_length, uint32_t number_of_random_bits_to_add);
 
 /**
  * @brief Removes random bits between bytes of the input vector and reconstructs the original value.
@@ -38,9 +37,10 @@ STATUS_CODE add_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_size,
  * @param out_bit_size - Size of the output vector in bits.
  * @param value - Pointer to the input vector.
  * @param value_bit_length - Length of the input vector in bits.
+ * @param number_of_random_bits_to_remove - Number of random bits to remove between each byte of the input vector.
  * @return STATUS_CODE - Status of the operation.
  */
-STATUS_CODE remove_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_size, uint8_t* value, uint32_t value_bit_length);
+STATUS_CODE remove_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_size, uint8_t* value, uint32_t value_bit_length, uint32_t number_of_random_bits_to_remove);
 
 /**
  * @brief Pads a uint8_t vector with 0x00 bytes to fit a specific length.

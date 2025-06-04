@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "OutputFormat.h"
+
 #define BINARY_FILE_ENDING ".bin"
 
 /**
@@ -22,3 +24,13 @@ STATUS_CODE validate_file_is_readable(const char* path);
  * @return STATUS_CODE - Status of the operation.
  */
 STATUS_CODE validate_file_is_binary(const char* path);
+
+/**
+ * @brief Validates if the given output file is writable and of the correct extension.
+ *
+ * @param path - The path to the output file to be validated.
+ * @param format - The output format to be used for validation.
+ * @return STATUS_CODE - Status of the operation.
+ */
+STATUS_CODE validate_output_file(const char* path, FILE_FORMAT format);
+

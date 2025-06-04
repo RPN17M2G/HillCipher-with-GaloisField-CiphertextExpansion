@@ -14,7 +14,7 @@ STATUS_CODE write_uint8_to_file(const char* filepath, const uint8_t* data, uint3
         goto cleanup;
     }
 
-    writing_mode = STATUS_FAILED(validate_file_is_binary(filepath)) ? "w" : "wb";
+    writing_mode = STATUS_SUCCESS(validate_file_is_binary(filepath)) ? "wb" : "w";
 
     file = fopen(filepath, writing_mode);
     if (!file)

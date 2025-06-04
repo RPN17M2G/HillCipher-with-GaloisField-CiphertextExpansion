@@ -1,6 +1,6 @@
 #include "../../include/Cipher/CipherUtils.h"
 
-STATUS_CODE add_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_size, uint8_t* value, uint32_t value_bit_length)
+STATUS_CODE add_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_size, uint8_t* value, uint32_t value_bit_length, uint32_t number_of_random_bits_to_add)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
     uint32_t output_byte = 0;
@@ -19,7 +19,7 @@ STATUS_CODE add_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_size,
     }
 
     // Calculate the size of the output vector
-    number_of_random_bits = NUMBER_OF_RANDOM_BITS_TO_ADD * (value_bit_length / BYTE_SIZE);
+    number_of_random_bits = number_of_random_bits_to_add * (value_bit_length / BYTE_SIZE);
     total_bits = value_bit_length + number_of_random_bits;
     total_bytes = total_bits / BYTE_SIZE;
 
@@ -40,7 +40,7 @@ STATUS_CODE add_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_size,
             ++output_byte;
         }
 
-        if (bit_number % (BYTE_SIZE + NUMBER_OF_RANDOM_BITS_TO_ADD) < BYTE_SIZE)
+        if (bit_number % (BYTE_SIZE + number_of_random_bits_to_add) < BYTE_SIZE)
         {
             current_working_byte = value[value_bit / BYTE_SIZE];
             current_working_byte_bit_index = value_bit % BYTE_SIZE;
@@ -82,7 +82,7 @@ cleanup:
     return return_code;
 }
 
-STATUS_CODE remove_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_size, uint8_t* value, uint32_t value_bit_length)
+STATUS_CODE remove_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_size, uint8_t* value, uint32_t value_bit_length, uint32_t number_of_random_bits_to_remove)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
     uint32_t block_size = 0;
@@ -98,7 +98,7 @@ STATUS_CODE remove_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_si
         goto cleanup;
     }
 
-    block_size = BYTE_SIZE + NUMBER_OF_RANDOM_BITS_TO_ADD;
+    block_size = BYTE_SIZE + number_of_random_bits_to_remove;
     number_of_random_plus_byte_blocks = value_bit_length / block_size;
     *out_bit_size = (number_of_random_plus_byte_blocks + (uint32_t)(value_bit_length % block_size != 0)) * BYTE_SIZE;
     *out = (uint8_t*)malloc(*out_bit_size + 1);
@@ -115,7 +115,7 @@ STATUS_CODE remove_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_si
         // Skip the random bits
         if ((output_bit % BYTE_SIZE == 0) && (output_bit != 0))
         {
-            if (random_bits_counter != NUMBER_OF_RANDOM_BITS_TO_ADD)
+            if (random_bits_counter != number_of_random_bits_to_remove)
             {
                 ++random_bits_counter;
                 continue;

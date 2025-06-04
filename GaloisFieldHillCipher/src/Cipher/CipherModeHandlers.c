@@ -66,7 +66,7 @@ STATUS_CODE handle_generate_and_encrypt_mode(const ParsedArguments* args)
 
     printf("[*] Encrypting data...\n");
 
-    return_code = encrypt(&ciphertext, &ciphertext_size, encryption_matrix, args->dimension, DEFAULT_PRIME_GALOIS_FIELD, plaintext, plaintext_size);
+    return_code = encrypt(&ciphertext, &ciphertext_size, encryption_matrix, args->dimension, DEFAULT_PRIME_GALOIS_FIELD, plaintext, plaintext_size, args->number_of_random_bits_between_bytes);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
@@ -294,7 +294,7 @@ STATUS_CODE handle_encrypt_mode(const ParsedArguments* args)
 
     printf("[*] Encrypting data...\n");
 
-    return_code = encrypt(&ciphertext, &ciphertext_size, encryption_matrix, args->dimension, DEFAULT_PRIME_GALOIS_FIELD, plaintext, plaintext_size);
+    return_code = encrypt(&ciphertext, &ciphertext_size, encryption_matrix, args->dimension, DEFAULT_PRIME_GALOIS_FIELD, plaintext, plaintext_size, args->number_of_random_bits_between_bytes);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
@@ -392,7 +392,7 @@ STATUS_CODE handle_decrypt_mode(const ParsedArguments* args)
 
     printf("[*] Decrypting data...\n");
 
-    return_code = decrypt(&decrypted_text, &decrypted_size, decryption_matrix, args->dimension, DEFAULT_PRIME_GALOIS_FIELD, ciphertext, ciphertext_size);
+    return_code = decrypt(&decrypted_text, &decrypted_size, decryption_matrix, args->dimension, DEFAULT_PRIME_GALOIS_FIELD, ciphertext, ciphertext_size, args->number_of_random_bits_between_bytes);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
@@ -500,7 +500,7 @@ STATUS_CODE handle_generate_and_decrypt_mode(const ParsedArguments* args)
 
     printf("[*] Decrypting data...\n");
 
-    return_code = decrypt(&decrypted_text, &decrypted_size, decryption_matrix, args->dimension, DEFAULT_PRIME_GALOIS_FIELD, ciphertext, ciphertext_size);
+    return_code = decrypt(&decrypted_text, &decrypted_size, decryption_matrix, args->dimension, DEFAULT_PRIME_GALOIS_FIELD, ciphertext, ciphertext_size, args->number_of_random_bits_between_bytes);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
