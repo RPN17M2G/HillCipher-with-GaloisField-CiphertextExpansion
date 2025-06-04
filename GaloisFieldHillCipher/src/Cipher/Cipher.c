@@ -3,6 +3,7 @@
 STATUS_CODE encrypt(int64_t** out_ciphertext, uint32_t* out_ciphertext_bit_size, int64_t** encryption_matrix, uint32_t dimension, uint32_t prime_field, uint8_t* plaintext_vector, uint32_t vector_bit_size, uint32_t number_of_random_bits)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
+	size_t block_number = 0, copy_index = 0;
 
 	uint32_t block_size_in_bits = (BYTE_SIZE * dimension);
 
@@ -55,7 +56,7 @@ STATUS_CODE encrypt(int64_t** out_ciphertext, uint32_t* out_ciphertext_bit_size,
 
 	*out_ciphertext_bit_size = block_size_in_bits * number_of_blocks * sizeof(int64_t);
 
-	for (size_t block_number = 0; block_number < number_of_blocks; ++block_number)
+	for (block_number = 0; block_number < number_of_blocks; ++block_number)
 	{
 		return_code = multiply_matrix_with_uint8_t_vector(&ciphertext_block, encryption_matrix, plaintext_blocks[block_number], dimension, prime_field);
 		if (STATUS_FAILED(return_code))
@@ -63,7 +64,7 @@ STATUS_CODE encrypt(int64_t** out_ciphertext, uint32_t* out_ciphertext_bit_size,
 			goto cleanup;
 		}
 
-		for (size_t copy_index = 0; copy_index < block_size_in_bits / BYTE_SIZE; ++copy_index)
+		for (copy_index = 0; copy_index < block_size_in_bits / BYTE_SIZE; ++copy_index)
 		{
 			(*out_ciphertext + (block_number * dimension))[copy_index] = ciphertext_block[copy_index];
 		}
@@ -84,7 +85,7 @@ cleanup:
 		free(random_inserted_plaintext);
 	}
 	free(padded_plaintext);
-	for (size_t block_number = 0; block_number < number_of_blocks; ++block_number)
+	for (block_number = 0; block_number < number_of_blocks; ++block_number)
 	{
 		free(plaintext_blocks[block_number]);
 	}
@@ -96,6 +97,7 @@ cleanup:
 STATUS_CODE decrypt(uint8_t** out_plaintext, uint32_t* out_plaintext_bit_size, int64_t** decryption_matrix, uint32_t dimension, uint32_t prime_field, int64_t* ciphertext_vector, uint32_t vector_bit_size, uint32_t number_of_random_bits)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
+	size_t block_number = 0, block_index = 0;
 
 	uint32_t vector_bit_size_aligned_to_uint8_t = vector_bit_size / sizeof(int64_t);
 
@@ -132,7 +134,7 @@ STATUS_CODE decrypt(uint8_t** out_plaintext, uint32_t* out_plaintext_bit_size, i
 		goto cleanup;
 	}
 
-	for (size_t block_number = 0; block_number < number_of_blocks; ++block_number)
+	for (block_number = 0; block_number < number_of_blocks; ++block_number)
 	{
 		return_code = multiply_matrix_with_int64_t_vector(&plaintext_block, decryption_matrix, ciphertext_blocks[block_number], dimension, prime_field);
 		if (STATUS_FAILED(return_code))
@@ -140,7 +142,7 @@ STATUS_CODE decrypt(uint8_t** out_plaintext, uint32_t* out_plaintext_bit_size, i
 			goto cleanup;
 		}
 
-		for (size_t block_index = 0; block_index < (block_size_in_bits_aligned_to_uint8_t / BYTE_SIZE); ++block_index)
+		for (block_index = 0; block_index < (block_size_in_bits_aligned_to_uint8_t / BYTE_SIZE); ++block_index)
 		{
 			decrypted_plaintext_blocks[(block_number * dimension) + block_index] = plaintext_block[block_index];
 		}
@@ -175,7 +177,7 @@ cleanup:
 	free(unpadded_plaintext);
 	if (ciphertext_blocks != NULL)
 	{
-		for (size_t block_number = 0; block_number < number_of_blocks; ++block_number)
+		for (block_number = 0; block_number < number_of_blocks; ++block_number)
 		{
 			free(ciphertext_blocks[block_number]);
 		}
@@ -190,6 +192,7 @@ STATUS_CODE generate_encryption_matrix(int64_t*** out_matrix, uint32_t dimension
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 	bool matrix_invertible = false;
 	uint32_t attempt_number = 0;
+	size_t row = 0;
 
 	if (NULL == out_matrix)
 	{
@@ -208,7 +211,7 @@ STATUS_CODE generate_encryption_matrix(int64_t*** out_matrix, uint32_t dimension
 		return_code = is_matrix_invertible(&matrix_invertible, *out_matrix, dimension, prime_field);
 		if (STATUS_FAILED(return_code) || !matrix_invertible)
 		{
-			for (size_t row = 0; row < dimension; ++row)
+			for (row = 0; row < dimension; ++row)
 			{
 				free((*out_matrix)[row]);
 				(*out_matrix)[row] = NULL;

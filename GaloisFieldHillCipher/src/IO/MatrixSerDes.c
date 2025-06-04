@@ -8,6 +8,7 @@ STATUS_CODE serialize_matrix(uint8_t** out_data, uint32_t* out_size, int64_t** m
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
     uint8_t* buffer = NULL;
     uint32_t size = 0;
+    size_t row = 0, column = 0, byte_index = 0;
 
     if (!out_data || !out_size || !matrix || (0 == dimension))
     {
@@ -23,14 +24,14 @@ STATUS_CODE serialize_matrix(uint8_t** out_data, uint32_t* out_size, int64_t** m
         goto cleanup;
     }
 
-    for (size_t row = 0; row < dimension; ++row)
+    for (row = 0; row < dimension; ++row)
     {
-        for (size_t column = 0; column < dimension; ++column)
+        for (column = 0; column < dimension; ++column)
         {
             int64_t value = matrix[row][column];
 
             // Store each value big endian
-            for (size_t byte_index = 0; byte_index < NUMBER_OF_BYTES_PER_ELEMENT; ++byte_index)
+            for (byte_index = 0; byte_index < NUMBER_OF_BYTES_PER_ELEMENT; ++byte_index)
             {
                 buffer[(row * dimension + column) * NUMBER_OF_BYTES_PER_ELEMENT + byte_index] =
                     (value >> (BYTE_SIZE * (NUMBER_OF_BYTES_PER_ELEMENT - 1 - byte_index))) & 0xFF;
@@ -56,6 +57,7 @@ STATUS_CODE deserialize_matrix(int64_t*** out_matrix, uint32_t dimension, const 
     int64_t** result = NULL;
     uint32_t expected_size = 0;
     size_t index = 0;
+    size_t row = 0, column = 0, byte_index = 0;
 
     if (!out_matrix || !data || (0 == dimension))
     {
@@ -77,7 +79,7 @@ STATUS_CODE deserialize_matrix(int64_t*** out_matrix, uint32_t dimension, const 
         goto cleanup;
     }
 
-    for (size_t row = 0; row < dimension; ++row)
+    for (row = 0; row < dimension; ++row)
     {
         result[row] = (int64_t*)malloc(dimension * sizeof(int64_t));
         if (!result[row])
@@ -86,12 +88,12 @@ STATUS_CODE deserialize_matrix(int64_t*** out_matrix, uint32_t dimension, const 
             goto cleanup;
         }
 
-        for (size_t column = 0; column < dimension; ++column)
+        for (column = 0; column < dimension; ++column)
         {
             index = (row * dimension + column) * NUMBER_OF_BYTES_PER_ELEMENT;
             result[row][column] = 0;
             // Read key data as big endian
-            for (size_t byte_index = 0; byte_index < NUMBER_OF_BYTES_PER_ELEMENT; ++byte_index)
+            for (byte_index = 0; byte_index < NUMBER_OF_BYTES_PER_ELEMENT; ++byte_index)
             {
                 result[row][column] |= ((int64_t)data[index + byte_index]) << (BYTE_SIZE * (NUMBER_OF_BYTES_PER_ELEMENT - 1 - byte_index));
             }

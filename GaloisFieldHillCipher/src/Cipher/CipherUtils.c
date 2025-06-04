@@ -3,6 +3,7 @@
 STATUS_CODE add_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_size, uint8_t* value, uint32_t value_bit_length, uint32_t number_of_random_bits_to_add)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
+    size_t bit_number = 0;
     uint32_t output_byte = 0;
     uint8_t current_working_byte = 0;
     uint32_t random_bit = 0;
@@ -33,7 +34,7 @@ STATUS_CODE add_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_size,
 
     memset(*out, 0, total_bytes);
 
-    for (size_t bit_number = 0; bit_number < total_bits; ++bit_number)
+    for (bit_number = 0; bit_number < total_bits; ++bit_number)
     {
         if ((bit_number % BYTE_SIZE == 0) && (bit_number != 0))
         {
@@ -86,6 +87,7 @@ STATUS_CODE remove_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_si
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
     uint32_t block_size = 0;
+    size_t bit_number = 0;
     double number_of_random_plus_byte_blocks = 0;
     uint32_t output_byte = 0;
     uint32_t output_bit = 0;
@@ -110,7 +112,7 @@ STATUS_CODE remove_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_si
 
     memset(*out, 0, *out_bit_size);
 
-    for (size_t bit_number = 0; bit_number < value_bit_length; ++bit_number)
+    for (bit_number = 0; bit_number < value_bit_length; ++bit_number)
     {
         // Skip the random bits
         if ((output_bit % BYTE_SIZE == 0) && (output_bit != 0))
@@ -155,6 +157,7 @@ cleanup:
 STATUS_CODE pad_to_length(uint8_t** out, uint32_t* out_bit_length, uint8_t* value, uint32_t value_bit_length, uint32_t target_bit_length, uint32_t block_bit_size)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
+    size_t index = 0;
 
     if ((NULL == out) || (NULL == value) || (NULL == out_bit_length))
     {
@@ -182,13 +185,13 @@ STATUS_CODE pad_to_length(uint8_t** out, uint32_t* out_bit_length, uint8_t* valu
 
 
     // Copy the original value to the output array
-    for (size_t index = 0; index < value_bit_length / BYTE_SIZE; ++index)
+    for (index = 0; index < value_bit_length / BYTE_SIZE; ++index)
     {
         (*out)[index] = value[index];
     }
 
     // Pad the remaining bytes with 0
-    for (size_t index = value_bit_length / BYTE_SIZE; index < target_bit_length / BYTE_SIZE; ++index)
+    for (index = value_bit_length / BYTE_SIZE; index < target_bit_length / BYTE_SIZE; ++index)
     {
         (*out)[index] = 0;
     }
@@ -213,6 +216,7 @@ STATUS_CODE remove_padding(uint8_t** out, uint32_t* out_bit_length, uint8_t* val
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 	bool out_flag_check = false;
+    size_t byte_number = 0, copy_index = 0;
 
     if ((NULL == out) || (NULL == value) || (NULL == out_bit_length))
     {
@@ -220,7 +224,7 @@ STATUS_CODE remove_padding(uint8_t** out, uint32_t* out_bit_length, uint8_t* val
         goto cleanup;
     }
 
-	for (size_t byte_number = 0; byte_number < value_bit_length / BYTE_SIZE; ++byte_number)
+	for (byte_number = 0; byte_number < value_bit_length / BYTE_SIZE; ++byte_number)
 	{
 		// Check if the magic byte is part of the padding
         if (out_flag_check && (value[byte_number] != 0))
@@ -250,7 +254,7 @@ STATUS_CODE remove_padding(uint8_t** out, uint32_t* out_bit_length, uint8_t* val
     }
 
     // Copy the original value to the output array
-    for (size_t copy_index = 0; copy_index < (*out_bit_length / BYTE_SIZE); ++copy_index)
+    for (copy_index = 0; copy_index < (*out_bit_length / BYTE_SIZE); ++copy_index)
     {
         (*out)[copy_index] = value[copy_index];
     }
@@ -268,6 +272,7 @@ cleanup:
 STATUS_CODE divide_uint8_t_into_blocks(uint8_t*** out_blocks, uint32_t* num_blocks, uint8_t* value, uint32_t value_bit_length, uint32_t block_bit_size)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
+    size_t block_number = 0, free_index = 0;
 
     if ((NULL == out_blocks) || (NULL == num_blocks) || (NULL == value) || (value_bit_length % block_bit_size != 0))
     {
@@ -289,7 +294,7 @@ STATUS_CODE divide_uint8_t_into_blocks(uint8_t*** out_blocks, uint32_t* num_bloc
         goto cleanup;
     }
 
-    for (size_t block_number = 0; block_number < *num_blocks; ++block_number)
+    for (block_number = 0; block_number < *num_blocks; ++block_number)
     {
         (*out_blocks)[block_number] = (uint8_t*)malloc(block_bit_size / BYTE_SIZE);
         if (NULL == (*out_blocks)[block_number])
@@ -306,11 +311,11 @@ STATUS_CODE divide_uint8_t_into_blocks(uint8_t*** out_blocks, uint32_t* num_bloc
 cleanup:
     if ((STATUS_FAILED(return_code)) && (NULL != out_blocks) && (NULL != *out_blocks) && (NULL != num_blocks))
     {
-        for (size_t i = 0; i < *num_blocks; ++i)
+        for (free_index = 0; free_index < *num_blocks; ++free_index)
         {
-            if ((*out_blocks)[i] != NULL)
+            if ((*out_blocks)[free_index] != NULL)
             {
-                free((*out_blocks)[i]);
+                free((*out_blocks)[free_index]);
             }
         }
         free(*out_blocks);
@@ -323,6 +328,7 @@ cleanup:
 STATUS_CODE divide_int64_t_into_blocks(int64_t*** out_blocks, uint32_t* num_blocks, int64_t* value, uint32_t value_bit_length, uint32_t block_bit_size)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
+    size_t block_number = 0, free_index = 0, element_index_in_block = 0, index = 0;
 
     if ((NULL == out_blocks)
         || (NULL == num_blocks)
@@ -346,7 +352,7 @@ STATUS_CODE divide_int64_t_into_blocks(int64_t*** out_blocks, uint32_t* num_bloc
         goto cleanup;
     }
 
-    for (size_t block_number = 0; block_number < *num_blocks; ++block_number)
+    for (block_number = 0; block_number < *num_blocks; ++block_number)
     {
         (*out_blocks)[block_number] = (int64_t*)malloc(ints_per_block * sizeof(int64_t));
         if (NULL == (*out_blocks)[block_number])
@@ -357,9 +363,9 @@ STATUS_CODE divide_int64_t_into_blocks(int64_t*** out_blocks, uint32_t* num_bloc
 
         memset((*out_blocks)[block_number], 0, ints_per_block * sizeof(int64_t));
 
-        for (size_t element_index_in_block = 0; element_index_in_block < ints_per_block; ++element_index_in_block)
+        for (element_index_in_block = 0; element_index_in_block < ints_per_block; ++element_index_in_block)
         {
-            size_t index = block_number * ints_per_block + element_index_in_block;
+            index = block_number * ints_per_block + element_index_in_block;
             if (index < total_ints)
             {
                 (*out_blocks)[block_number][element_index_in_block] = value[index];
@@ -372,11 +378,11 @@ STATUS_CODE divide_int64_t_into_blocks(int64_t*** out_blocks, uint32_t* num_bloc
 cleanup:
     if ((STATUS_FAILED(return_code)) && (NULL != out_blocks) && (NULL != *out_blocks) && (NULL != num_blocks))
     {
-        for (size_t i = 0; i < *num_blocks; ++i)
+        for (free_index = 0; free_index < *num_blocks; ++free_index)
         {
-            if ((*out_blocks)[i] != NULL)
+            if ((*out_blocks)[free_index] != NULL)
             {
-                free((*out_blocks)[i]);
+                free((*out_blocks)[free_index]);
             }
         }
         free(*out_blocks);

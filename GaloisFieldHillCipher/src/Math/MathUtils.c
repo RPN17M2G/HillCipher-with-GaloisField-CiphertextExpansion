@@ -5,6 +5,7 @@ STATUS_CODE matrix_determinant_laplace_expansion(int64_t* out_determinant, int64
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 	int64_t** minor_matrix = NULL;
 	uint32_t row = 0;
+	size_t column = 0;
 	int64_t minor_matrix_determinant = 0;
 	int64_t matrix_element = 0;
 	int64_t cofactor = 0;
@@ -27,7 +28,7 @@ STATUS_CODE matrix_determinant_laplace_expansion(int64_t* out_determinant, int64
 
 	// Expand along the first row
 	row = 0;
-	for (size_t column = 0; column < dimension; ++column)
+	for (column = 0; column < dimension; ++column)
 	{
 		if (0 == matrix[row][column])
 		{
@@ -101,6 +102,7 @@ STATUS_CODE inverse_square_matrix_adjugate_method(int64_t*** out_inverse_matrix,
 	int64_t inverse_determinant = 0;
 	int64_t** minor_matrix = NULL;
 	int64_t minor_matrix_determinant = 0;
+	size_t row = 0, column = 0;
 
 	return_code = is_matrix_invertible(&is_invertible, matrix, dimension, prime_field);
 	if (STATUS_FAILED(return_code))
@@ -130,7 +132,7 @@ STATUS_CODE inverse_square_matrix_adjugate_method(int64_t*** out_inverse_matrix,
 		goto cleanup;
 	}
 
-	for (size_t row = 0; row < dimension; ++row)
+	for (row = 0; row < dimension; ++row)
 	{
 		adjugate_matrix[row] = (int64_t*)malloc(dimension * sizeof(int64_t));
 		if (NULL == adjugate_matrix[row])
@@ -140,9 +142,9 @@ STATUS_CODE inverse_square_matrix_adjugate_method(int64_t*** out_inverse_matrix,
 		}
 	}
 
-	for (size_t row = 0; row < dimension; ++row)
+	for (row = 0; row < dimension; ++row)
 	{
-		for (size_t column = 0; column < dimension; ++column)
+		for (column = 0; column < dimension; ++column)
 		{
 			minor_matrix = NULL;
 			return_code = build_minor_matrix(&minor_matrix, matrix, dimension, row, column);
@@ -177,7 +179,7 @@ STATUS_CODE inverse_square_matrix_adjugate_method(int64_t*** out_inverse_matrix,
 		goto cleanup;
 	}
 
-	for (size_t row = 0; row < dimension; ++row)
+	for (row = 0; row < dimension; ++row)
 	{
 		(*out_inverse_matrix)[row] = (int64_t*)malloc(dimension * sizeof(int64_t));
 		if (NULL == (*out_inverse_matrix)[row])
@@ -187,9 +189,9 @@ STATUS_CODE inverse_square_matrix_adjugate_method(int64_t*** out_inverse_matrix,
 		}
 	}
 
-	for (size_t row = 0; row < dimension; ++row)
+	for (row = 0; row < dimension; ++row)
 	{
-		for (size_t column = 0; column < dimension; ++column)
+		for (column = 0; column < dimension; ++column)
 		{
 
 			(*out_inverse_matrix)[row][column] = multiply_over_galois_field(adjugate_matrix[row][column], inverse_determinant, prime_field);
@@ -200,7 +202,7 @@ STATUS_CODE inverse_square_matrix_adjugate_method(int64_t*** out_inverse_matrix,
 cleanup:
 	if (adjugate_matrix != NULL)
 	{
-		for (size_t row = 0; row < dimension; ++row)
+		for (row = 0; row < dimension; ++row)
 		{
 			free(adjugate_matrix[row]);
 		}
@@ -208,7 +210,7 @@ cleanup:
 	}
 	if (STATUS_FAILED(return_code) && (*out_inverse_matrix != NULL))
 	{
-		for (size_t row = 0; row < dimension; ++row)
+		for (row = 0; row < dimension; ++row)
 		{
 			free((*out_inverse_matrix)[row]);
 		}
@@ -223,6 +225,7 @@ STATUS_CODE multiply_matrix_with_uint8_t_vector(int64_t** out_vector, int64_t** 
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 	int64_t product = 0;
 	int64_t temp_result = 0;
+	size_t row = 0, column = 0;
 
 	*out_vector = (int64_t*)malloc(dimension * sizeof(int64_t));
 	if (NULL == *out_vector)
@@ -231,10 +234,10 @@ STATUS_CODE multiply_matrix_with_uint8_t_vector(int64_t** out_vector, int64_t** 
 		goto cleanup;
 	}
 
-	for (size_t row = 0; row < dimension; ++row)
+	for (row = 0; row < dimension; ++row)
 	{
 		temp_result = 0;
-		for (size_t column = 0; column < dimension; ++column)
+		for (column = 0; column < dimension; ++column)
 		{
 			product = multiply_over_galois_field(matrix[row][column], (int64_t)vector[column], prime_field);
 			temp_result = add_over_galois_field(temp_result, product, prime_field);
@@ -267,7 +270,8 @@ STATUS_CODE gcd(int64_t* out_gcd, int64_t first_element, int64_t second_element)
 	first_element = (first_element > 0) ? first_element : (first_element * -1);
 
 	// Euclidean algorithm
-	while (second_element != 0) {
+	while (second_element != 0)
+	{
 		temp = second_element;
 		second_element = first_element % second_element;
 		first_element = temp;
@@ -307,9 +311,9 @@ cleanup:
 
 STATUS_CODE generate_square_matrix_over_field(int64_t*** out_matrix, uint32_t dimension, uint32_t prime_field)
 {
-
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 	uint32_t secure_random_number = 0;
+	size_t row = 0, column = 0;
 
 	if (NULL == out_matrix)
 	{
@@ -325,7 +329,7 @@ STATUS_CODE generate_square_matrix_over_field(int64_t*** out_matrix, uint32_t di
 	}
 
 	// Generate random numbers mod prime_field to fill the matrix
-	for (size_t row = 0; row < dimension; ++row)
+	for (row = 0; row < dimension; ++row)
 	{
 		(*out_matrix)[row] = (int64_t*)malloc(dimension * sizeof(int64_t));
 		if (NULL == (*out_matrix)[row])
@@ -333,7 +337,7 @@ STATUS_CODE generate_square_matrix_over_field(int64_t*** out_matrix, uint32_t di
 			return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
 			goto cleanup;
 		}
-		for (size_t column = 0; column < dimension; ++column)
+		for (column = 0; column < dimension; ++column)
 		{
 			secure_random_number = 0;
 			return_code = generate_secure_random_number(&secure_random_number, (uint32_t)0, prime_field - 1);
@@ -349,7 +353,7 @@ STATUS_CODE generate_square_matrix_over_field(int64_t*** out_matrix, uint32_t di
 cleanup:
 	if (STATUS_FAILED(return_code) && (out_matrix != NULL) && (*out_matrix != NULL))
 	{
-		for (size_t row = 0; row < dimension; ++row)
+		for (row = 0; row < dimension; ++row)
 		{
 			free((*out_matrix)[row]);
 			(*out_matrix)[row] = NULL;
@@ -365,7 +369,8 @@ STATUS_CODE multiply_matrix_with_int64_t_vector(uint8_t** out_vector, int64_t** 
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 	uint64_t temp_result = 0;
 	int64_t product = 0;
-	
+	size_t row = 0, column = 0;
+
 	if ((NULL == out_vector) || (NULL == matrix) || (NULL == vector))
 	{
 		return_code = STATUS_CODE_INVALID_ARGUMENT;
@@ -379,10 +384,10 @@ STATUS_CODE multiply_matrix_with_int64_t_vector(uint8_t** out_vector, int64_t** 
 		goto cleanup;
 	}
 
-	for (size_t row = 0; row < dimension; ++row)
+	for (row = 0; row < dimension; ++row)
 	{
 		temp_result = 0;
-		for (size_t column = 0; column < dimension; ++column)
+		for (column = 0; column < dimension; ++column)
 		{
 			product = multiply_over_galois_field(matrix[row][column], vector[column], prime_field);
 			temp_result = add_over_galois_field(temp_result, product, prime_field);
@@ -410,6 +415,7 @@ STATUS_CODE build_minor_matrix(int64_t*** out_matrix, int64_t** matrix, uint32_t
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 	uint32_t minor_matrix_row = 0;
+	uint32_t sub_row = 0, sub_column = 0;
 	uint32_t minor_matrix_column = 0;
 
 	int64_t** minor_matrix = (int64_t**)malloc((dimension - 1) * sizeof(int64_t*));
@@ -419,7 +425,7 @@ STATUS_CODE build_minor_matrix(int64_t*** out_matrix, int64_t** matrix, uint32_t
 		goto cleanup;
 	}
 
-	for (size_t sub_row = 0; sub_row < dimension - 1; ++sub_row)
+	for (sub_row = 0; sub_row < dimension - 1; ++sub_row)
 	{
 		minor_matrix[sub_row] = (int64_t*)malloc((dimension - 1) * sizeof(int64_t));
 		if (NULL == minor_matrix[sub_row])
@@ -431,13 +437,13 @@ STATUS_CODE build_minor_matrix(int64_t*** out_matrix, int64_t** matrix, uint32_t
 
 	minor_matrix_row = 0;
 	minor_matrix_column = 0;
-	for (size_t sub_row = 0; sub_row < dimension; ++sub_row)
+	for (sub_row = 0; sub_row < dimension; ++sub_row)
 	{
 		if (sub_row == row) // Insert all rows except the current row
 		{
 			continue;
 		}
-		for (size_t sub_column = 0; sub_column < dimension; ++sub_column)
+		for (sub_column = 0; sub_column < dimension; ++sub_column)
 		{
 			if (sub_column == column) // Insert all columns except the current column
 			{
@@ -474,6 +480,7 @@ STATUS_CODE matrix_determinant_over_galois_field_gauss_jordan(int64_t* out_deter
 	int64_t* temp_row = NULL;
 	int64_t factor = 0;
 	int64_t product = 0;
+	size_t copy_row_index = 0, copy_column_index = 0, row_iteration = 0, free_index = 0, row = 0, column = 0;
 
 	if ((NULL == matrix) || (NULL == out_determinant) || (0 == dimension) || (0 == prime_field))
     {
@@ -488,7 +495,7 @@ STATUS_CODE matrix_determinant_over_galois_field_gauss_jordan(int64_t* out_deter
     	goto cleanup;
     }
 
-    for (uint32_t copy_row_index = 0; copy_row_index < dimension; copy_row_index++)
+    for (copy_row_index = 0; copy_row_index < dimension; copy_row_index++)
     {
         matrix_copy[copy_row_index] = (int64_t*)malloc(dimension * sizeof(int64_t));
         if (!matrix_copy[copy_row_index])
@@ -496,17 +503,17 @@ STATUS_CODE matrix_determinant_over_galois_field_gauss_jordan(int64_t* out_deter
             return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
         	goto cleanup;
         }
-        for (uint32_t copy_column_index = 0; copy_column_index < dimension; copy_column_index++)
+        for (copy_column_index = 0; copy_column_index < dimension; copy_column_index++)
         {
             matrix_copy[copy_row_index][copy_column_index] = matrix[copy_row_index][copy_column_index];
         }
     }
 
-    for (uint32_t row_iteration = 0; row_iteration < dimension; row_iteration++)
+    for (row_iteration = 0; row_iteration < dimension; row_iteration++)
     {
         pivot_row = row_iteration;
         // Find pivot row with non-zero element
-        for (uint32_t row = row_iteration + 1; row < dimension; row++)
+        for (row = row_iteration + 1; row < dimension; row++)
         {
             if (matrix_copy[row][row_iteration] != 0)
             {
@@ -535,15 +542,15 @@ STATUS_CODE matrix_determinant_over_galois_field_gauss_jordan(int64_t* out_deter
         inverse_pivot = raise_power_over_galois_field(matrix_copy[row_iteration][row_iteration], prime_field - 2, prime_field);
 
         // Normalize pivot row
-        for (uint32_t column = row_iteration; column < dimension; column++)
+        for (column = row_iteration; column < dimension; column++)
         {
             matrix_copy[row_iteration][column] = multiply_over_galois_field(matrix_copy[row_iteration][column], inverse_pivot, prime_field);
         }
         // Eliminate other rows
-        for (uint32_t row = 0; row < dimension; row++) {
+        for (row = 0; row < dimension; row++) {
             if (row != row_iteration && matrix_copy[row][row_iteration] != 0) {
                 factor = matrix_copy[row][row_iteration];
-                for (uint32_t column = row_iteration; column < dimension; column++) {
+                for (column = row_iteration; column < dimension; column++) {
                     product = multiply_over_galois_field(factor, matrix_copy[row_iteration][column], prime_field);
                     matrix_copy[row][column] = add_over_galois_field(matrix_copy[row][column], negate_over_galois_field(product, prime_field), prime_field);
                 }
@@ -557,9 +564,9 @@ STATUS_CODE matrix_determinant_over_galois_field_gauss_jordan(int64_t* out_deter
 cleanup:
 	if (matrix_copy)
 	{
-		for (uint32_t i = 0; i < dimension; i++)
+		for (free_index = 0; free_index < dimension; free_index++)
 		{
-			free(matrix_copy[i]);
+			free(matrix_copy[free_index]);
 		}
 		free(matrix_copy);
 	}
@@ -577,6 +584,7 @@ STATUS_CODE inverse_square_matrix_gauss_jordan(int64_t*** out_inverse_matrix, in
 	int64_t pivot_element = 0;
 	int64_t factor = 0;
 	int64_t product = 0;
+	size_t allocation_index = 0, row_iteration = 0, row = 0, column = 0, free_index = 0;
 
     if ((NULL == matrix) || (NULL == out_inverse_matrix))
     {
@@ -591,10 +599,10 @@ STATUS_CODE inverse_square_matrix_gauss_jordan(int64_t*** out_inverse_matrix, in
 		goto cleanup;
     }
 
-    for (uint32_t i = 0; i < dimension; i++)
+    for (allocation_index = 0; allocation_index < dimension; allocation_index++)
     {
-        augmented_matrix[i] = (int64_t*)malloc(2 * dimension * sizeof(int64_t));
-        if (!augmented_matrix[i])
+        augmented_matrix[allocation_index] = (int64_t*)malloc(2 * dimension * sizeof(int64_t));
+        if (!augmented_matrix[allocation_index])
         {
             return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
 			goto cleanup;
@@ -602,9 +610,9 @@ STATUS_CODE inverse_square_matrix_gauss_jordan(int64_t*** out_inverse_matrix, in
     }
 
     // Initialize augmented matrix: [matrix | identity]
-    for (uint32_t row = 0; row < dimension; row++)
+    for (row = 0; row < dimension; row++)
     {
-        for (uint32_t column = 0; column < dimension; column++)
+        for (column = 0; column < dimension; column++)
         {
             augmented_matrix[row][column] = matrix[row][column];
             augmented_matrix[row][column + dimension] = (row == column) ? 1 : 0;
@@ -612,10 +620,10 @@ STATUS_CODE inverse_square_matrix_gauss_jordan(int64_t*** out_inverse_matrix, in
     }
 
     // Perform Gauss-Jordan elimination
-    for (uint32_t row_iteration = 0; row_iteration < dimension; row_iteration++) {
+    for (row_iteration = 0; row_iteration < dimension; row_iteration++) {
         // Find pivot
         pivot_row = row_iteration;
-        for (uint32_t row = row_iteration + 1; row < dimension; row++)
+        for (row = row_iteration + 1; row < dimension; row++)
         {
             if (augmented_matrix[row][row_iteration] != 0)
             {
@@ -642,16 +650,16 @@ STATUS_CODE inverse_square_matrix_gauss_jordan(int64_t*** out_inverse_matrix, in
         pivot_element = augmented_matrix[row_iteration][row_iteration];
         pivot_inverse = raise_power_over_galois_field(pivot_element, prime_field - 2, prime_field);
 
-        for (uint32_t column = 0; column < 2 * dimension; column++) {
+        for (column = 0; column < 2 * dimension; column++) {
             augmented_matrix[row_iteration][column] = multiply_over_galois_field(augmented_matrix[row_iteration][column], pivot_inverse, prime_field);
         }
         // Eliminate other rows
-        for (uint32_t row = 0; row < dimension; row++)
+        for (row = 0; row < dimension; row++)
         {
             if (row != row_iteration && augmented_matrix[row][row_iteration] != 0)
             {
                 factor = augmented_matrix[row][row_iteration];
-                for (uint32_t column = 0; column < 2 * dimension; column++)
+                for (column = 0; column < 2 * dimension; column++)
                 {
                     product = multiply_over_galois_field(factor, augmented_matrix[row_iteration][column], prime_field);
                     augmented_matrix[row][column] = add_over_galois_field(augmented_matrix[row][column], negate_over_galois_field(product, prime_field), prime_field);
@@ -666,7 +674,7 @@ STATUS_CODE inverse_square_matrix_gauss_jordan(int64_t*** out_inverse_matrix, in
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
     	goto cleanup;
     }
-    for (uint32_t row = 0; row < dimension; row++)
+    for (row = 0; row < dimension; row++)
     {
         (*out_inverse_matrix)[row] = (int64_t*)malloc(dimension * sizeof(int64_t));
 		if (!(*out_inverse_matrix)[row])
@@ -677,9 +685,9 @@ STATUS_CODE inverse_square_matrix_gauss_jordan(int64_t*** out_inverse_matrix, in
     }
 
     // Copy right half of augmented matrix as inverse
-    for (uint32_t row = 0; row < dimension; row++)
+    for (row = 0; row < dimension; row++)
     {
-        for (uint32_t column = 0; column < dimension; column++)
+        for (column = 0; column < dimension; column++)
         {
             (*out_inverse_matrix)[row][column] = align_to_galois_field(augmented_matrix[row][column + dimension], prime_field);
         }
@@ -687,17 +695,17 @@ STATUS_CODE inverse_square_matrix_gauss_jordan(int64_t*** out_inverse_matrix, in
 
 	return_code = STATUS_CODE_SUCCESS;
 cleanup:
-    for (uint32_t i = 0; i < dimension; i++)
+    for (free_index = 0; free_index < dimension; free_index++)
     {
-	    free(augmented_matrix[i]);
+	    free(augmented_matrix[free_index]);
     }
     free(augmented_matrix);
 
 	if (STATUS_FAILED(return_code) && (out_inverse_matrix != NULL))
 	{
-		for (uint32_t i = 0; i < dimension; i++)
+		for (free_index = 0; free_index < dimension; free_index++)
 		{
-			free((*out_inverse_matrix)[i]);
+			free((*out_inverse_matrix)[free_index]);
 		}
 		free((*out_inverse_matrix));
 	}
