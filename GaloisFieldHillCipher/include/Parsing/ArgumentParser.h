@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ARGUMENT_PARSER_H
+#define ARGUMENT_PARSER_H
 
 #include <argparse.h>
 #include <stdbool.h>
@@ -116,3 +117,5 @@ STATUS_CODE extract_arguments(ParsedArguments* out_args, int argc, char** argv);
  * @return STATUS_CODE - Status of the operation.
  */
 STATUS_CODE parse_arguments(ParsedArguments* out_args, int argc, char** argv);
+
+#endif

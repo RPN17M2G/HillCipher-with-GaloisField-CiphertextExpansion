@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CIPHER_UTILS_H
+#define CIPHER_UTILS_H
 
 #include <stdio.h>
 #include <stdint.h>
@@ -90,3 +91,5 @@ STATUS_CODE divide_uint8_t_into_blocks(uint8_t*** out_blocks, uint32_t* num_bloc
  * @return STATUS_CODE - Status of the operation.
  */
 STATUS_CODE divide_int64_t_into_blocks(int64_t*** out_blocks, uint32_t* num_blocks, int64_t* value, uint32_t value_bit_length, uint32_t block_bit_size);
+
+#endif

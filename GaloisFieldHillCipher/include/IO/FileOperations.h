@@ -1,4 +1,5 @@
-#pragma once
+#ifndef FILE_OPERATIONS_H
+#define FILE_OPERATIONS_H
 
 #include <stdint.h>
 #include <stdio.h>
@@ -48,3 +49,5 @@ STATUS_CODE write_int64_to_file(const char* filepath, const int64_t* data, uint3
  * @return STATUS_CODE - Status of the operation.
  */
 STATUS_CODE read_int64_from_file(int64_t** out_data, uint32_t* out_size, const char* filepath);
+
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CIPHER_H
+#define CIPHER_H
 
 #include <stdio.h>
 #include <stdint.h>
@@ -7,7 +8,6 @@
 #include "../StatusCodes.h"
 #include "../Math/MathUtils.h"
 #include "CipherUtils.h"
-
 
 /**
  * @brief Encrypts a plaintext vector using the Extended Hill Cipher algorithm.
@@ -60,3 +60,5 @@ STATUS_CODE generate_encryption_matrix(int64_t*** out_matrix, uint32_t dimension
  * @return STATUS_CODE - Status of the operation.
  */
 STATUS_CODE generate_decryption_matrix(int64_t*** out_matrix, uint32_t dimension, int64_t** encryption_matrix, uint32_t prime_field);
+
+#endif

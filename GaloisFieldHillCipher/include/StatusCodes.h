@@ -1,4 +1,5 @@
-#pragma once
+#ifndef STATUS_CODES_H
+#define STATUS_CODES_H
 
 #define STATUS_SUCCESS(status) (status == STATUS_CODE_SUCCESS)
 #define STATUS_FAILED(status) (status != STATUS_CODE_SUCCESS)
@@ -37,3 +38,4 @@ enum STATUS_CODE
 	
 } typedef STATUS_CODE;
 
+#endif

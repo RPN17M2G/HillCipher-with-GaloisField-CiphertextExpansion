@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CIPHER_MODE_OPERATIONS_H
+#define CIPHER_MODE_OPERATIONS_H
 
 #include "../StatusCodes.h"
 #include "../Parsing/ArgumentParser.h"
@@ -56,3 +57,5 @@ STATUS_CODE handle_generate_and_decrypt_mode(const ParsedArguments* args);
  * @return STATUS_CODE - Status of the operation.
  */
 STATUS_CODE handle_generate_and_encrypt_mode(const ParsedArguments* args);
+
+#endif

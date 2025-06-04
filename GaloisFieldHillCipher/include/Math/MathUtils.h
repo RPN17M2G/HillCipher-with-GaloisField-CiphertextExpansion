@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MATH_UTILS_H
+#define MATH_UTILS_H
 
 #include <stdio.h>
 #include <stdint.h>
@@ -138,3 +139,4 @@ STATUS_CODE matrix_determinant_over_galois_field_gauss_jordan(int64_t* out_deter
  */
 STATUS_CODE inverse_square_matrix_gauss_jordan(int64_t*** out_inverse_matrix, int64_t** matrix, uint32_t dimension, uint32_t prime_field);
 
+#endif

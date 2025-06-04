@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MATRIX_UTILS_H
+#define MATRIX_UTILS_H
 
 #include <stdint.h>
 #include <stdio.h>
@@ -15,3 +16,5 @@
  * @return STATUS_CODE - Status of the operation.
  */
 STATUS_CODE free_matrix(int64_t** matrix, const uint32_t dimentaion);
+
+#endif

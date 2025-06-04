@@ -1,10 +1,11 @@
-#pragma once
+#ifndef FILE_VALIDATION_H
+#define FILE_VALIDATION_H
 
-#include "../StatusCodes.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 
+#include "../StatusCodes.h"
 #include "OutputFormat.h"
 
 #define BINARY_FILE_ENDING ".bin"
@@ -34,3 +35,4 @@ STATUS_CODE validate_file_is_binary(const char* path);
  */
 STATUS_CODE validate_output_file(const char* path, FILE_FORMAT format);
 
+#endif

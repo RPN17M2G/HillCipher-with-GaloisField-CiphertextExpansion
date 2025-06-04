@@ -10,4 +10,4 @@ enum FILE_FORMAT
     NUMBER_OF_OUTPUT_FORMATS
 } typedef FILE_FORMAT;
 
-#endif //OUTPUTFORMAT_H
+#endif

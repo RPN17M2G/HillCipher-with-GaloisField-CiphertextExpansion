@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CSPRNG_H
+#define CSPRNG_H
 
 #include <stdio.h>
 #include <stdint.h>
@@ -23,3 +24,5 @@ STATUS_CODE initialize_sodium_library();
  * @return STATUS_CODE - Status of the operation.
  */
 STATUS_CODE generate_secure_random_number(uint32_t* out_number, uint32_t minimum_value, uint32_t maximum_value);
+
+#endif

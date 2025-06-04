@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MATRIX_SERDES_H
+#define MATRIX_SERDES_H
 
 #include <stdint.h>
 #include <stdio.h>
@@ -32,3 +33,4 @@ STATUS_CODE serialize_matrix(uint8_t** out_data, uint32_t* out_size, int64_t** m
  */
 STATUS_CODE deserialize_matrix(int64_t*** out_matrix, uint32_t dimension, const uint8_t* data, uint32_t size);
 
+#endif

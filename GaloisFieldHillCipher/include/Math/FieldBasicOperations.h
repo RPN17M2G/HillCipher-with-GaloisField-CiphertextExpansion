@@ -1,7 +1,7 @@
-#pragma once
+#ifndef FIELD_BASIC_OPERATIONS_H
+#define FIELD_BASIC_OPERATIONS_H
 
 #include <stdint.h>
-
 
 /**
  * @brief Multiplies two elements over a finite field.
@@ -51,3 +51,4 @@ int64_t align_to_galois_field(int64_t element, uint32_t prime_field);
  */
 int64_t raise_power_over_galois_field(int64_t base, int64_t exponent, int64_t field);
 
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PRINT_UTILS_H
+#define PRINT_UTILS_H
 
 #include <stdint.h>
 #include <stdio.h>
@@ -30,3 +31,5 @@ void print_int64_vector(const int64_t* data, size_t size, const char* prefix);
  * @param dimension - Dimension of the square matrix.
  */
 void print_matrix(int64_t** matrix, uint32_t dimension);
+
+#endif
