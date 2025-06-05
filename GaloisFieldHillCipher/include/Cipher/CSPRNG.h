@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <sodium.h>
 
-#include "../StatusCodes.h"
+#include "StatusCodes.h"
 
 /**
  * @brief Initialize sodium.

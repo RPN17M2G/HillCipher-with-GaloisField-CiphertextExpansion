@@ -12,10 +12,11 @@ void test_add_random_bits_between_bytes_Sanity()
     uint8_t highest_four_mask = 0xF0; // 0b11110000
     uint8_t* output = NULL;
     uint32_t output_length = 0;
-    uint32_t expected_output_length = input_len + (input_number_of_elements * NUMBER_OF_RANDOM_BITS_TO_ADD);
+    uint32_t number_of_random_bits_between_bytes = 2;
+    uint32_t expected_output_length = input_len + (input_number_of_elements * number_of_random_bits_between_bytes);
 
     // Act
-    STATUS_CODE status = add_random_bits_between_bytes(&output, &output_length, input, input_len);
+    STATUS_CODE status = add_random_bits_between_bytes(&output, &output_length, input, input_len, number_of_random_bits_between_bytes);
 
     // Assert
     TEST_ASSERT_EQUAL(STATUS_CODE_SUCCESS, status);
@@ -34,9 +35,10 @@ void test_add_random_bits_between_bytes_EmptyInput()
     uint32_t output_bit_size = 0;
     uint8_t input[] = {};
     uint32_t input_bit_length = 0;
+    uint32_t number_of_random_bits_between_bytes = 2;
 
     // Act
-    STATUS_CODE status = add_random_bits_between_bytes(&output, &output_bit_size, input, input_bit_length);
+    STATUS_CODE status = add_random_bits_between_bytes(&output, &output_bit_size, input, input_bit_length, number_of_random_bits_between_bytes);
 
     // Assert
     TEST_ASSERT_EQUAL(STATUS_CODE_SUCCESS, status);

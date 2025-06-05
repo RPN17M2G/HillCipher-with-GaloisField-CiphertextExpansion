@@ -1,12 +1,12 @@
 #ifndef CIPHER_MODE_OPERATIONS_H
 #define CIPHER_MODE_OPERATIONS_H
 
-#include "../StatusCodes.h"
-#include "../Parsing/ArgumentParser.h"
-#include "../IO/PrintUtils.h"
-#include "../IO/FileOperations.h"
-#include "../Math/MatrixUtils.h"
-#include "../IO/MatrixSerDes.h"
+#include "StatusCodes.h"
+#include "Parsing/ArgumentParser.h"
+#include "IO/PrintUtils.h"
+#include "IO/FileOperations.h"
+#include "Math/MatrixUtils.h"
+#include "IO/SerDes.h"
 #include "CipherUtils.h"
 #include "Cipher.h"
 

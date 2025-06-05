@@ -1,4 +1,4 @@
-#include "../../include/Cipher/Cipher.h"
+#include "Cipher/Cipher.h"
 
 STATUS_CODE encrypt(int64_t** out_ciphertext, uint32_t* out_ciphertext_bit_size, int64_t** encryption_matrix, uint32_t dimension, uint32_t prime_field, uint8_t* plaintext_vector, uint32_t vector_bit_size, uint32_t number_of_random_bits)
 {
@@ -17,6 +17,7 @@ STATUS_CODE encrypt(int64_t** out_ciphertext, uint32_t* out_ciphertext_bit_size,
 	uint32_t number_of_blocks = 0;
 
 	int64_t* ciphertext_block = NULL;
+	int64_t* ciphertext_buffer = NULL;
 
 	if ((NULL == out_ciphertext) || (NULL == out_ciphertext_bit_size) || (NULL == encryption_matrix) || (NULL == plaintext_vector))
 	{
@@ -47,14 +48,12 @@ STATUS_CODE encrypt(int64_t** out_ciphertext, uint32_t* out_ciphertext_bit_size,
 		goto cleanup;
 	}
 
-	*out_ciphertext = (int64_t*)malloc(((block_size_in_bits * number_of_blocks) / BYTE_SIZE) * sizeof(int64_t));
-	if (NULL == *out_ciphertext)
+	ciphertext_buffer = (int64_t*)malloc(((block_size_in_bits * number_of_blocks) / BYTE_SIZE) * sizeof(int64_t));
+	if (NULL == ciphertext_buffer)
 	{
 		return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
 		goto cleanup;
 	}
-
-	*out_ciphertext_bit_size = block_size_in_bits * number_of_blocks * sizeof(int64_t);
 
 	for (block_number = 0; block_number < number_of_blocks; ++block_number)
 	{
@@ -66,30 +65,22 @@ STATUS_CODE encrypt(int64_t** out_ciphertext, uint32_t* out_ciphertext_bit_size,
 
 		for (copy_index = 0; copy_index < block_size_in_bits / BYTE_SIZE; ++copy_index)
 		{
-			(*out_ciphertext + (block_number * dimension))[copy_index] = ciphertext_block[copy_index];
+			(ciphertext_buffer + (block_number * dimension))[copy_index] = ciphertext_block[copy_index];
 		}
 
 		free(ciphertext_block);
 	}
 
+	*out_ciphertext = ciphertext_buffer;
+	ciphertext_buffer = NULL;
+	*out_ciphertext_bit_size = block_size_in_bits * number_of_blocks * sizeof(int64_t);
+
 	return_code = STATUS_CODE_SUCCESS;
 cleanup:
-	if ((STATUS_FAILED(return_code)) && (out_ciphertext != NULL) && (*out_ciphertext != NULL) && (out_ciphertext_bit_size != NULL) && (*out_ciphertext_bit_size != NULL))
-	{
-		free(*out_ciphertext);
-		*out_ciphertext = NULL;
-		*out_ciphertext_bit_size = 0;
-	}
-	if (random_inserted_plaintext)
-	{
-		free(random_inserted_plaintext);
-	}
+	free(ciphertext_buffer);
+	free(random_inserted_plaintext);
 	free(padded_plaintext);
-	for (block_number = 0; block_number < number_of_blocks; ++block_number)
-	{
-		free(plaintext_blocks[block_number]);
-	}
-	free(plaintext_blocks);
+	(void)free_uint8_matrix(plaintext_blocks, number_of_blocks);
 
 	return return_code;
 }
@@ -163,26 +154,15 @@ STATUS_CODE decrypt(uint8_t** out_plaintext, uint32_t* out_plaintext_bit_size, i
 	}
 
 	*out_plaintext = original_plaintext;
+	original_plaintext = NULL;
 	*out_plaintext_bit_size = original_plaintext_bit_size;
 
 	return_code = STATUS_CODE_SUCCESS;
 cleanup:
-	if ((STATUS_FAILED(return_code)) && (out_plaintext != NULL) && (*out_plaintext != NULL) && (out_plaintext_bit_size != NULL) && (*out_plaintext_bit_size != NULL))
-	{
-		free(*out_plaintext);
-		*out_plaintext = NULL;
-		*out_plaintext_bit_size = 0;
-	}
+	free(original_plaintext);
 	free(decrypted_plaintext_blocks);
 	free(unpadded_plaintext);
-	if (ciphertext_blocks != NULL)
-	{
-		for (block_number = 0; block_number < number_of_blocks; ++block_number)
-		{
-			free(ciphertext_blocks[block_number]);
-		}
-		free(ciphertext_blocks);
-	}
+	(void)free_int64_matrix(ciphertext_blocks, number_of_blocks);
 	return return_code;
 }
 
@@ -194,6 +174,8 @@ STATUS_CODE generate_encryption_matrix(int64_t*** out_matrix, uint32_t dimension
 	uint32_t attempt_number = 0;
 	size_t row = 0;
 
+	int64_t** matrix_buffer = NULL;
+
 	if (NULL == out_matrix)
 	{
 		return_code = STATUS_CODE_INVALID_ARGUMENT;
@@ -202,22 +184,22 @@ STATUS_CODE generate_encryption_matrix(int64_t*** out_matrix, uint32_t dimension
 
 	while (++attempt_number < max_attempts)
 	{
-		return_code = generate_square_matrix_over_field(out_matrix, dimension, prime_field);
+		return_code = generate_square_matrix_over_field(&matrix_buffer, dimension, prime_field);
 		if (STATUS_FAILED(return_code))
 		{
 			continue;
 		}
 
-		return_code = is_matrix_invertible(&matrix_invertible, *out_matrix, dimension, prime_field);
+		return_code = is_matrix_invertible(&matrix_invertible, matrix_buffer, dimension, prime_field);
 		if (STATUS_FAILED(return_code) || !matrix_invertible)
 		{
 			for (row = 0; row < dimension; ++row)
 			{
-				free((*out_matrix)[row]);
-				(*out_matrix)[row] = NULL;
+				free((matrix_buffer)[row]);
+				(matrix_buffer)[row] = NULL;
 			}
-			free(*out_matrix);
-			*out_matrix = NULL;
+			free(matrix_buffer);
+			matrix_buffer = NULL;
 		}
 		else if (matrix_invertible)
 		{
@@ -231,8 +213,12 @@ STATUS_CODE generate_encryption_matrix(int64_t*** out_matrix, uint32_t dimension
 		goto cleanup;
 	}
 
+	*out_matrix = matrix_buffer;
+	matrix_buffer = NULL;
+
 	return_code = STATUS_CODE_SUCCESS;
 cleanup:
+	(void)free_int64_matrix(matrix_buffer, dimension);
 	return return_code;
 }
 

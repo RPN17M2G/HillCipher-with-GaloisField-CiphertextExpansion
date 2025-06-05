@@ -29,7 +29,7 @@ void test_MathUtils_matrix_determinant_1x1()
     TEST_ASSERT_EQUAL_INT64(expected, actual_laplace_expansion);
     TEST_ASSERT_EQUAL_INT64(expected, actual_gauss_jordan);
 
-    free_matrix(matrix, dimension);
+    (void)free_int64_matrix(matrix, dimension);
 }
 
 void test_MathUtils_matrix_determinant_2x2()
@@ -52,7 +52,7 @@ void test_MathUtils_matrix_determinant_2x2()
     TEST_ASSERT_EQUAL_INT64(expected, actual_laplace_expansion);
     TEST_ASSERT_EQUAL_INT64(expected, actual_gauss_jordan);
 
-    free_matrix(matrix, dimension);
+    (void)free_int64_matrix(matrix, dimension);
 }
 
 void test_MathUtils_matrix_determinant_invalidArguments()
@@ -77,7 +77,7 @@ void test_MathUtils_matrix_determinant_invalidArguments()
     TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGUMENT, laplace_expansion_invalid_dimension_status);
     TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGUMENT, gauss_jordan_invalid_dimension_status);
 
-    free_matrix(matrix, dimension);
+    (void)free_int64_matrix(matrix, dimension);
 }
 
 void test_MathUtils_matrix_determinant_sanity() 
@@ -106,7 +106,7 @@ void test_MathUtils_matrix_determinant_sanity()
     TEST_ASSERT_EQUAL_INT64(expected, actual_laplace_expansion);
     TEST_ASSERT_EQUAL_INT64(expected, actual_gauss_jordan);
 
-    free_matrix(matrix, dimension);
+    (void)free_int64_matrix(matrix, dimension);
 }
 
 void test_MathUtils_build_minor_matrix_3x3() 
@@ -137,8 +137,8 @@ void test_MathUtils_build_minor_matrix_3x3()
     TEST_ASSERT_EQUAL_INT64(8, minor_matrix[1][0]);
     TEST_ASSERT_EQUAL_INT64(9, minor_matrix[1][1]);
 
-    free_matrix(minor_matrix, dimension - 1);
-    free_matrix(matrix, dimension);
+    (void)free_int64_matrix(minor_matrix, dimension - 1);
+    (void)free_int64_matrix(matrix, dimension);
 }
 
 void test_MathUtils_gcd_sanity() 
@@ -171,7 +171,7 @@ void test_MathUtils_is_matrix_invertible_true()
     TEST_ASSERT_EQUAL(STATUS_CODE_SUCCESS, status);
     TEST_ASSERT_TRUE(invertible);
 
-    free_matrix(matrix, dimension);
+    (void)free_int64_matrix(matrix, dimension);
 }
 
 void test_MathUtils_is_matrix_invertible_false() 
@@ -191,7 +191,7 @@ void test_MathUtils_is_matrix_invertible_false()
     TEST_ASSERT_EQUAL(STATUS_CODE_SUCCESS, status);
     TEST_ASSERT_FALSE(invertible);
 
-    free_matrix(matrix, dimension);
+    (void)free_int64_matrix(matrix, dimension);
 }
 
 void test_MathUtils_inverse_square_matrix_2x2() 
@@ -218,8 +218,8 @@ void test_MathUtils_inverse_square_matrix_2x2()
     TEST_ASSERT_EQUAL_INT64(7, inverse_matrix[1][0]);
     TEST_ASSERT_EQUAL_INT64(5, inverse_matrix[1][1]);
 
-    free_matrix(inverse_matrix, dimension);
-    free_matrix(matrix, dimension);
+    (void)free_int64_matrix(inverse_matrix, dimension);
+    (void)free_int64_matrix(matrix, dimension);
 }
 
 void test_MathUtils_multiply_matrix_with_uint8_t_vector() 
@@ -251,7 +251,7 @@ void test_MathUtils_multiply_matrix_with_uint8_t_vector()
     TEST_ASSERT_EQUAL_INT64(expected[1], result_vector[1]);
 
     free(result_vector);
-    free_matrix(matrix, dimension);
+    (void)free_int64_matrix(matrix, dimension);
 }
 
 void test_MathUtils_multiply_matrix_with_int64_t_vector() 
@@ -281,7 +281,7 @@ void test_MathUtils_multiply_matrix_with_int64_t_vector()
     TEST_ASSERT_EQUAL_UINT8(expected[1], result_vector[1]);
 
     free(result_vector);
-    free_matrix(matrix, dimension);
+    (void)free_int64_matrix(matrix, dimension);
 }
 
 void test_MathUtils_gcd_multiple_edge_cases() 
@@ -324,7 +324,7 @@ void test_MathUtils_is_matrix_invertible_null_arguments()
     status = is_matrix_invertible(&invertible, NULL, 1, 2);
     TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGUMENT, status);
 
-    free_matrix(matrix, 1);
+    (void)free_int64_matrix(matrix, 1);
 }
 
 void test_MathUtils_inverse_square_matrix_noninvertible_matrix() 
@@ -344,7 +344,7 @@ void test_MathUtils_inverse_square_matrix_noninvertible_matrix()
     TEST_ASSERT_EQUAL(STATUS_CODE_MATRIX_NOT_INVERTIBLE, status);
     TEST_ASSERT_NULL(inverse);
 
-    free_matrix(matrix, 2);
+    (void)free_int64_matrix(matrix, 2);
 }
 
 void test_MathUtils_multiply_matrix_with_uint8_t_vector_negative_and_not_aligned_values() 
@@ -373,7 +373,7 @@ void test_MathUtils_multiply_matrix_with_uint8_t_vector_negative_and_not_aligned
     TEST_ASSERT_EQUAL_INT64(expected[1], result_vector[1]);
 
     free(result_vector);
-    free_matrix(matrix, dimension);
+    (void)free_int64_matrix(matrix, dimension);
 }
 
 void test_MathUtils_multiply_matrix_with_int64_t_vector_negative_and_not_aligned_values() 
@@ -402,7 +402,7 @@ void test_MathUtils_multiply_matrix_with_int64_t_vector_negative_and_not_aligned
     TEST_ASSERT_EQUAL_UINT8(expected[1], result_vector[1]);
 
     free(result_vector);
-    free_matrix(matrix, dimension);
+    (void)free_int64_matrix(matrix, dimension);
 }
 
 void test_MathUtils_build_minor_matrix_sanity() 
@@ -428,8 +428,8 @@ void test_MathUtils_build_minor_matrix_sanity()
     TEST_ASSERT_EQUAL_INT64(7, minor_matrix[1][0]);
     TEST_ASSERT_EQUAL_INT64(9, minor_matrix[1][1]);
 
-    free_matrix(minor_matrix, dimension - 1);
-    free_matrix(matrix, dimension);
+    (void)free_int64_matrix(minor_matrix, dimension - 1);
+    (void)free_int64_matrix(matrix, dimension);
 }
 
 void test_MathUtils_gcd_large_numbers() 

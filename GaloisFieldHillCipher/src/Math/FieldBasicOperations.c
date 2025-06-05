@@ -1,4 +1,4 @@
-#include "../../include/Math/FieldBasicOperations.h"
+#include "Math/FieldBasicOperations.h"
 
 int64_t multiply_over_galois_field(int64_t first_element, int64_t second_element, uint32_t prime_field)
 {

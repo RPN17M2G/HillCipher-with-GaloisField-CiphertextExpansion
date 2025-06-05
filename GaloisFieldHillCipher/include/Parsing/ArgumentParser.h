@@ -8,10 +8,10 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "../OutputFormat.h"
-#include "../Modes.h"
-#include "../StatusCodes.h"
-#include "../IO/FileValidation.h"
+#include "OutputFormat.h"
+#include "Modes.h"
+#include "StatusCodes.h"
+#include "IO/FileValidation.h"
 
 #define MAX_ERROR_MSG_LEN (256)
 #define DECIMAL_BASE (10)

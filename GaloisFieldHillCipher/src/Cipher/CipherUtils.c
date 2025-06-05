@@ -1,4 +1,4 @@
-#include "../../include/Cipher/CipherUtils.h"
+#include "Cipher/CipherUtils.h"
 
 STATUS_CODE add_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_size, uint8_t* value, uint32_t value_bit_length, uint32_t number_of_random_bits_to_add)
 {
@@ -13,6 +13,8 @@ STATUS_CODE add_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_size,
     uint32_t total_bits = 0;
     uint32_t total_bytes = 0;
 
+    uint8_t* out_buffer = NULL;
+
     if ((NULL == out) || (NULL == out_bit_size))
     {
         return_code = STATUS_CODE_INVALID_ARGUMENT;
@@ -24,15 +26,14 @@ STATUS_CODE add_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_size,
     total_bits = value_bit_length + number_of_random_bits;
     total_bytes = total_bits / BYTE_SIZE;
 
-    *out = (uint8_t*)malloc(total_bytes);
-    *out_bit_size = total_bits;
-    if (NULL == *out)
+    out_buffer = (uint8_t*)malloc(total_bytes);
+    if (NULL == out_buffer)
     {
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
         goto cleanup;
     }
 
-    memset(*out, 0, total_bytes);
+    memset(out_buffer, 0, total_bytes);
 
     for (bit_number = 0; bit_number < total_bits; ++bit_number)
     {
@@ -61,25 +62,21 @@ STATUS_CODE add_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_size,
 
         if (IS_BIT_SET(current_working_byte, current_working_byte_bit_index))
         {
-            (*out)[output_byte] = SET_BIT((*out)[output_byte], bit_number);
+            (out_buffer)[output_byte] = SET_BIT((out_buffer)[output_byte], bit_number);
         }
         else
         {
-            (*out)[output_byte] = CLEAR_BIT((*out)[output_byte], bit_number);
+            (out_buffer)[output_byte] = CLEAR_BIT((out_buffer)[output_byte], bit_number);
         }
     }
 
+    *out = out_buffer;
+    out_buffer = NULL;
+    *out_bit_size = total_bits;
+
     return_code = STATUS_CODE_SUCCESS;
 cleanup:
-    if ((STATUS_FAILED(return_code)) && (NULL != out) && (NULL != *out))
-    {
-        free(*out);
-        *out = NULL;
-        if (NULL != out_bit_size)
-        {
-            *out_bit_size = 0;
-        }
-    }
+    free(out_buffer);
     return return_code;
 }
 
@@ -94,6 +91,9 @@ STATUS_CODE remove_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_si
     uint8_t random_bits_counter = 0;
     uint32_t byte_index = 0;
 
+    uint32_t out_bit_size_buffer = 0;
+    uint8_t* out_buffer = NULL;
+
     if ((NULL == out) || (NULL == out_bit_size) || (NULL == value))
     {
         return_code = STATUS_CODE_INVALID_ARGUMENT;
@@ -102,15 +102,15 @@ STATUS_CODE remove_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_si
 
     block_size = BYTE_SIZE + number_of_random_bits_to_remove;
     number_of_random_plus_byte_blocks = value_bit_length / block_size;
-    *out_bit_size = (number_of_random_plus_byte_blocks + (uint32_t)(value_bit_length % block_size != 0)) * BYTE_SIZE;
-    *out = (uint8_t*)malloc(*out_bit_size + 1);
-    if (NULL == *out)
+    out_bit_size_buffer = (number_of_random_plus_byte_blocks + (uint32_t)(value_bit_length % block_size != 0)) * BYTE_SIZE;
+    out_buffer = (uint8_t*)malloc(out_bit_size_buffer + 1);
+    if (NULL == out_buffer)
     {
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
         goto cleanup;
     }
 
-    memset(*out, 0, *out_bit_size);
+    memset(out_buffer, 0, out_bit_size_buffer);
 
     for (bit_number = 0; bit_number < value_bit_length; ++bit_number)
     {
@@ -128,11 +128,11 @@ STATUS_CODE remove_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_si
         byte_index = (uint32_t)(bit_number / BYTE_SIZE);
         if (IS_BIT_SET(value[byte_index], bit_number % BYTE_SIZE))
         {
-            (*out)[output_byte] = SET_BIT((*out)[output_byte], output_bit);
+            (out_buffer)[output_byte] = SET_BIT((out_buffer)[output_byte], output_bit);
         }
         else
         {
-            (*out)[output_byte] = CLEAR_BIT((*out)[output_byte], output_bit);
+            (out_buffer)[output_byte] = CLEAR_BIT((out_buffer)[output_byte], output_bit);
         }
 
         ++output_bit;
@@ -142,15 +142,13 @@ STATUS_CODE remove_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_si
         }
     }
 
+    *out = out_buffer;
+    out_buffer = NULL;
+    *out_bit_size = out_bit_size_buffer;
+
     return_code = STATUS_CODE_SUCCESS;
 cleanup:
-    if ((STATUS_FAILED(return_code)) && (NULL != out) && (NULL != *out))
-    {
-        free(*out);
-        *out = NULL;
-        if (NULL != out_bit_size)
-            *out_bit_size = 0;
-    }
+    free(out_buffer);
     return return_code;
 }
 
@@ -158,6 +156,7 @@ STATUS_CODE pad_to_length(uint8_t** out, uint32_t* out_bit_length, uint8_t* valu
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
     size_t index = 0;
+    uint8_t* out_buffer = NULL;
 
     if ((NULL == out) || (NULL == value) || (NULL == out_bit_length))
     {
@@ -176,8 +175,8 @@ STATUS_CODE pad_to_length(uint8_t** out, uint32_t* out_bit_length, uint8_t* valu
         target_bit_length += block_bit_size;
     }
 
-    *out = (uint8_t*)malloc(target_bit_length / BYTE_SIZE);
-    if (NULL == *out)
+    out_buffer = (uint8_t*)malloc(target_bit_length / BYTE_SIZE);
+    if (NULL == out_buffer)
     {
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
         goto cleanup;
@@ -187,28 +186,25 @@ STATUS_CODE pad_to_length(uint8_t** out, uint32_t* out_bit_length, uint8_t* valu
     // Copy the original value to the output array
     for (index = 0; index < value_bit_length / BYTE_SIZE; ++index)
     {
-        (*out)[index] = value[index];
+        (out_buffer)[index] = value[index];
     }
 
     // Pad the remaining bytes with 0
     for (index = value_bit_length / BYTE_SIZE; index < target_bit_length / BYTE_SIZE; ++index)
     {
-        (*out)[index] = 0;
+        (out_buffer)[index] = 0;
     }
 
     // Set the padding magic byte
-    (*out)[value_bit_length / BYTE_SIZE] = PADDING_MAGIC;
+    (out_buffer)[value_bit_length / BYTE_SIZE] = PADDING_MAGIC;
 
+    *out = out_buffer;
+    out_buffer = NULL;
     *out_bit_length = target_bit_length;
 
     return_code = STATUS_CODE_SUCCESS;
 cleanup:
-    if ((STATUS_FAILED(return_code)) && (NULL != out) && (NULL != *out) && (NULL != out_bit_length))
-    {
-        free(*out);
-        *out = NULL;
-        *out_bit_length = 0;
-    }
+    free(out_buffer);
     return return_code;
 }
 
@@ -217,6 +213,8 @@ STATUS_CODE remove_padding(uint8_t** out, uint32_t* out_bit_length, uint8_t* val
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 	bool out_flag_check = false;
     size_t byte_number = 0, copy_index = 0;
+    uint32_t out_bit_length_buffer = 0;
+    uint8_t* out_buffer = NULL;
 
     if ((NULL == out) || (NULL == value) || (NULL == out_bit_length))
     {
@@ -235,7 +233,7 @@ STATUS_CODE remove_padding(uint8_t** out, uint32_t* out_bit_length, uint8_t* val
 		// Check if the byte is the padding magic number
 		if (value[byte_number] == PADDING_MAGIC)
 		{
-			*out_bit_length = (byte_number * BYTE_SIZE);
+			out_bit_length_buffer = (byte_number * BYTE_SIZE);
             out_flag_check = true;
 		}
 	}
@@ -246,26 +244,26 @@ STATUS_CODE remove_padding(uint8_t** out, uint32_t* out_bit_length, uint8_t* val
         goto cleanup;
     }
 
-    *out = (uint8_t*)malloc(*out_bit_length / BYTE_SIZE);
-    if (NULL == *out)
+    out_buffer = (uint8_t*)malloc(out_bit_length_buffer / BYTE_SIZE);
+    if (NULL == out_buffer)
     {
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
         goto cleanup;
     }
 
     // Copy the original value to the output array
-    for (copy_index = 0; copy_index < (*out_bit_length / BYTE_SIZE); ++copy_index)
+    for (copy_index = 0; copy_index < (out_bit_length_buffer / BYTE_SIZE); ++copy_index)
     {
-        (*out)[copy_index] = value[copy_index];
+        (out_buffer)[copy_index] = value[copy_index];
     }
+
+    *out = out_buffer;
+    out_buffer = NULL;
+    *out_bit_length = out_bit_length_buffer;
+
     return_code = STATUS_CODE_SUCCESS;
 cleanup:
-    if ((STATUS_FAILED(return_code)) && (NULL != out) && (NULL != *out) && (NULL != out_bit_length))
-    {
-        free(*out);
-        *out = NULL;
-        *out_bit_length = 0;
-    }
+    free(out_buffer);
     return return_code;
 }
 
@@ -273,6 +271,8 @@ STATUS_CODE divide_uint8_t_into_blocks(uint8_t*** out_blocks, uint32_t* num_bloc
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
     size_t block_number = 0, free_index = 0;
+    uint8_t** out_blocks_buffer = NULL;
+    uint32_t num_blocks_buffer = 0;
 
     if ((NULL == out_blocks) || (NULL == num_blocks) || (NULL == value) || (value_bit_length % block_bit_size != 0))
     {
@@ -286,42 +286,34 @@ STATUS_CODE divide_uint8_t_into_blocks(uint8_t*** out_blocks, uint32_t* num_bloc
         goto cleanup;
     }
 
-    *num_blocks = (value_bit_length / block_bit_size);
-    *out_blocks = (uint8_t**)malloc(*num_blocks * sizeof(*out_blocks));
-    if (NULL == *out_blocks)
+    num_blocks_buffer = (value_bit_length / block_bit_size);
+    out_blocks_buffer = (uint8_t**)malloc(num_blocks_buffer * sizeof(out_blocks_buffer));
+    if (NULL == out_blocks_buffer)
     {
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
         goto cleanup;
     }
 
-    for (block_number = 0; block_number < *num_blocks; ++block_number)
+    for (block_number = 0; block_number < num_blocks_buffer; ++block_number)
     {
-        (*out_blocks)[block_number] = (uint8_t*)malloc(block_bit_size / BYTE_SIZE);
-        if (NULL == (*out_blocks)[block_number])
+        out_blocks_buffer[block_number] = (uint8_t*)malloc(block_bit_size / BYTE_SIZE);
+        if (NULL == out_blocks_buffer[block_number])
         {
             return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
             goto cleanup;
         }
 
         // Copy the block data
-        memcpy((*out_blocks)[block_number], value + (block_number * block_bit_size / BYTE_SIZE), block_bit_size / BYTE_SIZE);
+        memcpy(out_blocks_buffer[block_number], value + (block_number * block_bit_size / BYTE_SIZE), block_bit_size / BYTE_SIZE);
     }
+
+    *out_blocks = out_blocks_buffer;
+    out_blocks_buffer = NULL;
+    *num_blocks = num_blocks_buffer;
 
     return_code = STATUS_CODE_SUCCESS;
 cleanup:
-    if ((STATUS_FAILED(return_code)) && (NULL != out_blocks) && (NULL != *out_blocks) && (NULL != num_blocks))
-    {
-        for (free_index = 0; free_index < *num_blocks; ++free_index)
-        {
-            if ((*out_blocks)[free_index] != NULL)
-            {
-                free((*out_blocks)[free_index]);
-            }
-        }
-        free(*out_blocks);
-        *out_blocks = NULL;
-        *num_blocks = 0;
-    }
+    (void)free_uint8_matrix(out_blocks_buffer, num_blocks_buffer);
     return return_code;
 }
 
@@ -329,6 +321,8 @@ STATUS_CODE divide_int64_t_into_blocks(int64_t*** out_blocks, uint32_t* num_bloc
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
     size_t block_number = 0, free_index = 0, element_index_in_block = 0, index = 0;
+    int64_t** out_blocks_buffer = NULL;
+    uint32_t num_blocks_buffer = 0;
 
     if ((NULL == out_blocks)
         || (NULL == num_blocks)
@@ -341,53 +335,45 @@ STATUS_CODE divide_int64_t_into_blocks(int64_t*** out_blocks, uint32_t* num_bloc
         goto cleanup;
     }
 
-    *num_blocks = value_bit_length / block_bit_size;
+    num_blocks_buffer = value_bit_length / block_bit_size;
     uint32_t ints_per_block = block_bit_size / (sizeof(int64_t) * BYTE_SIZE);
     uint32_t total_ints = value_bit_length / (sizeof(int64_t) * BYTE_SIZE);
 
-    *out_blocks = (int64_t**)malloc(*num_blocks * sizeof(int64_t*));
-    if (NULL == *out_blocks)
+    out_blocks_buffer = (int64_t**)malloc(num_blocks_buffer * sizeof(int64_t*));
+    if (NULL == out_blocks_buffer)
     {
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
         goto cleanup;
     }
 
-    for (block_number = 0; block_number < *num_blocks; ++block_number)
+    for (block_number = 0; block_number < num_blocks_buffer; ++block_number)
     {
-        (*out_blocks)[block_number] = (int64_t*)malloc(ints_per_block * sizeof(int64_t));
-        if (NULL == (*out_blocks)[block_number])
+        out_blocks_buffer[block_number] = (int64_t*)malloc(ints_per_block * sizeof(int64_t));
+        if (NULL == out_blocks_buffer[block_number])
         {
             return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
             goto cleanup;
         }
 
-        memset((*out_blocks)[block_number], 0, ints_per_block * sizeof(int64_t));
+        memset(out_blocks_buffer[block_number], 0, ints_per_block * sizeof(int64_t));
 
         for (element_index_in_block = 0; element_index_in_block < ints_per_block; ++element_index_in_block)
         {
             index = block_number * ints_per_block + element_index_in_block;
             if (index < total_ints)
             {
-                (*out_blocks)[block_number][element_index_in_block] = value[index];
+                out_blocks_buffer[block_number][element_index_in_block] = value[index];
             }
         }
     }
+
+    *out_blocks = out_blocks_buffer;
+    out_blocks_buffer = NULL;
+    *num_blocks = num_blocks_buffer;
 
     return_code = STATUS_CODE_SUCCESS;
 
 cleanup:
-    if ((STATUS_FAILED(return_code)) && (NULL != out_blocks) && (NULL != *out_blocks) && (NULL != num_blocks))
-    {
-        for (free_index = 0; free_index < *num_blocks; ++free_index)
-        {
-            if ((*out_blocks)[free_index] != NULL)
-            {
-                free((*out_blocks)[free_index]);
-            }
-        }
-        free(*out_blocks);
-        *out_blocks = NULL;
-        *num_blocks = 0;
-    }
+    (void)free_int64_matrix(out_blocks_buffer, num_blocks_buffer);
     return return_code;
 }
