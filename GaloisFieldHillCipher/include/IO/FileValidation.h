@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../StatusCodes.h"
+#include "StatusCodes.h"
 #include "OutputFormat.h"
 
 #define BINARY_FILE_ENDING ".bin"

@@ -5,9 +5,11 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "../StatusCodes.h"
-#include "../Math/MathUtils.h"
+#include "StatusCodes.h"
+#include "Math/MathUtils.h"
 #include "CipherUtils.h"
+#include "Math/MatrixInverse.h"
+#include "Math/MatrixMultiplication.h"
 
 /**
  * @brief Encrypts a plaintext vector using the Extended Hill Cipher algorithm.

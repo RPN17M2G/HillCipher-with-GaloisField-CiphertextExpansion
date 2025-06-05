@@ -1,4 +1,4 @@
-#include "../../include/Cipher/CSPRNG.h"
+#include "Cipher/CSPRNG.h"
 
 STATUS_CODE initialize_sodium_library()
 {
@@ -30,12 +30,9 @@ STATUS_CODE generate_secure_random_number(uint32_t* out_number, uint32_t minimum
 	}
 
 	*out_number = randombytes_uniform(maximum_value - minimum_value) + minimum_value;
+
 	return_code = STATUS_CODE_SUCCESS;
 
 cleanup:
-	if (STATUS_FAILED(return_code) && (out_number != NULL))
-	{
-		*out_number = 0;
-	}
 	return return_code;
 }

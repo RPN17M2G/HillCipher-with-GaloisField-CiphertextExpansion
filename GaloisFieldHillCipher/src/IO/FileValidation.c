@@ -1,4 +1,4 @@
-#include "../../include/IO/FileValidation.h"
+#include "IO/FileValidation.h"
 
 STATUS_CODE validate_file_is_readable(const char* path) {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
@@ -52,6 +52,7 @@ STATUS_CODE validate_output_file(const char* path, FILE_FORMAT format)
     if (!path)
     {
         return_code = STATUS_CODE_INVALID_ARGUMENT;
+        goto cleanup;
     }
 
 

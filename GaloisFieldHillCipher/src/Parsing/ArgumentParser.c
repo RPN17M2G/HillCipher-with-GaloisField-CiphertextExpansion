@@ -1,4 +1,4 @@
-#include "../../include/Parsing/ArgumentParser.h"
+#include "Parsing/ArgumentParser.h"
 
 STATUS_CODE extract_arguments(ParsedArguments* out_args, int argc, char** argv)
 {

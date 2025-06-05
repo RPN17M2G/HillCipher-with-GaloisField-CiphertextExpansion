@@ -1,4 +1,4 @@
-#include "../../include/Cipher/CipherModeHandlers.h"
+#include "Cipher/CipherModeHandlers.h"
 
 STATUS_CODE handle_generate_and_encrypt_mode(const ParsedArguments* args)
 {
@@ -10,6 +10,7 @@ STATUS_CODE handle_generate_and_encrypt_mode(const ParsedArguments* args)
     uint8_t* key_data = NULL;
     int64_t* ciphertext = NULL;
     uint32_t plaintext_size = 0, ciphertext_size = 0;
+    uint8_t* serialized_ciphertext = NULL;
 
     if (!args || !args->output_file || (0 == args->dimension) || !args->input_file || !args->key)
     {
@@ -81,7 +82,12 @@ STATUS_CODE handle_generate_and_encrypt_mode(const ParsedArguments* args)
         printf("[*] Writing ciphertext to: %s\n", args->output_file);
     }
 
-    return_code = write_int64_to_file(args->output_file, ciphertext, ciphertext_size);
+    return_code = serialize_vector(&serialized_ciphertext, &ciphertext_size, ciphertext, ciphertext_size);
+    if (STATUS_FAILED(return_code))
+    {
+        goto cleanup;
+    }
+    return_code = write_uint8_to_file(args->output_file, serialized_ciphertext, ciphertext_size);
 
     if (args->verbose)
     {
@@ -89,23 +95,12 @@ STATUS_CODE handle_generate_and_encrypt_mode(const ParsedArguments* args)
     }
 
 cleanup:
-    if (serialized_data)
-    {
-        free(serialized_data);
-    }
-    if (plaintext)
-    {
-        free(plaintext);
-    }
-    if (key_data)
-    {
-        free(key_data);
-    }
-    if (ciphertext)
-    {
-        free(ciphertext);
-    }
-    free_matrix(encryption_matrix, args->dimension);
+    free(serialized_data);
+    free(serialized_ciphertext);
+    free(plaintext);
+    free(key_data);
+    free(ciphertext);
+    (void)free_int64_matrix(encryption_matrix, args->dimension);
     return return_code;
 }
 
@@ -150,11 +145,8 @@ STATUS_CODE handle_key_generation_mode(const ParsedArguments* args)
     return_code = write_uint8_to_file(args->output_file, serialized_data, serialized_size);
 
 cleanup:
-    if (serialized_data)
-    {
-        free(serialized_data);
-    }
-    free_matrix(encryption_matrix, args->dimension);
+    free(serialized_data);
+    (void)free_int64_matrix(encryption_matrix, args->dimension);
     return return_code;
 }
 
@@ -226,12 +218,9 @@ STATUS_CODE handle_decryption_key_generation_mode(const ParsedArguments* args)
     return_code = write_uint8_to_file(args->output_file, serialized_data, serialized_size);
 
 cleanup:
-    free_matrix(encryption_matrix, args->dimension);
-    free_matrix(decryption_matrix, args->dimension);
-    if (key_data)
-    {
-        free(key_data);
-    }
+    (void)free_int64_matrix(encryption_matrix, args->dimension);
+    (void)free_int64_matrix(decryption_matrix, args->dimension);
+    free(key_data);
     return return_code;
 }
 
@@ -243,6 +232,7 @@ STATUS_CODE handle_encrypt_mode(const ParsedArguments* args)
     int64_t** encryption_matrix = NULL;
     int64_t* ciphertext = NULL;
     uint32_t plaintext_size = 0, ciphertext_size = 0, key_size = 0;
+    uint8_t* serialized_ciphertext = NULL;
 
     if (!args || !args->input_file || !args->key || !args->output_file || (0 == args->dimension))
     {
@@ -309,7 +299,12 @@ STATUS_CODE handle_encrypt_mode(const ParsedArguments* args)
         printf("[*] Writing ciphertext to: %s\n", args->output_file);
     }
 
-    return_code = write_int64_to_file(args->output_file, ciphertext, ciphertext_size);
+    return_code = serialize_vector(&serialized_ciphertext, &ciphertext_size, ciphertext, ciphertext_size);
+    if (STATUS_FAILED(return_code))
+    {
+        goto cleanup;
+    }
+    return_code = write_uint8_to_file(args->output_file, serialized_ciphertext, ciphertext_size);
 
     if (args->verbose)
     {
@@ -317,19 +312,11 @@ STATUS_CODE handle_encrypt_mode(const ParsedArguments* args)
     }
 
 cleanup:
-    if (plaintext)
-    {
-        free(plaintext);
-    }
-    if (key_data)
-    {
-        free(key_data);
-    }
-    if (ciphertext)
-    {
-        free(ciphertext);
-    }
-    free_matrix(encryption_matrix, args->dimension);
+    free(plaintext);
+    free(serialized_ciphertext);
+    free(key_data);
+    free(ciphertext);
+    (void)free_int64_matrix(encryption_matrix, args->dimension);
     return return_code;
 }
 
@@ -339,6 +326,8 @@ STATUS_CODE handle_decrypt_mode(const ParsedArguments* args)
     uint8_t* key_data = NULL;
     uint8_t* decrypted_text = NULL;
     int64_t* ciphertext = NULL;
+    uint32_t serialized_ciphertext_size = 0;
+    uint8_t* serialized_ciphertext = NULL;
     int64_t** decryption_matrix = NULL;
     uint32_t ciphertext_size = 0, decrypted_size = 0, key_size = 0;
 
@@ -352,7 +341,12 @@ STATUS_CODE handle_decrypt_mode(const ParsedArguments* args)
         printf("Reading ciphertext from: %s\n", args->input_file);
     }
 
-    return_code = read_int64_from_file(&ciphertext, &ciphertext_size, args->input_file);
+    return_code = read_uint8_from_file(&serialized_ciphertext, &serialized_ciphertext_size, args->input_file);
+    if (STATUS_FAILED(return_code))
+    {
+        goto cleanup;
+    }
+    return_code = deserialize_vector(&ciphertext, &ciphertext_size, serialized_ciphertext, serialized_ciphertext_size);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
@@ -410,19 +404,11 @@ STATUS_CODE handle_decrypt_mode(const ParsedArguments* args)
     return_code = write_uint8_to_file(args->output_file, decrypted_text, decrypted_size);
 
 cleanup:
-    if (key_data)
-    {
-        free(key_data);
-    }
-    if (ciphertext)
-    {
-        free(ciphertext);
-    }
-    if (decrypted_text)
-    {
-        free(decrypted_text);
-    }
-    free_matrix(decryption_matrix, args->dimension);
+    free(key_data);
+    free(serialized_ciphertext);
+    free(ciphertext);
+    free(decrypted_text);
+    (void)free_int64_matrix(decryption_matrix, args->dimension);
     return return_code;
 }
 
@@ -435,6 +421,8 @@ STATUS_CODE handle_generate_and_decrypt_mode(const ParsedArguments* args)
     int64_t** encryption_matrix = NULL;
     int64_t** decryption_matrix = NULL;
     uint32_t ciphertext_size = 0, decrypted_size = 0, key_size = 0;
+    uint8_t* serialized_ciphertext = NULL;
+    uint32_t serialized_ciphertext_size = 0;
 
     if (!args || !args->input_file || !args->key || !args->output_file || (0 == args->dimension))
     {
@@ -446,7 +434,12 @@ STATUS_CODE handle_generate_and_decrypt_mode(const ParsedArguments* args)
         printf("[*] Reading ciphertext from: %s\n", args->input_file);
     }
 
-    return_code = read_int64_from_file(&ciphertext, &ciphertext_size, args->input_file);
+    return_code = read_uint8_from_file(&serialized_ciphertext, &serialized_ciphertext_size, args->input_file);
+    if (STATUS_FAILED(return_code))
+    {
+        goto cleanup;
+    }
+    return_code = deserialize_vector(&ciphertext, &ciphertext_size, serialized_ciphertext, serialized_ciphertext_size);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
@@ -518,20 +511,11 @@ STATUS_CODE handle_generate_and_decrypt_mode(const ParsedArguments* args)
     return_code = write_uint8_to_file(args->output_file, decrypted_text, decrypted_size);
 
 cleanup:
-    if (key_data)
-    {
-        free(key_data);
-    }
-    if (ciphertext)
-    {
-        free(ciphertext);
-    }
-    if (decrypted_text)
-    {
-        free(decrypted_text);
-    }
-    free_matrix(encryption_matrix, args->dimension);
-    free_matrix(decryption_matrix, args->dimension);
+    free(key_data);
+    free(ciphertext);
+    free(decrypted_text);
+    free(serialized_ciphertext);
+    (void)free_int64_matrix(encryption_matrix, args->dimension);
+    (void)free_int64_matrix(decryption_matrix, args->dimension);
     return return_code;
 }
-
