@@ -7,3 +7,6 @@
 [submodule "GaloisFieldHillCipher/thirdparty/Unity"]
 	path = GaloisFieldHillCipher/thirdparty/Unity
 	url = https://github.com/ThrowTheSwitch/Unity
+[submodule "GaloisFieldHillCipher/thirdparty/log"]
+	path = GaloisFieldHillCipher/thirdparty/log
+	url = https://github.com/rxi/log.c.git
