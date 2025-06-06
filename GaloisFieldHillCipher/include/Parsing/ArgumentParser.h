@@ -24,7 +24,6 @@
 #define MODE_KEY_GENERATE_AND_ENCRYPT_SHORT "ge"
 #define MODE_KEY_GENERATE_AND_DECRYPT_SHORT "gd"
 
-#define ARGUMENT_OUTPUT_FORMAT_SHORT "f"
 #define ARGUMENT_RANDOM_BITS_SHORT "r"
 #define ARGUMENT_INPUT_SHORT "i"
 #define ARGUMENT_OUTPUT_SHORT "o"
@@ -34,7 +33,6 @@
 #define ARGUMENT_KEY_SHORT "k"
 
 
-#define ARGUMENT_OUTPUT_FORMAT_LONG "output_format"
 #define ARGUMENT_RANDOM_BITS_LONG "number_of_random_bits"
 #define ARGUMENT_INPUT_LONG "input_file"
 #define ARGUMENT_OUTPUT_LONG "output_file"
@@ -43,17 +41,15 @@
 #define ARGUMENT_MODE_LONG "mode"
 #define ARGUMENT_KEY_LONG "key"
 
-#define ARGUMENT_OUTPUT_FORMAT_DOCUMENTATION "Output format (space optimized binary/entropy improved text) - enter 'binary' or 'text', default is 'binary'"
 #define ARGUMENT_RANDOM_BITS_DOCUMENTATION "Number of random bits to add between bytes"
 #define ARGUMENT_INPUT_DOCUMENTATION "Path to input file"
-#define ARGUMENT_OUTPUT_DOCUMENTATION "Path to output file"
+#define ARGUMENT_OUTPUT_DOCUMENTATION "Path to output file(Binary file for compact storage, text file for entropy hardened ciphertext)"
 #define ARGUMENT_DIMENSION_DOCUMENTATION "Dimension (uint32_t)"
 #define ARGUMENT_VERBOSE_DOCUMENTATION "Enable verbose output"
 #define ARGUMENT_MODE_DOCUMENTATION "Cipher mode of operation(encrypt/decrypt/key generation)"
 #define ARGUMENT_KEY_DOCUMENTATION "Path to key file"
 
 #define USAGE_HEADER "[!] Invalid usage.\n[*] Modes:\n"
-#define USAGE_OUTPUT_FORMAT_FLAG "[*]   -" ARGUMENT_OUTPUT_FORMAT_SHORT ", --" ARGUMENT_OUTPUT_FORMAT_LONG "    : " ARGUMENT_OUTPUT_FORMAT_DOCUMENTATION "\n"
 #define USAGE_RANDOM_BITS_FLAG "[*]   -" ARGUMENT_RANDOM_BITS_SHORT ", --" ARGUMENT_RANDOM_BITS_LONG "           : " ARGUMENT_RANDOM_BITS_DOCUMENTATION "\n"
 #define USAGE_KEY_GENERATION_MODE "[*]   " MODE_KEY_KEY_GENERATION_SHORT " : Key generation. Requires -" ARGUMENT_OUTPUT_SHORT " <" ARGUMENT_OUTPUT_LONG "> -" ARGUMENT_DIMENSION_SHORT " <" ARGUMENT_DIMENSION_LONG "> [-" ARGUMENT_VERBOSE_SHORT "]\n"
 #define USAGE_DECRYPTION_KEY_GENERATION_MODE "[*]   " MODE_KEY_DECRYPTION_KEY_GENERATION_SHORT " : Decryption key generation. Requires -" ARGUMENT_KEY_SHORT " <" ARGUMENT_KEY_LONG "> -" ARGUMENT_OUTPUT_SHORT " <" ARGUMENT_OUTPUT_LONG "> -" ARGUMENT_DIMENSION_SHORT " <" ARGUMENT_DIMENSION_LONG "> [-" ARGUMENT_VERBOSE_SHORT "]\n"
@@ -83,7 +79,6 @@
     USAGE_VERBOSE_FLAG \
     USAGE_MODE_FLAG \
     USAGE_KEY_FLAG \
-    USAGE_OUTPUT_FORMAT_FLAG \
     USAGE_RANDOM_BITS_FLAG)
 
 typedef struct {

@@ -139,6 +139,19 @@ in case of 2 bits insertion:
  
  first plaintext byte | 2 random bits | second plaintext byte | 2 random bits | third plaintext byte...
 
+##### Output and Input formats
+
+Determinated by the extension of the output file. 
+
+###### Binary Compact Storage
+
+My chosen GF is 25bits long, what means that every member of this GF fits inside 24bits == 3bytes.
+So there is an option to store the ciphertext in blocks of 3bytes each in the most compact way possible.
+
+###### ASCII Mapping
+
+For text storage, there is mapping between the digits of the ciphertext, each number of the GF fits inside 8 digits.
+The mapping has a variant(Same digit maps to few different letters) of 5 which helps reduce the entropy of the ciphertext.
 
 ### Thanks and Credit
 
