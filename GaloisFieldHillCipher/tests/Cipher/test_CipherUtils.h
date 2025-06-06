@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 #include "unity.h"
-#include "Cipher/CipherUtils.h"
+#include "Cipher/BlockDividing.h"
 
 void test_add_random_bits_between_bytes_Sanity();
 void test_add_random_bits_between_bytes_EmptyInput();

@@ -16,12 +16,12 @@ STATUS_CODE validate_file_is_readable(const char* path) {
 cleanup:
     return return_code;
 }
-
 STATUS_CODE validate_file_is_binary(const char* path)
 {
-    STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
-    const char* required_ext = BINARY_FILE_ENDING;
-    size_t path_len, ext_len;
+    STATUS_CODE return_code = STATUS_CODE_FILE_NOT_BINARY;
+    const char* binary_extensions[] = {".bin", ".png"};
+    size_t number_of_extensions = sizeof(binary_extensions) / sizeof(binary_extensions[0]);
+    size_t path_length = 0, extension_length = 0, extension_number = 0;
 
     if (!path)
     {
@@ -29,17 +29,19 @@ STATUS_CODE validate_file_is_binary(const char* path)
         goto cleanup;
     }
 
-    path_len = strlen(path);
-    ext_len = strlen(required_ext);
+    path_length = strlen(path);
 
-    if (path_len < ext_len || (strcmp(path + path_len - ext_len, required_ext) != 0))
-    {
-        return_code = STATUS_CODE_FILE_NOT_BINARY;
-        goto cleanup;
+    for (extension_number = 0; extension_number < number_of_extensions; ++extension_number) {
+        extension_length = strlen(binary_extensions[extension_number]);
+        if (path_length >= extension_length &&
+            strcmp(path + path_length - extension_length, binary_extensions[extension_number]) == 0)
+            {
+                return_code = STATUS_CODE_SUCCESS;
+                goto cleanup;
+            }
     }
 
-    return_code = STATUS_CODE_SUCCESS;
-
+    return_code = STATUS_CODE_FILE_NOT_BINARY;
 cleanup:
     return return_code;
 }

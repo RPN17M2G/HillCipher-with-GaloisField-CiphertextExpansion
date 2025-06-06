@@ -8,7 +8,7 @@
 
 #include "FileValidation.h"
 #include "StatusCodes.h"
-#include "Cipher/CipherUtils.h"
+#include "Cipher/BlockDividing.h"
 
 /**
  * @brief Write uint8_t vector to a file.

@@ -7,8 +7,9 @@
 #include "IO/FileOperations.h"
 #include "Math/MatrixUtils.h"
 #include "IO/SerDes.h"
-#include "CipherUtils.h"
+#include "BlockDividing.h"
 #include "Cipher.h"
+#include "Cipher/AsciiMapping.h"
 
 /**
  * @brief Handle key generation mode - Generate a key and write it to the specified file.

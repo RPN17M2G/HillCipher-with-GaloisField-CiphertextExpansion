@@ -11,6 +11,7 @@ STATUS_CODE handle_generate_and_encrypt_mode(const ParsedArguments* args)
     int64_t* ciphertext = NULL;
     uint32_t plaintext_size = 0, ciphertext_size = 0;
     uint8_t* serialized_ciphertext = NULL;
+    uint32_t serialized_ciphertext_size = 0;
 
     if (!args || !args->output_file || (0 == args->dimension) || !args->input_file || !args->key)
     {
@@ -82,14 +83,34 @@ STATUS_CODE handle_generate_and_encrypt_mode(const ParsedArguments* args)
         printf("[*] Writing ciphertext to: %s\n", args->output_file);
     }
 
-    return_code = serialize_vector(&serialized_ciphertext, &ciphertext_size, ciphertext, ciphertext_size);
+    if (args->output_format == OUTPUT_FORMAT_BINARY)
+    {
+        if (args->verbose)
+        {
+            printf("[*] Serializing ciphertext to binary...\n");
+        }
+        return_code = serialize_vector(&serialized_ciphertext, &serialized_ciphertext_size, ciphertext, ciphertext_size);
+    }
+    else // Text format
+    {
+        if (args->verbose)
+        {
+            printf("[*] Mapping int64 ciphertext to text...\n");
+        }
+        return_code = map_from_int64_to_ascii(&serialized_ciphertext, &serialized_ciphertext_size, ciphertext, ciphertext_size);
+    }
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
     }
+    if (args->verbose)
+    {
+        print_uint8_vector(serialized_ciphertext, serialized_ciphertext_size, "[*] Serialized ciphertext data:");
+    }
+
     return_code = write_uint8_to_file(args->output_file, serialized_ciphertext, ciphertext_size);
 
-    if (args->verbose)
+    if (args->verbose && STATUS_SUCCESS(return_code))
     {
         printf("[*] Ciphertext written successfully.\n");
     }
@@ -233,6 +254,7 @@ STATUS_CODE handle_encrypt_mode(const ParsedArguments* args)
     int64_t* ciphertext = NULL;
     uint32_t plaintext_size = 0, ciphertext_size = 0, key_size = 0;
     uint8_t* serialized_ciphertext = NULL;
+    uint32_t serialized_ciphertext_size = 0;
 
     if (!args || !args->input_file || !args->key || !args->output_file || (0 == args->dimension))
     {
@@ -299,12 +321,32 @@ STATUS_CODE handle_encrypt_mode(const ParsedArguments* args)
         printf("[*] Writing ciphertext to: %s\n", args->output_file);
     }
 
-    return_code = serialize_vector(&serialized_ciphertext, &ciphertext_size, ciphertext, ciphertext_size);
+    if (args->output_format == OUTPUT_FORMAT_BINARY)
+    {
+        if (args->verbose)
+        {
+            printf("[*] Serializing ciphertext to binary...\n");
+        }
+        return_code = serialize_vector(&serialized_ciphertext, &serialized_ciphertext_size, ciphertext, ciphertext_size);
+    }
+    else // Text format
+    {
+        if (args->verbose)
+        {
+            printf("[*] Mapping int64 ciphertext to text...\n");
+        }
+        return_code = map_from_int64_to_ascii(&serialized_ciphertext, &serialized_ciphertext_size, ciphertext, ciphertext_size);
+    }
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
     }
-    return_code = write_uint8_to_file(args->output_file, serialized_ciphertext, ciphertext_size);
+    if (args->verbose)
+    {
+        print_uint8_vector(serialized_ciphertext, serialized_ciphertext_size, "[*] Serialized ciphertext data:");
+    }
+
+    return_code = write_uint8_to_file(args->output_file, serialized_ciphertext, serialized_ciphertext_size);
 
     if (args->verbose)
     {
@@ -373,7 +415,22 @@ STATUS_CODE handle_decrypt_mode(const ParsedArguments* args)
         print_uint8_vector(key_data, key_size / BYTE_SIZE, "[*] Key data:");
     }
 
-    return_code = deserialize_matrix(&decryption_matrix, args->dimension, key_data, key_size);
+    if (args->input_format == OUTPUT_FORMAT_BINARY)
+    {
+        if (args->verbose)
+        {
+            printf("[*] Deserializing binary ciphertext...\n");
+        }
+        return_code = deserialize_vector(&ciphertext, &ciphertext_size, serialized_ciphertext, serialized_ciphertext_size);
+    }
+    else // Text format
+    {
+        if (args->verbose)
+        {
+            printf("[*] Mapping text ciphertext to int64_t vector...\n");
+        }
+        return_code = map_from_ascii_to_int64(&ciphertext, &ciphertext_size, serialized_ciphertext, serialized_ciphertext_size);
+    }
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
@@ -439,7 +496,23 @@ STATUS_CODE handle_generate_and_decrypt_mode(const ParsedArguments* args)
     {
         goto cleanup;
     }
-    return_code = deserialize_vector(&ciphertext, &ciphertext_size, serialized_ciphertext, serialized_ciphertext_size);
+
+    if (args->input_format == OUTPUT_FORMAT_BINARY)
+    {
+        if (args->verbose)
+        {
+            printf("[*] Deserializing binary ciphertext...\n");
+        }
+        return_code = deserialize_vector(&ciphertext, &ciphertext_size, serialized_ciphertext, serialized_ciphertext_size);
+    }
+    else // Text format
+    {
+        if (args->verbose)
+        {
+            printf("[*] Mapping text ciphertext to int64_t vector...\n");
+        }
+        return_code = map_from_ascii_to_int64(&ciphertext, &ciphertext_size, serialized_ciphertext, serialized_ciphertext_size);
+    }
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;

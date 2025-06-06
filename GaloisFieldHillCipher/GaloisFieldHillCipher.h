@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "include/Cipher/CipherUtils.h"
+#include "include/Cipher/BlockDividing.h"
 #include "include/Cipher/Cipher.h"
 #include "include/Parsing/ArgumentParser.h"
 #include "include/IO/FileOperations.h"

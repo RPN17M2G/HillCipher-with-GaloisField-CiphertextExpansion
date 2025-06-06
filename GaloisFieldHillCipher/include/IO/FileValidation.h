@@ -8,8 +8,6 @@
 #include "StatusCodes.h"
 #include "OutputFormat.h"
 
-#define BINARY_FILE_ENDING ".bin"
-
 /**
  * @brief Validates if the given file exists and is readable.
  *
