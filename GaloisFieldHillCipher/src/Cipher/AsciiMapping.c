@@ -130,7 +130,7 @@ STATUS_CODE map_from_ascii_to_int64(int64_t** out_int64, uint32_t* out_int64_siz
 
     *out_int64 = buffer;
     buffer = NULL;
-    *out_int64_size = number_of_output_numbers;
+    *out_int64_size = number_of_output_numbers * sizeof(int64_t);
 
     return_code = STATUS_CODE_SUCCESS;
 cleanup:

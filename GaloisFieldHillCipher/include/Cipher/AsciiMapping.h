@@ -9,7 +9,7 @@
 #include "StatusCodes.h"
 #include "Cipher/CSPRNG.h"
 
-#define DIGITS_PER_NUMBER (7)
+#define DIGITS_PER_NUMBER (8)
 #define DIGIT_VARIANTS (5)
 #define MAX_DIGIT (9)
 

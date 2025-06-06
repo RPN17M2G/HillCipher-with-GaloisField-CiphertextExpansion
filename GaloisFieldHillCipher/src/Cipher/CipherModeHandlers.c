@@ -108,7 +108,7 @@ STATUS_CODE handle_generate_and_encrypt_mode(const ParsedArguments* args)
         print_uint8_vector(serialized_ciphertext, serialized_ciphertext_size, "[*] Serialized ciphertext data:");
     }
 
-    return_code = write_uint8_to_file(args->output_file, serialized_ciphertext, ciphertext_size);
+    return_code = write_uint8_to_file(args->output_file, serialized_ciphertext, serialized_ciphertext_size);
 
     if (args->verbose && STATUS_SUCCESS(return_code))
     {
@@ -497,6 +497,13 @@ STATUS_CODE handle_generate_and_decrypt_mode(const ParsedArguments* args)
         goto cleanup;
     }
 
+    serialized_ciphertext_size = serialized_ciphertext_size / BYTE_SIZE; // Convert to bytes
+
+    if (args->verbose)
+    {
+        print_uint8_vector(serialized_ciphertext, serialized_ciphertext_size, "[*] Serialized ciphertext data:");
+    }
+
     if (args->input_format == OUTPUT_FORMAT_BINARY)
     {
         if (args->verbose)
@@ -517,6 +524,7 @@ STATUS_CODE handle_generate_and_decrypt_mode(const ParsedArguments* args)
     {
         goto cleanup;
     }
+    ciphertext_size = ciphertext_size * BYTE_SIZE; // Convert to bits
 
     if (args->verbose)
     {
