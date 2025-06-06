@@ -7,6 +7,7 @@ STATUS_CODE free_int64_matrix(int64_t** matrix, uint32_t dimension)
 
 	if (NULL == matrix)
 	{
+		log_warn("[!] Matrix is NULL in free_int64_matrix.");
 		return_code = STATUS_CODE_INVALID_ARGUMENT;
 		goto cleanup;
 	}
@@ -29,6 +30,7 @@ STATUS_CODE free_uint8_matrix(uint8_t** matrix, uint32_t dimension)
 
 	if (NULL == matrix)
 	{
+		log_error("[!] Invalid argument: matrix is NULL in free_uint8_matrix.");
 		return_code = STATUS_CODE_INVALID_ARGUMENT;
 		goto cleanup;
 	}
@@ -43,3 +45,4 @@ STATUS_CODE free_uint8_matrix(uint8_t** matrix, uint32_t dimension)
 cleanup:
 	return return_code;
 }
+

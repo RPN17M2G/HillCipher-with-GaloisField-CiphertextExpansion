@@ -10,6 +10,7 @@
 #include "BlockDividing.h"
 #include "Cipher.h"
 #include "Cipher/AsciiMapping.h"
+#include "log.h"
 
 /**
  * @brief Handle key generation mode - Generate a key and write it to the specified file.

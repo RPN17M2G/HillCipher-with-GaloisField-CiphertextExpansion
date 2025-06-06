@@ -8,9 +8,17 @@ STATUS_CODE multiply_matrix_with_uint8_t_vector(int64_t** out_vector, int64_t** 
     size_t row = 0, column = 0;
     int64_t* out_vector_buffer = NULL;
 
+    if ((NULL == out_vector) || (NULL == matrix) || (NULL == vector))
+    {
+        log_error("[!] Invalid argument in multiply_matrix_with_uint8_t_vector.");
+        return_code = STATUS_CODE_INVALID_ARGUMENT;
+        goto cleanup;
+    }
+
     out_vector_buffer = (int64_t*)malloc(dimension * sizeof(int64_t));
     if (NULL == out_vector_buffer)
     {
+        log_error("[!] Memory allocation failed in multiply_matrix_with_uint8_t_vector.");
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
         goto cleanup;
     }
@@ -45,6 +53,7 @@ STATUS_CODE multiply_matrix_with_int64_t_vector(uint8_t** out_vector, int64_t** 
 
     if ((NULL == out_vector) || (NULL == matrix) || (NULL == vector))
     {
+        log_error("[!] Invalid argument in multiply_matrix_with_int64_t_vector.");
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
     }
@@ -52,6 +61,7 @@ STATUS_CODE multiply_matrix_with_int64_t_vector(uint8_t** out_vector, int64_t** 
     out_vector_buffer = (uint8_t*)malloc(dimension + MEMORY_BUFFER_FOR_PLAINTEXT_BLOCK);
     if (NULL == out_vector_buffer)
     {
+        log_error("[!] Memory allocation failed in multiply_matrix_with_int64_t_vector.");
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
         goto cleanup;
     }
@@ -67,6 +77,7 @@ STATUS_CODE multiply_matrix_with_int64_t_vector(uint8_t** out_vector, int64_t** 
 
         if (temp_result > UINT8_MAX)
         {
+            log_error("[!] Result width too large in multiply_matrix_with_int64_t_vector.");
             return_code = STATUS_CODE_INVALID_RESULT_WIDTH;
             goto cleanup;
         }
@@ -81,3 +92,4 @@ cleanup:
     free(out_vector_buffer);
     return return_code;
 }
+

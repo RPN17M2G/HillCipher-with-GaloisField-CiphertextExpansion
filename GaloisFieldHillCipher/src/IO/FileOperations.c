@@ -1,6 +1,5 @@
 #include "IO/FileOperations.h"
 
-
 STATUS_CODE write_uint8_to_file(const char* filepath, const uint8_t* data, uint32_t size)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
@@ -57,7 +56,7 @@ STATUS_CODE read_uint8_from_file(uint8_t** out_data, uint32_t* out_size, const c
     file = fopen(filepath, reading_mode);
     if (!file)
     {
-        printf("[!] Could not open file: %s\n", filepath);
+        log_info("[!] Could not open file: %s\n", filepath);
         return_code = STATUS_CODE_COULDNT_OPEN_FILE;
         goto cleanup;
     }

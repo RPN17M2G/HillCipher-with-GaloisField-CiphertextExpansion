@@ -15,11 +15,13 @@ STATUS_CODE inverse_square_matrix_adjugate_method(int64_t*** out_inverse_matrix,
 	return_code = is_matrix_invertible(&is_invertible, matrix, dimension, prime_field);
 	if (STATUS_FAILED(return_code))
 	{
+		log_error("[!] Failed to check if matrix is invertible in inverse_square_matrix_adjugate_method.");
 		goto cleanup;
 	}
 
 	if (!is_invertible)
 	{
+		log_error("[!] Matrix is not invertible in inverse_square_matrix_adjugate_method.");
 		return_code = STATUS_CODE_MATRIX_NOT_INVERTIBLE;
 		goto cleanup;
 	}
@@ -28,6 +30,7 @@ STATUS_CODE inverse_square_matrix_adjugate_method(int64_t*** out_inverse_matrix,
 	return_code = matrix_determinant_over_galois_field_laplace_expansion(&determinant, matrix, dimension, prime_field);
 	if (STATUS_FAILED(return_code))
 	{
+		log_error("[!] Failed to compute determinant in inverse_square_matrix_adjugate_method.");
 		goto cleanup;
 	}
 	inverse_determinant = raise_power_over_galois_field(determinant, prime_field - 2, prime_field);
@@ -36,6 +39,7 @@ STATUS_CODE inverse_square_matrix_adjugate_method(int64_t*** out_inverse_matrix,
 	adjugate_matrix = (int64_t**)malloc(dimension * sizeof(int64_t*));
 	if (NULL == adjugate_matrix)
 	{
+		log_error("[!] Memory allocation failed for adjugate_matrix in inverse_square_matrix_adjugate_method.");
 		return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
 		goto cleanup;
 	}
@@ -45,6 +49,7 @@ STATUS_CODE inverse_square_matrix_adjugate_method(int64_t*** out_inverse_matrix,
 		adjugate_matrix[row] = (int64_t*)malloc(dimension * sizeof(int64_t));
 		if (NULL == adjugate_matrix[row])
 		{
+			log_error("[!] Memory allocation failed for adjugate_matrix row in inverse_square_matrix_adjugate_method.");
 			return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
 			goto cleanup;
 		}
@@ -58,12 +63,14 @@ STATUS_CODE inverse_square_matrix_adjugate_method(int64_t*** out_inverse_matrix,
 			return_code = build_minor_matrix(&minor_matrix, matrix, dimension, row, column);
 			if (STATUS_FAILED(return_code))
 			{
+				log_error("[!] Failed to build minor matrix in inverse_square_matrix_adjugate_method.");
 				goto cleanup;
 			}
 			minor_matrix_determinant = 0;
 			return_code = matrix_determinant_over_galois_field_laplace_expansion(&minor_matrix_determinant, minor_matrix, dimension - 1, prime_field);
 			if (STATUS_FAILED(return_code))
 			{
+				log_error("[!] Failed to compute minor matrix determinant in inverse_square_matrix_adjugate_method.");
 				goto cleanup;
 			}
 
@@ -83,6 +90,7 @@ STATUS_CODE inverse_square_matrix_adjugate_method(int64_t*** out_inverse_matrix,
 	inverse_matrix_buffer = (int64_t**)malloc(dimension * sizeof(int64_t*));
 	if (NULL == inverse_matrix_buffer)
 	{
+		log_error("[!] Memory allocation failed for inverse_matrix_buffer in inverse_square_matrix_adjugate_method.");
 		return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
 		goto cleanup;
 	}
@@ -92,6 +100,7 @@ STATUS_CODE inverse_square_matrix_adjugate_method(int64_t*** out_inverse_matrix,
 		inverse_matrix_buffer[row] = (int64_t*)malloc(dimension * sizeof(int64_t));
 		if (NULL == inverse_matrix_buffer[row])
 		{
+			log_error("[!] Memory allocation failed for inverse_matrix_buffer row in inverse_square_matrix_adjugate_method.");
 			return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
 			goto cleanup;
 		}
@@ -131,6 +140,7 @@ STATUS_CODE inverse_square_matrix_gauss_jordan(int64_t*** out_inverse_matrix, in
 
     if ((NULL == matrix) || (NULL == out_inverse_matrix))
     {
+		log_error("[!] Invalid argument: matrix or out_inverse_matrix is NULL in inverse_square_matrix_gauss_jordan.");
 		return_code = STATUS_CODE_INVALID_ARGUMENT;
     	goto cleanup;
     }
@@ -138,6 +148,7 @@ STATUS_CODE inverse_square_matrix_gauss_jordan(int64_t*** out_inverse_matrix, in
     augmented_matrix = (int64_t**)malloc(dimension * sizeof(int64_t*));
     if (!augmented_matrix)
     {
+		log_error("[!] Memory allocation failed for augmented_matrix in inverse_square_matrix_gauss_jordan.");
 		return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
 		goto cleanup;
     }
@@ -147,6 +158,7 @@ STATUS_CODE inverse_square_matrix_gauss_jordan(int64_t*** out_inverse_matrix, in
         augmented_matrix[allocation_index] = (int64_t*)malloc(2 * dimension * sizeof(int64_t));
         if (!augmented_matrix[allocation_index])
         {
+            log_error("[!] Memory allocation failed for augmented_matrix row in inverse_square_matrix_gauss_jordan.");
             return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
 			goto cleanup;
         }
@@ -177,6 +189,7 @@ STATUS_CODE inverse_square_matrix_gauss_jordan(int64_t*** out_inverse_matrix, in
 
         if (0 == augmented_matrix[pivot_row][row_iteration])
         {
+            log_error("[!] Matrix is not invertible (zero pivot) in inverse_square_matrix_gauss_jordan.");
             return_code = STATUS_CODE_MATRIX_NOT_INVERTIBLE;
 			goto cleanup;
         }
@@ -214,6 +227,7 @@ STATUS_CODE inverse_square_matrix_gauss_jordan(int64_t*** out_inverse_matrix, in
     out_inverse_matrix_buffer = (int64_t**)malloc(dimension * sizeof(int64_t*));
     if (!out_inverse_matrix_buffer)
     {
+        log_error("[!] Memory allocation failed for out_inverse_matrix_buffer in inverse_square_matrix_gauss_jordan.");
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
     	goto cleanup;
     }
@@ -222,6 +236,7 @@ STATUS_CODE inverse_square_matrix_gauss_jordan(int64_t*** out_inverse_matrix, in
         out_inverse_matrix_buffer[row] = (int64_t*)malloc(dimension * sizeof(int64_t));
 		if (!out_inverse_matrix_buffer[row])
 		{
+            log_error("[!] Memory allocation failed for out_inverse_matrix_buffer row in inverse_square_matrix_gauss_jordan.");
     		return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
 			goto cleanup;
 		}
@@ -245,3 +260,4 @@ cleanup:
 	(void)free_int64_matrix(out_inverse_matrix_buffer, dimension);
     return return_code;
 }
+

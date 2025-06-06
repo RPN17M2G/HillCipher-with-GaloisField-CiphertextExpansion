@@ -9,6 +9,7 @@
 #include "FileValidation.h"
 #include "StatusCodes.h"
 #include "Cipher/BlockDividing.h"
+#include "log.h"
 
 /**
  * @brief Write uint8_t vector to a file.

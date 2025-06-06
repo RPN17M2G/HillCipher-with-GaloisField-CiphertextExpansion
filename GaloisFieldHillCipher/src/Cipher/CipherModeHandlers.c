@@ -18,7 +18,7 @@ STATUS_CODE handle_generate_and_encrypt_mode(const ParsedArguments* args)
         return STATUS_CODE_INVALID_ARGUMENT;
     }
 
-    printf("[*] Generating encryption matrix...\n");
+    log_info("[*] Generating encryption matrix...\n");
 
     return_code = generate_encryption_matrix(&encryption_matrix, args->dimension, DEFAULT_PRIME_GALOIS_FIELD, 3);
     if (STATUS_FAILED(return_code))
@@ -26,7 +26,7 @@ STATUS_CODE handle_generate_and_encrypt_mode(const ParsedArguments* args)
         goto cleanup;
     }
 
-    printf("[*] Encryption matrix generated.\n");
+    log_info("[*] Encryption matrix generated.\n");
     if (args->verbose)
     {
         print_matrix(encryption_matrix, args->dimension);
@@ -41,7 +41,7 @@ STATUS_CODE handle_generate_and_encrypt_mode(const ParsedArguments* args)
     if (args->verbose)
     {
         print_uint8_vector(serialized_data, serialized_size, "[*] Serialized matrix data:");
-        printf("[*] Writing to key file: %s\n", args->key);
+        log_info("[*] Writing to key file: %s\n", args->key);
     }
 
     return_code = write_uint8_to_file(args->key, serialized_data, serialized_size);
@@ -52,7 +52,7 @@ STATUS_CODE handle_generate_and_encrypt_mode(const ParsedArguments* args)
 
     if (args->verbose)
     {
-        printf("[*] Reading plaintext from: %s\n", args->input_file);
+        log_info("[*] Reading plaintext from: %s\n", args->input_file);
     }
 
     return_code = read_uint8_from_file(&plaintext, &plaintext_size, args->input_file);
@@ -66,7 +66,7 @@ STATUS_CODE handle_generate_and_encrypt_mode(const ParsedArguments* args)
         print_uint8_vector(plaintext, plaintext_size / BYTE_SIZE, "[*] Plaintext data:");
     }
 
-    printf("[*] Encrypting data...\n");
+    log_info("[*] Encrypting data...\n");
 
     return_code = encrypt(&ciphertext, &ciphertext_size, encryption_matrix, args->dimension, DEFAULT_PRIME_GALOIS_FIELD, plaintext, plaintext_size, args->number_of_random_bits_between_bytes);
     if (STATUS_FAILED(return_code))
@@ -75,19 +75,19 @@ STATUS_CODE handle_generate_and_encrypt_mode(const ParsedArguments* args)
     }
     ciphertext_size = (ciphertext_size / (BYTE_SIZE * sizeof(int64_t))); // Size is returned as bits
 
-    printf("[*] Encryption completed, ciphertext size: %ld\n", ciphertext_size);
+    log_info("[*] Encryption completed, ciphertext size: %ld\n", ciphertext_size);
 
     if (args->verbose)
     {
         print_int64_vector(ciphertext, ciphertext_size, "[*] Ciphertext data:");
-        printf("[*] Writing ciphertext to: %s\n", args->output_file);
+        log_info("[*] Writing ciphertext to: %s\n", args->output_file);
     }
 
     if (args->output_format == OUTPUT_FORMAT_BINARY)
     {
         if (args->verbose)
         {
-            printf("[*] Serializing ciphertext to binary...\n");
+            log_info("[*] Serializing ciphertext to binary...\n");
         }
         return_code = serialize_vector(&serialized_ciphertext, &serialized_ciphertext_size, ciphertext, ciphertext_size);
     }
@@ -95,7 +95,7 @@ STATUS_CODE handle_generate_and_encrypt_mode(const ParsedArguments* args)
     {
         if (args->verbose)
         {
-            printf("[*] Mapping int64 ciphertext to text...\n");
+            log_info("[*] Mapping int64 ciphertext to text...\n");
         }
         return_code = map_from_int64_to_ascii(&serialized_ciphertext, &serialized_ciphertext_size, ciphertext, ciphertext_size);
     }
@@ -112,7 +112,7 @@ STATUS_CODE handle_generate_and_encrypt_mode(const ParsedArguments* args)
 
     if (args->verbose && STATUS_SUCCESS(return_code))
     {
-        printf("[*] Ciphertext written successfully.\n");
+        log_info("[*] Ciphertext written successfully.\n");
     }
 
 cleanup:
@@ -137,7 +137,7 @@ STATUS_CODE handle_key_generation_mode(const ParsedArguments* args)
         return STATUS_CODE_INVALID_ARGUMENT;
     }
 
-    printf("[*] Generating encryption matrix...\n");
+    log_info("[*] Generating encryption matrix...\n");
 
     return_code = generate_encryption_matrix(&encryption_matrix, args->dimension, DEFAULT_PRIME_GALOIS_FIELD, 3);
     if (STATUS_FAILED(return_code))
@@ -145,7 +145,7 @@ STATUS_CODE handle_key_generation_mode(const ParsedArguments* args)
         goto cleanup;
     }
 
-    printf("[*] Encryption matrix generated.\n");
+    log_info("[*] Encryption matrix generated.\n");
     if (args->verbose)
     {
         print_matrix(encryption_matrix, args->dimension);
@@ -160,7 +160,7 @@ STATUS_CODE handle_key_generation_mode(const ParsedArguments* args)
     if (args->verbose)
     {
         print_uint8_vector(serialized_data, serialized_size, "[*] Serialized matrix data:");
-        printf("[*] Writing to key file: %s\n", args->output_file);
+        log_info("[*] Writing to key file: %s\n", args->output_file);
     }
 
     return_code = write_uint8_to_file(args->output_file, serialized_data, serialized_size);
@@ -188,7 +188,7 @@ STATUS_CODE handle_decryption_key_generation_mode(const ParsedArguments* args)
 
     if (args->verbose)
     {
-        printf("[*] Reading encryption key from: %s\n", args->key);
+        log_info("[*] Reading encryption key from: %s\n", args->key);
     }
 
     return_code = read_uint8_from_file(&key_data, &key_size, args->key);
@@ -208,7 +208,7 @@ STATUS_CODE handle_decryption_key_generation_mode(const ParsedArguments* args)
         goto cleanup;
     }
 
-    printf("[*] Generating decryption matrix...\n");
+    log_info("[*] Generating decryption matrix...\n");
 
     return_code = generate_decryption_matrix(&decryption_matrix, args->dimension,
                                            encryption_matrix, DEFAULT_PRIME_GALOIS_FIELD);
@@ -217,7 +217,7 @@ STATUS_CODE handle_decryption_key_generation_mode(const ParsedArguments* args)
         goto cleanup;
     }
 
-    printf("[*] Decryption matrix generated.\n");
+    log_info("[*] Decryption matrix generated.\n");
 
     if (args->verbose)
     {
@@ -233,7 +233,7 @@ STATUS_CODE handle_decryption_key_generation_mode(const ParsedArguments* args)
     if (args->verbose)
     {
         print_uint8_vector(serialized_data, serialized_size, "[*] Serialized matrix data:");
-        printf("[*] Writing to key file: %s\n", args->output_file);
+        log_info("[*] Writing to key file: %s\n", args->output_file);
     }
 
     return_code = write_uint8_to_file(args->output_file, serialized_data, serialized_size);
@@ -263,7 +263,7 @@ STATUS_CODE handle_encrypt_mode(const ParsedArguments* args)
 
     if (args->verbose)
     {
-        printf("[*] Reading plaintext from: %s\n", args->input_file);
+        log_info("[*] Reading plaintext from: %s\n", args->input_file);
     }
 
     return_code = read_uint8_from_file(&plaintext, &plaintext_size, args->input_file);
@@ -279,7 +279,7 @@ STATUS_CODE handle_encrypt_mode(const ParsedArguments* args)
 
     if (args->verbose)
     {
-        printf("[*] Reading key from: %s\n", args->key);
+        log_info("[*] Reading key from: %s\n", args->key);
     }
 
     return_code = read_uint8_from_file(&key_data, &key_size, args->key);
@@ -304,7 +304,7 @@ STATUS_CODE handle_encrypt_mode(const ParsedArguments* args)
         print_matrix(encryption_matrix, args->dimension);
     }
 
-    printf("[*] Encrypting data...\n");
+    log_info("[*] Encrypting data...\n");
 
     return_code = encrypt(&ciphertext, &ciphertext_size, encryption_matrix, args->dimension, DEFAULT_PRIME_GALOIS_FIELD, plaintext, plaintext_size, args->number_of_random_bits_between_bytes);
     if (STATUS_FAILED(return_code))
@@ -313,19 +313,19 @@ STATUS_CODE handle_encrypt_mode(const ParsedArguments* args)
     }
     ciphertext_size = (ciphertext_size / (BYTE_SIZE * sizeof(int64_t))); // Size is returned as bits
 
-    printf("[*] Encryption completed, ciphertext size: %ld\n", ciphertext_size);
+    log_info("[*] Encryption completed, ciphertext size: %ld\n", ciphertext_size);
 
     if (args->verbose)
     {
         print_int64_vector(ciphertext, ciphertext_size, "[*] Ciphertext data:");
-        printf("[*] Writing ciphertext to: %s\n", args->output_file);
+        log_info("[*] Writing ciphertext to: %s\n", args->output_file);
     }
 
     if (args->output_format == OUTPUT_FORMAT_BINARY)
     {
         if (args->verbose)
         {
-            printf("[*] Serializing ciphertext to binary...\n");
+            log_info("[*] Serializing ciphertext to binary...\n");
         }
         return_code = serialize_vector(&serialized_ciphertext, &serialized_ciphertext_size, ciphertext, ciphertext_size);
     }
@@ -333,7 +333,7 @@ STATUS_CODE handle_encrypt_mode(const ParsedArguments* args)
     {
         if (args->verbose)
         {
-            printf("[*] Mapping int64 ciphertext to text...\n");
+            log_info("[*] Mapping int64 ciphertext to text...\n");
         }
         return_code = map_from_int64_to_ascii(&serialized_ciphertext, &serialized_ciphertext_size, ciphertext, ciphertext_size);
     }
@@ -350,7 +350,7 @@ STATUS_CODE handle_encrypt_mode(const ParsedArguments* args)
 
     if (args->verbose)
     {
-        printf("[*] Ciphertext written successfully.\n");
+        log_info("[*] Ciphertext written successfully.\n");
     }
 
 cleanup:
@@ -380,7 +380,7 @@ STATUS_CODE handle_decrypt_mode(const ParsedArguments* args)
 
     if (args->verbose)
     {
-        printf("Reading ciphertext from: %s\n", args->input_file);
+        log_info("Reading ciphertext from: %s\n", args->input_file);
     }
 
     return_code = read_uint8_from_file(&serialized_ciphertext, &serialized_ciphertext_size, args->input_file);
@@ -401,7 +401,7 @@ STATUS_CODE handle_decrypt_mode(const ParsedArguments* args)
 
     if (args->verbose)
     {
-        printf("[*] Reading key from: %s\n", args->key);
+        log_info("[*] Reading key from: %s\n", args->key);
     }
 
     return_code = read_uint8_from_file(&key_data, &key_size, args->key);
@@ -419,7 +419,7 @@ STATUS_CODE handle_decrypt_mode(const ParsedArguments* args)
     {
         if (args->verbose)
         {
-            printf("[*] Deserializing binary ciphertext...\n");
+            log_info("[*] Deserializing binary ciphertext...\n");
         }
         return_code = deserialize_vector(&ciphertext, &ciphertext_size, serialized_ciphertext, serialized_ciphertext_size);
     }
@@ -427,7 +427,7 @@ STATUS_CODE handle_decrypt_mode(const ParsedArguments* args)
     {
         if (args->verbose)
         {
-            printf("[*] Mapping text ciphertext to int64_t vector...\n");
+            log_info("[*] Mapping text ciphertext to int64_t vector...\n");
         }
         return_code = map_from_ascii_to_int64(&ciphertext, &ciphertext_size, serialized_ciphertext, serialized_ciphertext_size);
     }
@@ -441,7 +441,7 @@ STATUS_CODE handle_decrypt_mode(const ParsedArguments* args)
         print_matrix(decryption_matrix, args->dimension);
     }
 
-    printf("[*] Decrypting data...\n");
+    log_info("[*] Decrypting data...\n");
 
     return_code = decrypt(&decrypted_text, &decrypted_size, decryption_matrix, args->dimension, DEFAULT_PRIME_GALOIS_FIELD, ciphertext, ciphertext_size, args->number_of_random_bits_between_bytes);
     if (STATUS_FAILED(return_code))
@@ -450,15 +450,20 @@ STATUS_CODE handle_decrypt_mode(const ParsedArguments* args)
     }
     decrypted_size = (decrypted_size / BYTE_SIZE); // Size is returned as bits
 
-    printf("Decryption completed, plaintext size: %ld\n", decrypted_size);
+    log_info("Decryption completed, plaintext size: %ld\n", decrypted_size);
 
     if (args->verbose)
     {
         print_uint8_vector(decrypted_text, decrypted_size, "[*] Decrypted data:");
-        printf("[*] Writing plaintext to: %s\n", args->output_file);
+        log_info("[*] Writing plaintext to: %s\n", args->output_file);
     }
 
     return_code = write_uint8_to_file(args->output_file, decrypted_text, decrypted_size);
+
+    if (args->verbose && STATUS_SUCCESS(return_code))
+    {
+        log_info("[*] Plaintext written successfully.\n");
+    }
 
 cleanup:
     free(key_data);
@@ -488,7 +493,7 @@ STATUS_CODE handle_generate_and_decrypt_mode(const ParsedArguments* args)
 
     if (args->verbose)
     {
-        printf("[*] Reading ciphertext from: %s\n", args->input_file);
+        log_info("[*] Reading ciphertext from: %s\n", args->input_file);
     }
 
     return_code = read_uint8_from_file(&serialized_ciphertext, &serialized_ciphertext_size, args->input_file);
@@ -508,7 +513,7 @@ STATUS_CODE handle_generate_and_decrypt_mode(const ParsedArguments* args)
     {
         if (args->verbose)
         {
-            printf("[*] Deserializing binary ciphertext...\n");
+            log_info("[*] Deserializing binary ciphertext...\n");
         }
         return_code = deserialize_vector(&ciphertext, &ciphertext_size, serialized_ciphertext, serialized_ciphertext_size);
     }
@@ -516,7 +521,7 @@ STATUS_CODE handle_generate_and_decrypt_mode(const ParsedArguments* args)
     {
         if (args->verbose)
         {
-            printf("[*] Mapping text ciphertext to int64_t vector...\n");
+            log_info("[*] Mapping text ciphertext to int64_t vector...\n");
         }
         return_code = map_from_ascii_to_int64(&ciphertext, &ciphertext_size, serialized_ciphertext, serialized_ciphertext_size);
     }
@@ -533,7 +538,7 @@ STATUS_CODE handle_generate_and_decrypt_mode(const ParsedArguments* args)
 
     if (args->verbose)
     {
-        printf("[*] Reading key from: %s\n", args->key);
+        log_info("[*] Reading key from: %s\n", args->key);
     }
 
     return_code = read_uint8_from_file(&key_data, &key_size, args->key);
@@ -558,7 +563,7 @@ STATUS_CODE handle_generate_and_decrypt_mode(const ParsedArguments* args)
         print_matrix(encryption_matrix, args->dimension);
     }
 
-    printf("[*] Generating decryption matrix...\n");
+    log_info("[*] Generating decryption matrix...\n");
 
     return_code = generate_decryption_matrix(&decryption_matrix, args->dimension, encryption_matrix, DEFAULT_PRIME_GALOIS_FIELD);
     if (STATUS_FAILED(return_code))
@@ -566,13 +571,13 @@ STATUS_CODE handle_generate_and_decrypt_mode(const ParsedArguments* args)
         goto cleanup;
     }
 
-    printf("[*] Decryption matrix generated.\n");
+    log_info("[*] Decryption matrix generated.\n");
     if (args->verbose)
     {
         print_matrix(decryption_matrix, args->dimension);
     }
 
-    printf("[*] Decrypting data...\n");
+    log_info("[*] Decrypting data...\n");
 
     return_code = decrypt(&decrypted_text, &decrypted_size, decryption_matrix, args->dimension, DEFAULT_PRIME_GALOIS_FIELD, ciphertext, ciphertext_size, args->number_of_random_bits_between_bytes);
     if (STATUS_FAILED(return_code))
@@ -581,15 +586,20 @@ STATUS_CODE handle_generate_and_decrypt_mode(const ParsedArguments* args)
     }
     decrypted_size = (decrypted_size / BYTE_SIZE); // Size is returned as bits
 
-    printf("[*] Decryption completed, plaintext size: %ld\n", decrypted_size);
+    log_info("[*] Decryption completed, plaintext size: %ld\n", decrypted_size);
 
     if (args->verbose)
     {
         print_uint8_vector(decrypted_text, decrypted_size, "[*] Decrypted data:");
-        printf("[*] Writing plaintext to: %s\n", args->output_file);
+        log_info("[*] Writing plaintext to: %s\n", args->output_file);
     }
 
     return_code = write_uint8_to_file(args->output_file, decrypted_text, decrypted_size);
+
+    if (args->verbose && STATUS_SUCCESS(return_code))
+    {
+        log_info("[*] Plaintext written successfully.\n");
+    }
 
 cleanup:
     free(key_data);

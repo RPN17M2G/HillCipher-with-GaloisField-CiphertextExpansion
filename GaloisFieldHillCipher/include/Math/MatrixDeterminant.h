@@ -11,6 +11,7 @@
 #include "Math/FieldBasicOperations.h"
 #include "Math/MatrixUtils.h"
 #include "Math/MatrixInverse.h"
+#include "log.h"
 
 /**
  * @brief Calculates the determinant of a square matrix using laplace expansion.

@@ -10,6 +10,7 @@ STATUS_CODE serialize_matrix(uint8_t** out_data, uint32_t* out_size, int64_t** m
 
     if (!out_data || !out_size || !matrix || (0 == dimension))
     {
+        log_error("[!] Invalid argument in serialize_matrix.");
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
     }
@@ -18,6 +19,7 @@ STATUS_CODE serialize_matrix(uint8_t** out_data, uint32_t* out_size, int64_t** m
     buffer = (uint8_t*)malloc(size);
     if (!buffer)
     {
+        log_error("[!] Memory allocation failed in serialize_matrix.");
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
         goto cleanup;
     }
@@ -57,6 +59,7 @@ STATUS_CODE deserialize_matrix(int64_t*** out_matrix, uint32_t dimension, const 
 
     if (!out_matrix || !data || (0 == dimension))
     {
+        log_error("[!] Invalid argument in deserialize_matrix.");
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
     }
@@ -64,6 +67,7 @@ STATUS_CODE deserialize_matrix(int64_t*** out_matrix, uint32_t dimension, const 
     expected_size = dimension * dimension * NUMBER_OF_BYTES_PER_ELEMENT * BYTE_SIZE;
     if (size != expected_size)
     {
+        log_error("[!] Invalid file size in deserialize_matrix.");
         return_code = STATUS_CODE_ERROR_INVALID_FILE_SIZE;
         goto cleanup;
     }
@@ -71,6 +75,7 @@ STATUS_CODE deserialize_matrix(int64_t*** out_matrix, uint32_t dimension, const 
     result = (int64_t**)malloc(dimension * sizeof(int64_t*));
     if (!result)
     {
+        log_error("[!] Memory allocation failed in deserialize_matrix.");
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
         goto cleanup;
     }
@@ -80,6 +85,7 @@ STATUS_CODE deserialize_matrix(int64_t*** out_matrix, uint32_t dimension, const 
         result[row] = (int64_t*)malloc(dimension * sizeof(int64_t));
         if (!result[row])
         {
+            log_error("[!] Memory allocation failed for row in deserialize_matrix.");
             return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
             goto cleanup;
         }
@@ -115,6 +121,7 @@ STATUS_CODE serialize_vector(uint8_t** out_data, uint32_t* out_size, int64_t* ve
 
     if (!out_data || !out_size || !vector || (0 == size))
     {
+        log_error("[!] Invalid argument in serialize_vector.");
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
     }
@@ -122,6 +129,7 @@ STATUS_CODE serialize_vector(uint8_t** out_data, uint32_t* out_size, int64_t* ve
     buffer = (uint8_t*)malloc(size * NUMBER_OF_BYTES_PER_ELEMENT);
     if (!buffer)
     {
+        log_error("[!] Memory allocation failed in serialize_vector.");
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
         goto cleanup;
     }
@@ -154,12 +162,14 @@ STATUS_CODE deserialize_vector(int64_t** out_vector, uint32_t* out_size, const u
 
     if (!out_vector || !data || !out_size)
     {
+        log_error("[!] Invalid argument in deserialize_vector.");
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
     }
 
     if (data_size % NUMBER_OF_BYTES_PER_ELEMENT != 0)
     {
+        log_error("[!] Invalid file size in deserialize_vector.");
         return_code = STATUS_CODE_ERROR_INVALID_FILE_SIZE;
         goto cleanup;
     }
@@ -167,6 +177,7 @@ STATUS_CODE deserialize_vector(int64_t** out_vector, uint32_t* out_size, const u
     result = (int64_t*)malloc((data_size / NUMBER_OF_BYTES_PER_ELEMENT) * sizeof(int64_t));
     if (!result)
     {
+        log_error("[!] Memory allocation failed in deserialize_vector.");
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
         goto cleanup;
     }

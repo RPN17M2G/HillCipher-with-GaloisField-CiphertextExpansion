@@ -12,6 +12,7 @@
 #include "FieldBasicOperations.h"
 #include "Cipher/CSPRNG.h"
 #include "Math/MatrixDeterminant.h"
+#include "log.h"
 
 /**
  * @brief Calculates the greatest common divisor (GCD) of two elements.

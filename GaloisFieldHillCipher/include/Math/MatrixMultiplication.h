@@ -9,6 +9,7 @@
 
 #include "StatusCodes.h"
 #include "FieldBasicOperations.h"
+#include "log.h"
 
 #define MEMORY_BUFFER_FOR_PLAINTEXT_BLOCK (3)
 

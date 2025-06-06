@@ -3,6 +3,14 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
+
+#include "log.h"
+
+#define UINT8_HEX_CHARS_PER_ELEMENT 4
+#define INT64_HEX_CHARS_PER_ELEMENT 24
+#define MATRIX_HEX_CHARS_PER_ELEMENT 24
+#define PRINT_BUFFER_EXTRA 128
 
 /**
  * @brief Print a uint8_t vector to the console.

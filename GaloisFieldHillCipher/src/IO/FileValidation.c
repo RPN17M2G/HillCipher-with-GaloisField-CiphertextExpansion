@@ -7,6 +7,7 @@ STATUS_CODE validate_file_is_readable(const char* path) {
     FILE* file = fopen(path, reading_mode);
     if (!file)
     {
+        log_error("[!] Input file does not exist or is not readable: %s", path ? path : "(null)");
         return_code = STATUS_CODE_INPUT_FILE_DOESNT_EXISTS_OR_NOT_READBLE;
         goto cleanup;
     }
@@ -25,6 +26,7 @@ STATUS_CODE validate_file_is_binary(const char* path)
 
     if (!path)
     {
+        log_error("[!] Invalid argument: path is NULL in validate_file_is_binary.");
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
     }
@@ -53,6 +55,7 @@ STATUS_CODE validate_output_file(const char* path, FILE_FORMAT format)
     FILE* file = NULL;
     if (!path)
     {
+        log_error("[!] Invalid argument: path is NULL in validate_output_file.");
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
     }
@@ -68,6 +71,7 @@ STATUS_CODE validate_output_file(const char* path, FILE_FORMAT format)
     file = fopen(path, writing_mode);
     if (!file)
     {
+        log_error("[!] Output file does not exist or is not writeable: %s", path ? path : "(null)");
         return_code = STATUS_CODE_INPUT_FILE_DOESNT_EXISTS_OR_NOT_WRITEBLE;
         goto cleanup;
     }

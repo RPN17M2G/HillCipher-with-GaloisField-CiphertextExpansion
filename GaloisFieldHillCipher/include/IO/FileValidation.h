@@ -7,6 +7,7 @@
 
 #include "StatusCodes.h"
 #include "OutputFormat.h"
+#include "log.h"
 
 /**
  * @brief Validates if the given file exists and is readable.

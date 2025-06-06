@@ -9,6 +9,7 @@
 #include <string.h>
 
 #include "StatusCodes.h"
+#include "log.h"
 
 /**
  * @brief Frees the memory allocated for a matrix.

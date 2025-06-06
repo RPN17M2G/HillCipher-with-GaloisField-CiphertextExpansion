@@ -13,6 +13,7 @@ STATUS_CODE matrix_determinant_laplace_expansion(int64_t* out_determinant, int64
 
 	if ((NULL == matrix) || (NULL == out_determinant))
 	{
+		log_error("[!] Invalid argument: matrix or out_determinant is NULL in matrix_determinant_laplace_expansion.");
 		return_code = STATUS_CODE_INVALID_ARGUMENT;
 		goto cleanup;
 	}
@@ -40,6 +41,7 @@ STATUS_CODE matrix_determinant_laplace_expansion(int64_t* out_determinant, int64
 		return_code = build_minor_matrix(&minor_matrix, matrix, dimension, row, column);
 		if (STATUS_FAILED(return_code))
 		{
+			log_error("[!] Failed to build minor matrix in matrix_determinant_laplace_expansion.");
 			goto cleanup;
 		}
 
@@ -48,6 +50,7 @@ STATUS_CODE matrix_determinant_laplace_expansion(int64_t* out_determinant, int64
 
 		if (STATUS_FAILED(return_code))
 		{
+			log_error("[!] Failed to compute minor matrix determinant in matrix_determinant_laplace_expansion.");
 			goto cleanup;
 		}
 
@@ -77,6 +80,7 @@ STATUS_CODE matrix_determinant_over_galois_field_laplace_expansion(int64_t* out_
 
 	if ((NULL == matrix) || (NULL == out_determinant) || (0 == dimension) || (0 == prime_field))
 	{
+		log_error("[!] Invalid argument in matrix_determinant_over_galois_field_laplace_expansion.");
 		return_code = STATUS_CODE_INVALID_ARGUMENT;
 		goto cleanup;
 	}
@@ -84,6 +88,7 @@ STATUS_CODE matrix_determinant_over_galois_field_laplace_expansion(int64_t* out_
 	return_code = matrix_determinant_laplace_expansion(&determinant, matrix, dimension, prime_field);
 	if (STATUS_FAILED(return_code))
 	{
+		log_error("[!] Failed to compute determinant in matrix_determinant_over_galois_field_laplace_expansion.");
 		goto cleanup;
 	}
 
@@ -108,6 +113,7 @@ STATUS_CODE matrix_determinant_over_galois_field_gauss_jordan(int64_t* out_deter
 
 	if ((NULL == matrix) || (NULL == out_determinant) || (0 == dimension) || (0 == prime_field))
     {
+		log_error("[!] Invalid argument in matrix_determinant_over_galois_field_gauss_jordan.");
 		return_code = STATUS_CODE_INVALID_ARGUMENT;
     	goto cleanup;
     }
@@ -115,6 +121,7 @@ STATUS_CODE matrix_determinant_over_galois_field_gauss_jordan(int64_t* out_deter
     matrix_copy = (int64_t**)malloc(dimension * sizeof(int64_t*));
     if (!matrix_copy)
     {
+		log_error("[!] Memory allocation failed for matrix_copy in matrix_determinant_over_galois_field_gauss_jordan.");
 		return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
     	goto cleanup;
     }
@@ -124,6 +131,7 @@ STATUS_CODE matrix_determinant_over_galois_field_gauss_jordan(int64_t* out_deter
         matrix_copy[copy_row_index] = (int64_t*)malloc(dimension * sizeof(int64_t));
         if (!matrix_copy[copy_row_index])
         {
+            log_error("[!] Memory allocation failed for matrix_copy row in matrix_determinant_over_galois_field_gauss_jordan.");
             return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
         	goto cleanup;
         }
@@ -148,6 +156,7 @@ STATUS_CODE matrix_determinant_over_galois_field_gauss_jordan(int64_t* out_deter
 
         if (0 == matrix_copy[pivot_row][row_iteration])
         {
+            log_error("[!] Matrix is not invertible (zero pivot) in matrix_determinant_over_galois_field_gauss_jordan.");
             determinant = 0;
             break;
         }
@@ -197,3 +206,4 @@ cleanup:
 
 	return return_code;
 }
+
