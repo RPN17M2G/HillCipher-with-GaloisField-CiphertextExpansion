@@ -1,8 +1,5 @@
 ﻿#include "GaloisFieldHillCipher.h"
 
-
-#include "include/Cipher/CipherModeHandlers.h"
-
 int main(int argc, char** argv)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
