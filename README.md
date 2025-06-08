@@ -27,6 +27,7 @@
 | `-v`, `--verbose`       | Enable verbose output |
 | `-m`, `--mode`          | Cipher mode of operation |
 | `-k`, `--key`           | Path to key file |
+| `-l`, `--log_file`      | Path to log file |
 
 
 ## Overview 
