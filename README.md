@@ -80,37 +80,44 @@ aka finite field. It's a field that contains a finite number of elements.
 
 ##### Matrix Multipication With Vector
 
-Results in a matrix which each element in each row is multipied by the vector at the position of the coulmn.
+Each matrix row is multiplied element-wise with the plaintext vector. The results are summed to produce the final vector.
 
-**Example:**
+Example:
 
-*Encryption Matrix*:
-| C1 | C2 | C3 |
-|---|---|---|
-| 2 | 3 | 4 |
-| 6 | 8 | 9 |
-| 4 | 5 | 2 |
+Encryption Matrix: 
 
-*Plaintext Vector*:
-| C1 |
-|---|
-| 3 |
-| 5 |
-| 7 |
+| C1 | C2 | C3 | 
+|----|----|----|
+| 2  | 3  | 4  | 
+| 6  | 8  | 9  | 
+| 4  | 5  | 2  |
 
-Multiplication A * B:
-| C1 | C2 | C3 |
-|---|---|---|
-| 2*3 | 3*5 | 4*7 |
-| 6*3 | 8*5 | 9*7 |
-| 4*3 | 5*5 | 2*7 |
+Plaintext Vector: 
 
-Result:
-| C1 |
-|---|
-| 49 |
-| 121 |
-| 51 |
+|     | 
+|-----| 
+| 3   | 
+| 5   | 
+| 7   |
+
+Multiplication and Sum:
+
+Row 1: 2×3 + 3×5 + 4×7 = 49
+
+Row 2: 6×3 + 8×5 + 9×7 = 121
+
+Row 3: 4×3 + 5×5 + 2×7 = 51
+
+
+Resulting Vector: 
+
+|     | 
+|-----| 
+| 49  | 
+| 121 | 
+| 51  |
+
+
 
 ### Implementation
 
