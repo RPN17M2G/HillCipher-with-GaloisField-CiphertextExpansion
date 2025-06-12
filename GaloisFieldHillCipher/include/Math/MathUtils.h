@@ -24,4 +24,28 @@
  */
 STATUS_CODE gcd(int64_t* out_gcd, int64_t first_element, int64_t second_element);
 
+/**
+ * @brief Adding two vectors over finite field.
+ *
+ * @param out_vector - Pointer to the output vector.
+ * @param first_vector - First vector to add.
+ * @param second_vector - Second vector to add.
+ * @param length - Length of vectors.
+ * @param prime_field - The prime field to operate on.
+ * @return
+ */
+STATUS_CODE add_two_vectors_over_gf(int64_t** out_vector, int64_t* first_vector, int64_t* second_vector, uint32_t length, uint32_t prime_field);
+
+/**
+ * @brief Substructing two vectors over finite field.
+ *
+ * @param out_vector - Pointer to the output vector.
+ * @param first_vector - First vector to substruct from.
+ * @param second_vector - Second vector to substruct.
+ * @param length - Length of vectors.
+ * @param prime_field - The prime field to operate on.
+ * @return
+ */
+STATUS_CODE substruct_two_vectors_over_gf(int64_t** out_vector, int64_t* first_vector, int64_t* second_vector, uint32_t length, uint32_t prime_field);
+
 #endif
