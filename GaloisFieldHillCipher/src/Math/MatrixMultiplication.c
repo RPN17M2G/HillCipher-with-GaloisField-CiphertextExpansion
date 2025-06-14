@@ -92,4 +92,3 @@ cleanup:
     free(out_vector_buffer);
     return return_code;
 }
-

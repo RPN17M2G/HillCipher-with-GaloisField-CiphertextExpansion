@@ -260,4 +260,3 @@ cleanup:
 	(void)free_int64_matrix(out_inverse_matrix_buffer, dimension);
     return return_code;
 }
-
