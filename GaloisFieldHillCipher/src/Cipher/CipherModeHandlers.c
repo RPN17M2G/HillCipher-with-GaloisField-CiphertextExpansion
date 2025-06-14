@@ -180,8 +180,9 @@ STATUS_CODE handle_decryption_key_generation_mode(const ParsedArguments* args)
     uint32_t key_size = 0;
     uint8_t* serialized_data = NULL;
     uint32_t serialized_size = 0;
+    uint32_t dimension = 0;
 
-    if (!args || !args->key || !args->output_file || (0 == args->dimension))
+    if (!args || !args->key || !args->output_file)
     {
         return STATUS_CODE_INVALID_ARGUMENT;
     }
@@ -202,7 +203,8 @@ STATUS_CODE handle_decryption_key_generation_mode(const ParsedArguments* args)
         print_uint8_vector(key_data, key_size / BYTE_SIZE, "[*] Key data:");
     }
 
-    return_code = deserialize_matrix(&encryption_matrix, args->dimension, key_data, key_size);
+    dimension = sqrt(key_size / (BYTE_SIZE * NUMBER_OF_BYTES_PER_ELEMENT));
+    return_code = deserialize_matrix(&encryption_matrix, dimension, key_data, key_size);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
@@ -210,7 +212,7 @@ STATUS_CODE handle_decryption_key_generation_mode(const ParsedArguments* args)
 
     log_info("[*] Generating decryption matrix...\n");
 
-    return_code = generate_decryption_matrix(&decryption_matrix, args->dimension,
+    return_code = generate_decryption_matrix(&decryption_matrix, dimension,
                                            encryption_matrix, DEFAULT_PRIME_GALOIS_FIELD);
     if (STATUS_FAILED(return_code))
     {
@@ -221,10 +223,10 @@ STATUS_CODE handle_decryption_key_generation_mode(const ParsedArguments* args)
 
     if (args->verbose)
     {
-        print_matrix(decryption_matrix, args->dimension);
+        print_matrix(decryption_matrix, dimension);
     }
 
-    return_code = serialize_matrix(&serialized_data, &serialized_size, decryption_matrix, args->dimension);
+    return_code = serialize_matrix(&serialized_data, &serialized_size, decryption_matrix, dimension);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
@@ -239,8 +241,8 @@ STATUS_CODE handle_decryption_key_generation_mode(const ParsedArguments* args)
     return_code = write_uint8_to_file(args->output_file, serialized_data, serialized_size);
 
 cleanup:
-    (void)free_int64_matrix(encryption_matrix, args->dimension);
-    (void)free_int64_matrix(decryption_matrix, args->dimension);
+    (void)free_int64_matrix(encryption_matrix, dimension);
+    (void)free_int64_matrix(decryption_matrix, dimension);
     free(key_data);
     return return_code;
 }
@@ -255,8 +257,9 @@ STATUS_CODE handle_encrypt_mode(const ParsedArguments* args)
     uint32_t plaintext_size = 0, ciphertext_size = 0, key_size = 0;
     uint8_t* serialized_ciphertext = NULL;
     uint32_t serialized_ciphertext_size = 0;
+    uint32_t dimension = 0;
 
-    if (!args || !args->input_file || !args->key || !args->output_file || (0 == args->dimension))
+    if (!args || !args->input_file || !args->key || !args->output_file)
     {
         return STATUS_CODE_INVALID_ARGUMENT;
     }
@@ -293,7 +296,8 @@ STATUS_CODE handle_encrypt_mode(const ParsedArguments* args)
         print_uint8_vector(key_data, key_size / BYTE_SIZE, "[*] Key data:");
     }
 
-    return_code = deserialize_matrix(&encryption_matrix, args->dimension, key_data, key_size);
+    dimension = sqrt(key_size / (BYTE_SIZE * NUMBER_OF_BYTES_PER_ELEMENT));
+    return_code = deserialize_matrix(&encryption_matrix, dimension, key_data, key_size);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
@@ -301,12 +305,12 @@ STATUS_CODE handle_encrypt_mode(const ParsedArguments* args)
 
     if (args->verbose)
     {
-        print_matrix(encryption_matrix, args->dimension);
+        print_matrix(encryption_matrix, dimension);
     }
 
     log_info("[*] Encrypting data...\n");
 
-    return_code = encrypt(&ciphertext, &ciphertext_size, encryption_matrix, args->dimension, DEFAULT_PRIME_GALOIS_FIELD, plaintext, plaintext_size, args->number_of_random_bits_between_bytes);
+    return_code = encrypt(&ciphertext, &ciphertext_size, encryption_matrix, dimension, DEFAULT_PRIME_GALOIS_FIELD, plaintext, plaintext_size, args->number_of_random_bits_between_bytes);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
@@ -358,7 +362,7 @@ cleanup:
     free(serialized_ciphertext);
     free(key_data);
     free(ciphertext);
-    (void)free_int64_matrix(encryption_matrix, args->dimension);
+    (void)free_int64_matrix(encryption_matrix, dimension);
     return return_code;
 }
 
@@ -372,8 +376,9 @@ STATUS_CODE handle_decrypt_mode(const ParsedArguments* args)
     uint8_t* serialized_ciphertext = NULL;
     int64_t** decryption_matrix = NULL;
     uint32_t ciphertext_size = 0, decrypted_size = 0, key_size = 0;
+    uint32_t dimension = 0;
 
-    if (!args || !args->input_file || !args->key || !args->output_file || (0 == args->dimension))
+    if (!args || !args->input_file || !args->key || !args->output_file)
     {
         return STATUS_CODE_INVALID_ARGUMENT;
     }
@@ -409,6 +414,7 @@ STATUS_CODE handle_decrypt_mode(const ParsedArguments* args)
     {
         goto cleanup;
     }
+    dimension = sqrt(key_size / (BYTE_SIZE * NUMBER_OF_BYTES_PER_ELEMENT));
 
     if (args->verbose)
     {
@@ -438,12 +444,12 @@ STATUS_CODE handle_decrypt_mode(const ParsedArguments* args)
 
     if (args->verbose)
     {
-        print_matrix(decryption_matrix, args->dimension);
+        print_matrix(decryption_matrix, dimension);
     }
 
     log_info("[*] Decrypting data...\n");
 
-    return_code = decrypt(&decrypted_text, &decrypted_size, decryption_matrix, args->dimension, DEFAULT_PRIME_GALOIS_FIELD, ciphertext, ciphertext_size, args->number_of_random_bits_between_bytes);
+    return_code = decrypt(&decrypted_text, &decrypted_size, decryption_matrix, dimension, DEFAULT_PRIME_GALOIS_FIELD, ciphertext, ciphertext_size, args->number_of_random_bits_between_bytes);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
@@ -470,7 +476,7 @@ cleanup:
     free(serialized_ciphertext);
     free(ciphertext);
     free(decrypted_text);
-    (void)free_int64_matrix(decryption_matrix, args->dimension);
+    (void)free_int64_matrix(decryption_matrix, dimension);
     return return_code;
 }
 
@@ -485,8 +491,9 @@ STATUS_CODE handle_generate_and_decrypt_mode(const ParsedArguments* args)
     uint32_t ciphertext_size = 0, decrypted_size = 0, key_size = 0;
     uint8_t* serialized_ciphertext = NULL;
     uint32_t serialized_ciphertext_size = 0;
+    uint32_t dimension = 0;
 
-    if (!args || !args->input_file || !args->key || !args->output_file || (0 == args->dimension))
+    if (!args || !args->input_file || !args->key || !args->output_file)
     {
         return STATUS_CODE_INVALID_ARGUMENT;
     }
@@ -552,7 +559,8 @@ STATUS_CODE handle_generate_and_decrypt_mode(const ParsedArguments* args)
         print_uint8_vector(key_data, key_size / BYTE_SIZE, "[*] Key data:");
     }
 
-    return_code = deserialize_matrix(&encryption_matrix, args->dimension, key_data, key_size);
+    dimension = sqrt(key_size / (BYTE_SIZE * NUMBER_OF_BYTES_PER_ELEMENT));
+    return_code = deserialize_matrix(&encryption_matrix, dimension, key_data, key_size);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
@@ -560,12 +568,12 @@ STATUS_CODE handle_generate_and_decrypt_mode(const ParsedArguments* args)
 
     if (args->verbose)
     {
-        print_matrix(encryption_matrix, args->dimension);
+        print_matrix(encryption_matrix, dimension);
     }
 
     log_info("[*] Generating decryption matrix...\n");
 
-    return_code = generate_decryption_matrix(&decryption_matrix, args->dimension, encryption_matrix, DEFAULT_PRIME_GALOIS_FIELD);
+    return_code = generate_decryption_matrix(&decryption_matrix, dimension, encryption_matrix, DEFAULT_PRIME_GALOIS_FIELD);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
@@ -574,12 +582,12 @@ STATUS_CODE handle_generate_and_decrypt_mode(const ParsedArguments* args)
     log_info("[*] Decryption matrix generated.\n");
     if (args->verbose)
     {
-        print_matrix(decryption_matrix, args->dimension);
+        print_matrix(decryption_matrix, dimension);
     }
 
     log_info("[*] Decrypting data...\n");
 
-    return_code = decrypt(&decrypted_text, &decrypted_size, decryption_matrix, args->dimension, DEFAULT_PRIME_GALOIS_FIELD, ciphertext, ciphertext_size, args->number_of_random_bits_between_bytes);
+    return_code = decrypt(&decrypted_text, &decrypted_size, decryption_matrix, dimension, DEFAULT_PRIME_GALOIS_FIELD, ciphertext, ciphertext_size, args->number_of_random_bits_between_bytes);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
@@ -606,7 +614,7 @@ cleanup:
     free(ciphertext);
     free(decrypted_text);
     free(serialized_ciphertext);
-    (void)free_int64_matrix(encryption_matrix, args->dimension);
-    (void)free_int64_matrix(decryption_matrix, args->dimension);
+    (void)free_int64_matrix(encryption_matrix, dimension);
+    (void)free_int64_matrix(decryption_matrix, dimension);
     return return_code;
 }

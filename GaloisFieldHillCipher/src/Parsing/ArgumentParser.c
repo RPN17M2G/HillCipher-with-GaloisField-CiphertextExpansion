@@ -43,14 +43,14 @@ STATUS_CODE validate_mode_args(OPERATION_MODE mode, const char* input_file, cons
     switch (mode)
     {
     case KEY_GENERATION_MODE:
-        if (output_file && dimension) {
+        if (output_file && (dimension > 0)) {
             return_code = STATUS_CODE_SUCCESS;
             goto cleanup;
         }
         log_error("[!] Missing output_file or dimension for KEY_GENERATION_MODE.");
         break;
     case DECRYPTION_KEY_GENERATION_MODE:
-        if (key && output_file && dimension &&
+        if (key && output_file &&
             STATUS_SUCCESS(validate_file_is_readable(key)) &&
             STATUS_SUCCESS(validate_file_is_binary(key))) {
             return_code = STATUS_CODE_SUCCESS;
@@ -59,7 +59,7 @@ STATUS_CODE validate_mode_args(OPERATION_MODE mode, const char* input_file, cons
         log_error("[!] Invalid arguments or key file for DECRYPTION_KEY_GENERATION_MODE.");
         break;
     case DECRYPT_MODE:
-        if (input_file && output_file && key && dimension &&
+        if (input_file && output_file && key &&
             STATUS_SUCCESS(validate_file_is_readable(input_file)) &&
             STATUS_SUCCESS(validate_file_is_readable(key)) &&
             STATUS_SUCCESS(validate_file_is_binary(key))) {
@@ -69,7 +69,7 @@ STATUS_CODE validate_mode_args(OPERATION_MODE mode, const char* input_file, cons
         log_error("[!] Invalid arguments or files for DECRYPT_MODE.");
         break;
     case ENCRYPT_MODE:
-        if (input_file && output_file && key && dimension &&
+        if (input_file && output_file && key &&
             STATUS_SUCCESS(validate_file_is_readable(key)) &&
             STATUS_SUCCESS(validate_file_is_binary(key)) &&
             STATUS_SUCCESS(validate_file_is_readable(input_file))) {
@@ -79,7 +79,7 @@ STATUS_CODE validate_mode_args(OPERATION_MODE mode, const char* input_file, cons
         log_error("[!] Invalid arguments or files for ENCRYPT_MODE.");
         break;
     case GENERATE_AND_ENCRYPT_MODE:
-        if (input_file && output_file && key && dimension &&
+        if (input_file && output_file && key && (dimension > 0) &&
             STATUS_SUCCESS(validate_file_is_readable(input_file)) &&
             STATUS_SUCCESS(validate_file_is_binary(key))) {
             return_code = STATUS_CODE_SUCCESS;
@@ -88,7 +88,7 @@ STATUS_CODE validate_mode_args(OPERATION_MODE mode, const char* input_file, cons
         log_error("[!] Invalid arguments or files for GENERATE_AND_ENCRYPT_MODE.");
         break;
     case GENERATE_AND_DECRYPT_MODE:
-        if (input_file && output_file && key && dimension &&
+        if (input_file && output_file && key &&
             STATUS_SUCCESS(validate_file_is_readable(key)) &&
             STATUS_SUCCESS(validate_file_is_binary(key)) &&
             STATUS_SUCCESS(validate_file_is_readable(input_file))) {
@@ -138,8 +138,8 @@ static STATUS_CODE parse_argparse_options(
     const char** mode_string, int argc, char** argv)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
-    if (!input_file || !output_file || !key || !log_file ||
-        !dimension || !number_of_random_bits_between_bytes || !verbose || !mode_string || !argv)
+    if (!input_file || !output_file || !key || !log_file
+         || !number_of_random_bits_between_bytes || !verbose || !mode_string || !argv)
     {
         log_error("[!] Invalid argument: NULL pointer in parse_argparse_options.");
         return_code = STATUS_CODE_INVALID_ARGUMENT;
@@ -206,6 +206,12 @@ STATUS_CODE parse_arguments(ParsedArguments* out_args, int argc, char** argv)
 
     if (!number_of_random_bits_between_bytes)
         number_of_random_bits_between_bytes = DEFAULT_VALUE_OF_NUMBER_OF_RANDOM_BITS_TO_ADD;
+
+    if (number_of_random_bits_between_bytes < 0)
+    {
+        log_error("[!] Invalid number of random bits between bytes: %u. Must be non-negative.", number_of_random_bits_between_bytes);
+        goto parse_error;
+    }
 
     return_code = validate_mode_args(mode, input_file, output_file, key, dimension);
     if (STATUS_FAILED(return_code))
