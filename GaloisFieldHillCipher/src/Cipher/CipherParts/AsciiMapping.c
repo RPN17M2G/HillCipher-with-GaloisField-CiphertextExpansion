@@ -1,4 +1,4 @@
-#include "Cipher/AsciiMapping.h"
+#include "../../../include/Cipher/CipherParts/AsciiMapping.h"
 
 STATUS_CODE ascii_char_to_digit(uint8_t* out_digit, char input)
 {

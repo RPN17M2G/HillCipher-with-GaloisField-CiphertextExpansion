@@ -28,7 +28,7 @@ STATUS_CODE is_matrix_invertible(bool* out_is_invertible, int64_t** matrix, uint
 		return return_code;
 }
 
-STATUS_CODE free_int64_matrix(int64_t** matrix, uint32_t dimension)
+STATUS_CODE free_int64_matrix(int64_t** matrix, uint32_t rows)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 	size_t row = 0;
@@ -40,7 +40,7 @@ STATUS_CODE free_int64_matrix(int64_t** matrix, uint32_t dimension)
 		goto cleanup;
 	}
 
-	for (row = 0; row < dimension; ++row)
+	for (row = 0; row < rows; ++row)
 	{
 		free(matrix[row]);
 	}
@@ -51,7 +51,7 @@ cleanup:
 	return return_code;
 }
 
-STATUS_CODE free_uint8_matrix(uint8_t** matrix, uint32_t dimension)
+STATUS_CODE free_uint8_matrix(uint8_t** matrix, uint32_t rows)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 	size_t row = 0;
@@ -63,7 +63,7 @@ STATUS_CODE free_uint8_matrix(uint8_t** matrix, uint32_t dimension)
 		goto cleanup;
 	}
 
-	for (row = 0; row < dimension; ++row)
+	for (row = 0; row < rows; ++row)
 	{
 		free(matrix[row]);
 	}
@@ -74,7 +74,7 @@ cleanup:
 	return return_code;
 }
 
-STATUS_CODE generate_square_matrix_over_field(int64_t*** out_matrix, uint32_t dimension, uint32_t prime_field)
+STATUS_CODE generate_matrix_over_field(int64_t*** out_matrix, uint32_t rows, uint32_t columns, uint32_t prime_field)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
 	uint32_t secure_random_number = 0;
@@ -83,36 +83,36 @@ STATUS_CODE generate_square_matrix_over_field(int64_t*** out_matrix, uint32_t di
 
 	if (NULL == out_matrix)
 	{
-		log_error("[!] Invalid argument: out_matrix is NULL in generate_square_matrix_over_field.");
+		log_error("[!] Invalid argument: out_matrix is NULL in generate_matrix_over_field.");
 		return_code = STATUS_CODE_INVALID_ARGUMENT;
 		goto cleanup;
 	}
 
-	out_matrix_buffer = (int64_t**)malloc(dimension * sizeof(int64_t*));
+	out_matrix_buffer = (int64_t**)malloc(rows * sizeof(int64_t*));
 	if (NULL == out_matrix_buffer)
 	{
-		log_error("[!] Memory allocation failed for out_matrix_buffer in generate_square_matrix_over_field.");
+		log_error("[!] Memory allocation failed for out_matrix_buffer in generate_matrix_over_field.");
 		return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
 		goto cleanup;
 	}
 
 	// Generate random numbers mod prime_field to fill the matrix
-	for (row = 0; row < dimension; ++row)
+	for (row = 0; row < rows; ++row)
 	{
-		out_matrix_buffer[row] = (int64_t*)malloc(dimension * sizeof(int64_t));
+		out_matrix_buffer[row] = (int64_t*)malloc(columns * sizeof(int64_t));
 		if (NULL == out_matrix_buffer[row])
 		{
-			log_error("[!] Memory allocation failed for out_matrix_buffer row in generate_square_matrix_over_field.");
+			log_error("[!] Memory allocation failed for out_matrix_buffer row in generate_matrix_over_field.");
 			return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
 			goto cleanup;
 		}
-		for (column = 0; column < dimension; ++column)
+		for (column = 0; column < columns; ++column)
 		{
 			secure_random_number = 0;
 			return_code = generate_secure_random_number(&secure_random_number, (uint32_t)0, prime_field - 1);
 			if (STATUS_FAILED(return_code))
 			{
-				log_error("[!] Failed to generate secure random number in generate_square_matrix_over_field.");
+				log_error("[!] Failed to generate secure random number in generate_matrix_over_field.");
 				goto cleanup;
 			}
 			out_matrix_buffer[row][column] = (int64_t)(secure_random_number);
@@ -124,8 +124,13 @@ STATUS_CODE generate_square_matrix_over_field(int64_t*** out_matrix, uint32_t di
 
 	return_code = STATUS_CODE_SUCCESS;
 	cleanup:
-		(void)free_int64_matrix(out_matrix_buffer, dimension);
+		(void)free_int64_matrix(out_matrix_buffer, rows);
 	return return_code;
+}
+
+STATUS_CODE generate_square_matrix_over_field(int64_t*** out_matrix, uint32_t dimension, uint32_t prime_field)
+{
+	return generate_matrix_over_field(out_matrix, dimension, dimension, prime_field);
 }
 
 STATUS_CODE build_minor_matrix(int64_t*** out_matrix, int64_t** matrix, uint32_t dimension, uint32_t row, uint32_t column)

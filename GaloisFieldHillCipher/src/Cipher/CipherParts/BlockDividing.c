@@ -1,4 +1,4 @@
-#include "Cipher/BlockDividing.h"
+#include "../../../include/Cipher/CipherParts/BlockDividing.h"
 
 STATUS_CODE divide_uint8_t_into_blocks(uint8_t*** out_blocks, uint32_t* num_blocks, uint8_t* value, uint32_t value_bit_length, uint32_t block_bit_size)
 {

@@ -7,7 +7,7 @@
 #include <string.h>
 
 #include "StatusCodes.h"
-#include "Cipher/CSPRNG.h"
+#include "CSPRNG.h"
 
 #define DIGITS_PER_NUMBER (8)
 #define DIGIT_VARIANTS (5)

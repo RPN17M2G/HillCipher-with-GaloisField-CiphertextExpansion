@@ -1,4 +1,4 @@
-#include "Cipher/CSPRNG.h"
+#include "../../../include/Cipher/CipherParts/CSPRNG.h"
 
 STATUS_CODE initialize_sodium_library()
 {

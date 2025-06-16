@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 
-#include "include/Cipher/BlockDividing.h"
+#include "include/Cipher/CipherParts/BlockDividing.h"
 #include "include/Cipher/Cipher.h"
 #include "include/Parsing/ArgumentParser.h"
 #include "include/IO/FileOperations.h"

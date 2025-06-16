@@ -134,7 +134,7 @@ cleanup:
 
 static STATUS_CODE parse_argparse_options(
     const char** input_file, const char** output_file, const char** key, const char** log_file,
-    uint32_t* dimension, uint32_t* number_of_random_bits_between_bytes, uint32_t* verbose,
+    uint32_t* dimension, uint32_t* number_of_random_bits_between_bytes, uint32_t* number_of_error_vectors, uint32_t* verbose,
     const char** mode_string, int argc, char** argv)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
@@ -155,6 +155,7 @@ static STATUS_CODE parse_argparse_options(
         OPT_STRING(*ARGUMENT_MODE_SHORT, ARGUMENT_MODE_LONG, mode_string, ARGUMENT_MODE_DOCUMENTATION),
         OPT_STRING(*ARGUMENT_KEY_SHORT, ARGUMENT_KEY_LONG, key, ARGUMENT_KEY_DOCUMENTATION),
         OPT_INTEGER(*ARGUMENT_RANDOM_BITS_SHORT, ARGUMENT_RANDOM_BITS_LONG, number_of_random_bits_between_bytes, ARGUMENT_RANDOM_BITS_DOCUMENTATION),
+        OPT_INTEGER(*ARGUMENT_ERROR_VECTORS_SHORT, ARGUMENT_ERROR_VECTORS_LONG, number_of_error_vectors, ARGUMENT_ERROR_VECTORS_DOCUMENTATION),
         OPT_STRING(*ARGUMENT_LOG_SHORT, ARGUMENT_LOG_LONG, log_file, ARGUMENT_LOG_DOCUMENTATION),
         OPT_END(),
     };
@@ -187,6 +188,7 @@ STATUS_CODE parse_arguments(ParsedArguments* out_args, int argc, char** argv)
     const char* mode_string = NULL;
     FILE_FORMAT output_format = OUTPUT_FORMAT_UNINITIALIZED;
     FILE_FORMAT input_format = OUTPUT_FORMAT_UNINITIALIZED;
+    uint32_t number_of_error_vectors = 0;
 
     if (!out_args || !argv) {
         log_error("[!] Invalid argument: out_args or argv is NULL in parse_arguments.");
@@ -195,7 +197,7 @@ STATUS_CODE parse_arguments(ParsedArguments* out_args, int argc, char** argv)
     }
 
     return_code = parse_argparse_options(&input_file, &output_file, &key, &log_file,
-                                         &dimension, &number_of_random_bits_between_bytes, &verbose, &mode_string,
+                                         &dimension, &number_of_random_bits_between_bytes, &number_of_error_vectors, &verbose, &mode_string,
                                          argc, argv);
     if (STATUS_FAILED(return_code))
         goto parse_error;
@@ -239,6 +241,7 @@ STATUS_CODE parse_arguments(ParsedArguments* out_args, int argc, char** argv)
     out_args->output_format = output_format;
     out_args->input_format = input_format;
     out_args->log_file = log_file;
+    out_args->number_of_error_vectors = number_of_error_vectors;
 
     return_code = STATUS_CODE_SUCCESS;
     goto cleanup;

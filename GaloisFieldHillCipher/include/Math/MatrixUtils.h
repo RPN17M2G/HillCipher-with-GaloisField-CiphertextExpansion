@@ -16,19 +16,19 @@
  * @brief Frees the memory allocated for a matrix.
  *
  * @param matrix - Pointer to the matrix to be freed.
- * @param dimension - Dimension of the square matrix.
+ * @param rows - Number of rows in the matrix.
  * @return STATUS_CODE - Status of the operation.
  */
-STATUS_CODE free_int64_matrix(int64_t** matrix, const uint32_t dimension);
+STATUS_CODE free_int64_matrix(int64_t** matrix, const uint32_t rows);
 
 /**
  * @brief Frees the memory allocated for a matrix.
  *
  * @param matrix - Pointer to the matrix to be freed.
- * @param dimension - Dimension of the square matrix.
+ * @param rows - Number of rows in the matrix.
  * @return STATUS_CODE - Status of the operation.
  */
-STATUS_CODE free_uint8_matrix(uint8_t** matrix, const uint32_t dimension);
+STATUS_CODE free_uint8_matrix(uint8_t** matrix, const uint32_t rows);
 
 /**
  * @brief Generates a square matrix with cryptography secure random values.
@@ -39,6 +39,17 @@ STATUS_CODE free_uint8_matrix(uint8_t** matrix, const uint32_t dimension);
  * @return STATUS_CODE - Status of the operation.
  */
 STATUS_CODE generate_square_matrix_over_field(int64_t*** out_matrix, uint32_t dimension, uint32_t prime_field);
+
+/**
+ * @brief Generates a square matrix with cryptography secure random values.
+ *
+ * @param out_matrix - Pointer to the output matrix - allocated inside the function and memory released if fails.
+ * @param rows - Number of rows in the matrix.
+ * @param columns - Number of columns in the matrix.
+ * @param prime_field - Prime field to use for generating random values.
+ * @return STATUS_CODE - Status of the operation.
+ */
+STATUS_CODE generate_matrix_over_field(int64_t*** out_matrix, uint32_t rows, uint32_t columns, uint32_t prime_field);
 
 /**
  * @brief Checks if a matrix is invertible.

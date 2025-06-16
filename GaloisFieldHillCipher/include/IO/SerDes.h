@@ -8,7 +8,7 @@
 
 #include "StatusCodes.h"
 #include "Math/MatrixUtils.h"
-#include "Cipher/BlockDividing.h"
+#include "../Cipher/CipherParts/BlockDividing.h"
 #include "log.h"
 
 #define NUMBER_OF_BYTES_PER_ELEMENT (3)

@@ -7,9 +7,9 @@
 #include "IO/FileOperations.h"
 #include "Math/MatrixUtils.h"
 #include "IO/SerDes.h"
-#include "BlockDividing.h"
+#include "CipherParts/BlockDividing.h"
 #include "Cipher.h"
-#include "Cipher/AsciiMapping.h"
+#include "CipherParts/AsciiMapping.h"
 #include "log.h"
 
 /**

@@ -12,6 +12,9 @@ STATUS_CODE handle_generate_and_encrypt_mode(const ParsedArguments* args)
     uint32_t plaintext_size = 0, ciphertext_size = 0;
     uint8_t* serialized_ciphertext = NULL;
     uint32_t serialized_ciphertext_size = 0;
+    int64_t** error_vector_matrix = NULL;
+    uint8_t* serialized_error_vectors = NULL;
+    uint32_t serialized_error_vectors_size = 0;
 
     if (!args || !args->output_file || (0 == args->dimension) || !args->input_file || !args->key)
     {
@@ -44,6 +47,19 @@ STATUS_CODE handle_generate_and_encrypt_mode(const ParsedArguments* args)
         log_info("[*] Writing to key file: %s\n", args->key);
     }
 
+    log_info("[*] Generating error vector matrix...\n");
+    return_code = generate_matrix_over_field(&error_vector_matrix, args->number_of_error_vectors, args->dimension, DEFAULT_PRIME_GALOIS_FIELD);
+    if (STATUS_FAILED(return_code))
+    {
+        goto cleanup;
+    }
+    log_info("[*] Error vector matrix generated.\n");
+    if (args->verbose)
+    {
+        print_matrix(error_vector_matrix, args->number_of_error_vectors);
+    }
+    // TODO: Store error vectors in a file if/when persistent storage is required
+
     return_code = write_uint8_to_file(args->key, serialized_data, serialized_size);
     if (STATUS_FAILED(return_code))
     {
@@ -67,8 +83,7 @@ STATUS_CODE handle_generate_and_encrypt_mode(const ParsedArguments* args)
     }
 
     log_info("[*] Encrypting data...\n");
-
-    return_code = encrypt(&ciphertext, &ciphertext_size, encryption_matrix, args->dimension, DEFAULT_PRIME_GALOIS_FIELD, plaintext, plaintext_size, args->number_of_random_bits_between_bytes);
+    return_code = encrypt(&ciphertext, &ciphertext_size, encryption_matrix, args->dimension, DEFAULT_PRIME_GALOIS_FIELD, plaintext, plaintext_size, args->number_of_random_bits_between_bytes, error_vector_matrix, args->number_of_error_vectors);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
@@ -121,7 +136,9 @@ cleanup:
     free(plaintext);
     free(key_data);
     free(ciphertext);
+    free(serialized_error_vectors);
     (void)free_int64_matrix(encryption_matrix, args->dimension);
+    (void)free_int64_matrix(error_vector_matrix, args->number_of_error_vectors);
     return return_code;
 }
 
@@ -258,6 +275,10 @@ STATUS_CODE handle_encrypt_mode(const ParsedArguments* args)
     uint8_t* serialized_ciphertext = NULL;
     uint32_t serialized_ciphertext_size = 0;
     uint32_t dimension = 0;
+    int64_t** error_vector_matrix = NULL;
+    uint8_t* error_vector_data = NULL;
+    uint32_t error_vector_size = 0;
+    char error_vector_file[512];
 
     if (!args || !args->input_file || !args->key || !args->output_file)
     {
@@ -308,9 +329,9 @@ STATUS_CODE handle_encrypt_mode(const ParsedArguments* args)
         print_matrix(encryption_matrix, dimension);
     }
 
-    log_info("[*] Encrypting data...\n");
+    // TODO: Read error vectors from a file if/when persistent storage is required
 
-    return_code = encrypt(&ciphertext, &ciphertext_size, encryption_matrix, dimension, DEFAULT_PRIME_GALOIS_FIELD, plaintext, plaintext_size, args->number_of_random_bits_between_bytes);
+    return_code = encrypt(&ciphertext, &ciphertext_size, encryption_matrix, dimension, DEFAULT_PRIME_GALOIS_FIELD, plaintext, plaintext_size, args->number_of_random_bits_between_bytes, error_vector_matrix, args->number_of_error_vectors);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
@@ -362,7 +383,9 @@ cleanup:
     free(serialized_ciphertext);
     free(key_data);
     free(ciphertext);
+    free(error_vector_data);
     (void)free_int64_matrix(encryption_matrix, dimension);
+    (void)free_int64_matrix(error_vector_matrix, args->number_of_error_vectors);
     return return_code;
 }
 
@@ -377,6 +400,10 @@ STATUS_CODE handle_decrypt_mode(const ParsedArguments* args)
     int64_t** decryption_matrix = NULL;
     uint32_t ciphertext_size = 0, decrypted_size = 0, key_size = 0;
     uint32_t dimension = 0;
+    int64_t** error_vector_matrix = NULL;
+    uint8_t* error_vector_data = NULL;
+    uint32_t error_vector_size = 0;
+    char error_vector_file[512];
 
     if (!args || !args->input_file || !args->key || !args->output_file)
     {
@@ -421,35 +448,9 @@ STATUS_CODE handle_decrypt_mode(const ParsedArguments* args)
         print_uint8_vector(key_data, key_size / BYTE_SIZE, "[*] Key data:");
     }
 
-    if (args->input_format == OUTPUT_FORMAT_BINARY)
-    {
-        if (args->verbose)
-        {
-            log_info("[*] Deserializing binary ciphertext...\n");
-        }
-        return_code = deserialize_vector(&ciphertext, &ciphertext_size, serialized_ciphertext, serialized_ciphertext_size);
-    }
-    else // Text format
-    {
-        if (args->verbose)
-        {
-            log_info("[*] Mapping text ciphertext to int64_t vector...\n");
-        }
-        return_code = map_from_ascii_to_int64(&ciphertext, &ciphertext_size, serialized_ciphertext, serialized_ciphertext_size);
-    }
-    if (STATUS_FAILED(return_code))
-    {
-        goto cleanup;
-    }
+    // TODO: Read error vectors from a file if/when persistent storage is required
 
-    if (args->verbose)
-    {
-        print_matrix(decryption_matrix, dimension);
-    }
-
-    log_info("[*] Decrypting data...\n");
-
-    return_code = decrypt(&decrypted_text, &decrypted_size, decryption_matrix, dimension, DEFAULT_PRIME_GALOIS_FIELD, ciphertext, ciphertext_size, args->number_of_random_bits_between_bytes);
+    return_code = decrypt(&decrypted_text, &decrypted_size, decryption_matrix, dimension, DEFAULT_PRIME_GALOIS_FIELD, ciphertext, ciphertext_size, args->number_of_random_bits_between_bytes, error_vector_matrix, args->number_of_error_vectors);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
@@ -476,7 +477,9 @@ cleanup:
     free(serialized_ciphertext);
     free(ciphertext);
     free(decrypted_text);
+    free(error_vector_data);
     (void)free_int64_matrix(decryption_matrix, dimension);
+    (void)free_int64_matrix(error_vector_matrix, args->number_of_error_vectors);
     return return_code;
 }
 
@@ -492,6 +495,8 @@ STATUS_CODE handle_generate_and_decrypt_mode(const ParsedArguments* args)
     uint8_t* serialized_ciphertext = NULL;
     uint32_t serialized_ciphertext_size = 0;
     uint32_t dimension = 0;
+    int64_t** error_vector_matrix = NULL;
+    uint32_t number_of_error_vectors = 0;
 
     if (!args || !args->input_file || !args->key || !args->output_file)
     {
@@ -585,9 +590,11 @@ STATUS_CODE handle_generate_and_decrypt_mode(const ParsedArguments* args)
         print_matrix(decryption_matrix, dimension);
     }
 
+    // TODO: Read error vectors from a file if/when persistent storage is required
+
     log_info("[*] Decrypting data...\n");
 
-    return_code = decrypt(&decrypted_text, &decrypted_size, decryption_matrix, dimension, DEFAULT_PRIME_GALOIS_FIELD, ciphertext, ciphertext_size, args->number_of_random_bits_between_bytes);
+    return_code = decrypt(&decrypted_text, &decrypted_size, decryption_matrix, dimension, DEFAULT_PRIME_GALOIS_FIELD, ciphertext, ciphertext_size, args->number_of_random_bits_between_bytes, error_vector_matrix, number_of_error_vectors);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;

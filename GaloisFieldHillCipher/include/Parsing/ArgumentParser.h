@@ -34,7 +34,7 @@
 #define ARGUMENT_MODE_SHORT "m"
 #define ARGUMENT_KEY_SHORT "k"
 #define ARGUMENT_LOG_SHORT "l"
-
+#define ARGUMENT_ERROR_VECTORS_SHORT "n"
 
 #define ARGUMENT_RANDOM_BITS_LONG "number_of_random_bits"
 #define ARGUMENT_INPUT_LONG "input_file"
@@ -44,6 +44,7 @@
 #define ARGUMENT_MODE_LONG "mode"
 #define ARGUMENT_KEY_LONG "key"
 #define ARGUMENT_LOG_LONG "log_file"
+#define ARGUMENT_ERROR_VECTORS_LONG "number_of_error_vectors"
 
 #define ARGUMENT_RANDOM_BITS_DOCUMENTATION "Number of random bits to add between bytes"
 #define ARGUMENT_INPUT_DOCUMENTATION "Path to input file"
@@ -53,6 +54,7 @@
 #define ARGUMENT_MODE_DOCUMENTATION "Cipher mode of operation(encrypt/decrypt/key generation)"
 #define ARGUMENT_KEY_DOCUMENTATION "Path to key file"
 #define ARGUMENT_LOG_DOCUMENTATION "Path to log file (must be a text file)"
+#define ARGUMENT_ERROR_VECTORS_DOCUMENTATION "Number of error vectors (affine transformation vectors) to use per block"
 
 #define USAGE_HEADER "[!] Invalid usage.\n[*] Modes:\n"
 #define USAGE_RANDOM_BITS_FLAG "[*]   -" ARGUMENT_RANDOM_BITS_SHORT ", --" ARGUMENT_RANDOM_BITS_LONG "           : " ARGUMENT_RANDOM_BITS_DOCUMENTATION "\n"
@@ -70,6 +72,7 @@
 #define USAGE_MODE_FLAG "[*]   -" ARGUMENT_MODE_SHORT ", --" ARGUMENT_MODE_LONG "             : " ARGUMENT_MODE_DOCUMENTATION "\n"
 #define USAGE_KEY_FLAG "[*]   -" ARGUMENT_KEY_SHORT ", --" ARGUMENT_KEY_LONG "              : " ARGUMENT_KEY_DOCUMENTATION "\n"
 #define USAGE_LOG_FLAG "[*]   -" ARGUMENT_LOG_SHORT ", --" ARGUMENT_LOG_LONG "              : " ARGUMENT_LOG_DOCUMENTATION "\n"
+#define USAGE_ERROR_VECTORS_FLAG "[*]   -" ARGUMENT_ERROR_VECTORS_SHORT ", --" ARGUMENT_ERROR_VECTORS_LONG "           : " ARGUMENT_ERROR_VECTORS_DOCUMENTATION "\n"
 
 #define USAGE (USAGE_HEADER \
     USAGE_KEY_GENERATION_MODE \
@@ -86,6 +89,7 @@
     USAGE_MODE_FLAG \
     USAGE_KEY_FLAG \
     USAGE_RANDOM_BITS_FLAG \
+    USAGE_ERROR_VECTORS_FLAG \
     USAGE_LOG_FLAG)
 
 typedef struct {
@@ -97,6 +101,7 @@ typedef struct {
     OPERATION_MODE mode;
     FILE_FORMAT output_format;
     uint32_t number_of_random_bits_between_bytes;
+    uint32_t number_of_error_vectors;
     FILE_FORMAT input_format; // Not a main argument but is inferred from input file extension
     const char* log_file;     // Optional log file (must be text)
 } ParsedArguments;
@@ -140,5 +145,26 @@ STATUS_CODE validate_mode_args(OPERATION_MODE mode, const char* input_file, cons
  * @return STATUS_CODE Status of the operation.
  */
 STATUS_CODE get_file_format(FILE_FORMAT* out_format, const char* file);
+
+/**
+ * @brief Parses command-line arguments using argparse library.
+ *
+ * @param input_file Pointer to store the input file path.
+ * @param output_file Pointer to store the output file path.
+ * @param key Pointer to store the key file path.
+ * @param log_file Pointer to store the log file path.
+ * @param dimension Pointer to store the matrix dimension.
+ * @param number_of_random_bits_between_bytes Pointer to store the number of random bits.
+ * @param number_of_error_vectors Pointer to store the number of error vectors.
+ * @param verbose Pointer to store verbosity flag.
+ * @param mode_string Pointer to store the operation mode string.
+ * @param argc Number of command-line arguments.
+ * @param argv Command-line arguments array.
+ * @return STATUS_CODE Status of the operation.
+ */
+static STATUS_CODE parse_argparse_options(
+    const char** input_file, const char** output_file, const char** key, const char** log_file,
+    uint32_t* dimension, uint32_t* number_of_random_bits_between_bytes, uint32_t* number_of_error_vectors, uint32_t* verbose,
+    const char** mode_string, int argc, char** argv);
 
 #endif
