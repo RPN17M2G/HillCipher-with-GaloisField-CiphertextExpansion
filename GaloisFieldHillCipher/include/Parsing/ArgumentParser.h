@@ -96,14 +96,15 @@ typedef struct {
     const char* input_file;
     const char* output_file;
     const char* key;
+    const char* decryption_key;
     uint32_t dimension;
     bool verbose;
     OPERATION_MODE mode;
     FILE_FORMAT output_format;
     uint32_t number_of_random_bits_between_bytes;
     uint32_t number_of_error_vectors;
-    FILE_FORMAT input_format; // Not a main argument but is inferred from input file extension
-    const char* log_file;     // Optional log file (must be text)
+    FILE_FORMAT input_format;
+    const char* log_file;
 } ParsedArguments;
 
 /**
