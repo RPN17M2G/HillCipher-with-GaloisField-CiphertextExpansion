@@ -1,13 +1,16 @@
-#pragma once
+#ifndef CIPHER_MODE_OPERATIONS_H
+#define CIPHER_MODE_OPERATIONS_H
 
-#include "../StatusCodes.h"
-#include "../Parsing/ArgumentParser.h"
-#include "../IO/PrintUtils.h"
-#include "../IO/FileOperations.h"
-#include "../Math/MatrixUtils.h"
-#include "../IO/MatrixSerDes.h"
-#include "CipherUtils.h"
+#include "StatusCodes.h"
+#include "Parsing/ArgumentParser.h"
+#include "IO/PrintUtils.h"
+#include "IO/FileOperations.h"
+#include "Math/MatrixUtils.h"
+#include "IO/SerDes.h"
+#include "BlockDividing.h"
 #include "Cipher.h"
+#include "Cipher/AsciiMapping.h"
+#include "log.h"
 
 /**
  * @brief Handle key generation mode - Generate a key and write it to the specified file.
@@ -56,3 +59,5 @@ STATUS_CODE handle_generate_and_decrypt_mode(const ParsedArguments* args);
  * @return STATUS_CODE - Status of the operation.
  */
 STATUS_CODE handle_generate_and_encrypt_mode(const ParsedArguments* args);
+
+#endif

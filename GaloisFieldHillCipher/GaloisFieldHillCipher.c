@@ -1,11 +1,9 @@
 ﻿#include "GaloisFieldHillCipher.h"
 
-
-#include "include/Cipher/CipherModeHandlers.h"
-
 int main(int argc, char** argv)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
+    FILE* log_fp = NULL;
     ParsedArguments parsed_args = { 0 };
     return_code = parse_arguments(&parsed_args, argc, argv);
     if (STATUS_FAILED(return_code))
@@ -22,6 +20,12 @@ int main(int argc, char** argv)
     if (parsed_args.verbose)
     {
         printf("[*] Verbose mode is enabled.\n");
+    }
+
+    if (parsed_args.log_file)
+    {
+        log_fp = fopen(parsed_args.log_file, "a");
+        log_add_fp(log_fp, LOG_TRACE);
     }
 
     switch (parsed_args.mode)
@@ -50,5 +54,9 @@ int main(int argc, char** argv)
     }
 
 cleanup:
+    if (log_fp)
+    {
+        fclose(log_fp);
+    }
     return return_code;
 }

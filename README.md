@@ -4,6 +4,32 @@
 **This implementation is for EDUCATIONAL PURPOSES ONLY and should NOT be used in any real-world environment.**
 
 
+## Usage
+
+### Modes
+
+| Mode | Description | Required Flags |
+|------|-------------|----------------|
+| `ek` | Key generation | `-o <output_file> -d <dimension>` `[-v]` |
+| `dk` | Decryption key generation | `-k <key> -o <output_file> -d <dimension>` `[-v]` |
+| `e`  | Encrypt | `-i <input_file> -o <output_file> -k <key> -d <dimension>` `[-v]` |
+| `d`  | Decrypt | `-i <input_file> -o <output_file> -k <key> -d <dimension>` `[-v]` |
+| `ge` | Generate key and encrypt | `-i <input_file> -o <output_file> -k <key> -d <dimension>` `[-v]` |
+| `gd` | Generate key and decrypt | `-i <input_file> -o <output_file> -k <key> -d <dimension>` `[-v]` |
+
+### Flags
+
+| Flag | Description |
+|------|-------------|
+| `-i`, `--input_file`    | Path to input file |
+| `-o`, `--output_file`   | Path to output file |
+| `-d`, `--dimension`     | Matrix/key dimension (`uint32_t`) |
+| `-v`, `--verbose`       | Enable verbose output |
+| `-m`, `--mode`          | Cipher mode of operation |
+| `-k`, `--key`           | Path to key file |
+| `-l`, `--log_file`      | Path to log file |
+
+
 ## Overview 
 
 An implimentation of the Hill cipher extended by the use of Galois fields as described by Rodney Cooper in 1980.
@@ -54,37 +80,44 @@ aka finite field. It's a field that contains a finite number of elements.
 
 ##### Matrix Multipication With Vector
 
-Results in a matrix which each element in each row is multipied by the vector at the position of the coulmn.
+Each matrix row is multiplied element-wise with the plaintext vector. The results are summed to produce the final vector.
 
-**Example:**
+Example:
 
-*Encryption Matrix*:
-| C1 | C2 | C3 |
-|---|---|---|
-| 2 | 3 | 4 |
-| 6 | 8 | 9 |
-| 4 | 5 | 2 |
+Encryption Matrix: 
 
-*Plaintext Vector*:
-| C1 |
-|---|
-| 3 |
-| 5 |
-| 7 |
+| C1 | C2 | C3 | 
+|----|----|----|
+| 2  | 3  | 4  | 
+| 6  | 8  | 9  | 
+| 4  | 5  | 2  |
 
-Multiplication A * B:
-| C1 | C2 | C3 |
-|---|---|---|
-| 2*3 | 3*5 | 4*7 |
-| 6*3 | 8*5 | 9*7 |
-| 4*3 | 5*5 | 2*7 |
+Plaintext Vector: 
 
-Result:
-| C1 |
-|---|
-| 49 |
-| 121 |
-| 51 |
+|     | 
+|-----| 
+| 3   | 
+| 5   | 
+| 7   |
+
+Multiplication and Sum:
+
+Row 1: 2×3 + 3×5 + 4×7 = 49
+
+Row 2: 6×3 + 8×5 + 9×7 = 121
+
+Row 3: 4×3 + 5×5 + 2×7 = 51
+
+
+Resulting Vector: 
+
+|     | 
+|-----| 
+| 49  | 
+| 121 | 
+| 51  |
+
+
 
 ### Implementation
 
@@ -114,6 +147,19 @@ in case of 2 bits insertion:
  
  first plaintext byte | 2 random bits | second plaintext byte | 2 random bits | third plaintext byte...
 
+##### Output and Input formats
+
+Determinated by the extension of the output file. 
+
+###### Binary Compact Storage
+
+My chosen GF is 25bits long, what means that every member of this GF fits inside 24bits == 3bytes.
+So there is an option to store the ciphertext in blocks of 3bytes each in the most compact way possible.
+
+###### ASCII Mapping
+
+For text storage, there is mapping between the digits of the ciphertext, each number of the GF fits inside 8 digits.
+The mapping has a variant(Same digit maps to few different letters) of 5 which helps reduce the entropy of the ciphertext.
 
 ### Thanks and Credit
 

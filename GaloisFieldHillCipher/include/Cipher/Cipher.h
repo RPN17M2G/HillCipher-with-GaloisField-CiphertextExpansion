@@ -1,13 +1,17 @@
-#pragma once
+#ifndef CIPHER_H
+#define CIPHER_H
 
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "../StatusCodes.h"
-#include "../Math/MathUtils.h"
-#include "CipherUtils.h"
-
+#include "StatusCodes.h"
+#include "Math/MathUtils.h"
+#include "Cipher/BlockDividing.h"
+#include "Math/MatrixInverse.h"
+#include "Math/MatrixMultiplication.h"
+#include "Cipher/CiphertextExpansion.h"
+#include "Cipher/Padding.h"
 
 /**
  * @brief Encrypts a plaintext vector using the Extended Hill Cipher algorithm.
@@ -19,9 +23,10 @@
  * @param prime_field - The prime field to use for modular arithmetic.
  * @param plaintext_vector - The plaintext vector to be encrypted.
  * @param vector_size - The size of the plaintext vector in bits.
+ * @param number_of_random_bits - The number of random bits to insert between each byte of the plaintext vector.
  * @return STATUS_CODE - Status of the operation.
  */
-STATUS_CODE encrypt(int64_t** out_ciphertext, uint32_t* out_ciphertext_size, int64_t** encryption_matrix, uint32_t dimension, uint32_t prime_field, uint8_t* plaintext_vector, uint32_t vector_size);
+STATUS_CODE encrypt(int64_t** out_ciphertext, uint32_t* out_ciphertext_size, int64_t** encryption_matrix, uint32_t dimension, uint32_t prime_field, uint8_t* plaintext_vector, uint32_t vector_size, uint32_t number_of_random_bits);
 
 /**
  * @brief Decrypts a ciphertext vector using the Extended Hill Cipher algorithm.
@@ -33,9 +38,10 @@ STATUS_CODE encrypt(int64_t** out_ciphertext, uint32_t* out_ciphertext_size, int
  * @param prime_field - The prime field to use for modular arithmetic.
  * @param ciphertext_vector - The ciphertext vector to be decrypted.
  * @param vector_size - The size of the ciphertext vector in bits.
+ * @param number_of_random_bits - The number of random bits that were inserted between each byte of the plaintext vector during encryption.
  * @return STATUS_CODE - Status of the operation.
  */
-STATUS_CODE decrypt(uint8_t** out_plaintext, uint32_t* out_plaintext_size, int64_t** decryption_matrix, uint32_t dimension, uint32_t prime_field, int64_t* ciphertext_vector, uint32_t vector_size);
+STATUS_CODE decrypt(uint8_t** out_plaintext, uint32_t* out_plaintext_size, int64_t** decryption_matrix, uint32_t dimension, uint32_t prime_field, int64_t* ciphertext_vector, uint32_t vector_size, uint32_t number_of_random_bits);
 
 /**
  * @brief Generates an encryption matrix with cryptography secure random values.
@@ -58,3 +64,5 @@ STATUS_CODE generate_encryption_matrix(int64_t*** out_matrix, uint32_t dimension
  * @return STATUS_CODE - Status of the operation.
  */
 STATUS_CODE generate_decryption_matrix(int64_t*** out_matrix, uint32_t dimension, int64_t** encryption_matrix, uint32_t prime_field);
+
+#endif

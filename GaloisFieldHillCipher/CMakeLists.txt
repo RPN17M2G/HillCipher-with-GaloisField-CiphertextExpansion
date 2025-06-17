@@ -13,9 +13,9 @@ endif()
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
-file(GLOB_RECURSE SOURCES src/*.c GaloisFieldHillCipher.c)
-file(GLOB_RECURSE SOURCES_WITHOUT_MAIN src/*.c)
-file(GLOB_RECURSE INCLUDES include/*.h)
+file(GLOB_RECURSE SOURCES src/*.c GaloisFieldHillCipher.c thirdparty/log/src/*.c)
+file(GLOB_RECURSE SOURCES_WITHOUT_MAIN src/*.c thirdparty/log/src/*.c)
+file(GLOB_RECURSE INCLUDES include/*.h thirdparty/log/src/*.h)
 file(GLOB_RECURSE TESTS_SOURCES tests/*.c)
 file(GLOB_RECURSE TESTS_INCLUDES tests/*.h)
 
@@ -43,6 +43,7 @@ target_include_directories(GaloisFieldHillCipher PRIVATE
         include
         thirdparty/argparse
         thirdparty/sodium/include
+        thirdparty/log/src
 )
 
 add_executable(UnitTests
@@ -57,6 +58,7 @@ target_include_directories(UnitTests PRIVATE
         thirdparty/Unity/src
         thirdparty/argparse
         thirdparty/sodium/include
+        thirdparty/log/src
 )
 
 target_link_libraries(UnitTests PRIVATE

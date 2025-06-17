@@ -6,6 +6,7 @@
 #include "unity.h"
 #include "Math/MathUtils.h"
 #include "Math/MatrixUtils.h"
+#include "Math/MatrixMultiplication.h"
 
 void run_all_MathUtils_tests();
 

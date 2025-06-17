@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MODES_H
+#define MODES_H
 
 enum OPERATION_MODE
 {
@@ -9,5 +10,8 @@ enum OPERATION_MODE
 	ENCRYPT_MODE,
 	GENERATE_AND_ENCRYPT_MODE,
 	GENERATE_AND_DECRYPT_MODE,
+
+	NUMBER_OF_MODES
 } typedef OPERATION_MODE;
 
+#endif
