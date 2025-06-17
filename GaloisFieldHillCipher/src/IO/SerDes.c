@@ -1,6 +1,16 @@
 #include "IO/SerDes.h"
 
-STATUS_CODE serialize_matrix(uint8_t** out_data, uint32_t* out_size, int64_t** matrix, uint32_t dimension)
+STATUS_CODE serialize_square_matrix(uint8_t** out_data, uint32_t* out_size, int64_t** matrix, uint32_t dimension)
+{
+    return serialize_matrix(out_data, out_size, matrix, dimension, dimension);
+}
+
+STATUS_CODE deserialize_square_matrix(int64_t*** out_matrix, uint32_t dimension, const uint8_t* data, uint32_t size)
+{
+    return deserialize_matrix(out_matrix, dimension, dimension, data, size);
+}
+
+STATUS_CODE serialize_matrix(uint8_t** out_data, uint32_t* out_size, int64_t** matrix, uint32_t rows, uint32_t columns)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
     uint8_t* buffer = NULL;
@@ -8,14 +18,14 @@ STATUS_CODE serialize_matrix(uint8_t** out_data, uint32_t* out_size, int64_t** m
     size_t row = 0, column = 0, byte_index = 0;
     int64_t value = 0;
 
-    if (!out_data || !out_size || !matrix || (0 == dimension))
+    if (!out_data || !out_size || !matrix || (0 == rows) || (0 == columns))
     {
         log_error("[!] Invalid argument in serialize_matrix.");
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
     }
 
-    size = dimension * dimension * NUMBER_OF_BYTES_PER_ELEMENT;
+    size = rows * columns * NUMBER_OF_BYTES_PER_ELEMENT;
     buffer = (uint8_t*)malloc(size);
     if (!buffer)
     {
@@ -24,16 +34,16 @@ STATUS_CODE serialize_matrix(uint8_t** out_data, uint32_t* out_size, int64_t** m
         goto cleanup;
     }
 
-    for (row = 0; row < dimension; ++row)
+    for (row = 0; row < rows; ++row)
     {
-        for (column = 0; column < dimension; ++column)
+        for (column = 0; column < columns; ++column)
         {
             value = matrix[row][column];
 
             // Store each value big endian
             for (byte_index = 0; byte_index < NUMBER_OF_BYTES_PER_ELEMENT; ++byte_index)
             {
-                buffer[(row * dimension + column) * NUMBER_OF_BYTES_PER_ELEMENT + byte_index] =
+                buffer[(row * columns + column) * NUMBER_OF_BYTES_PER_ELEMENT + byte_index] =
                     (value >> (BYTE_SIZE * (NUMBER_OF_BYTES_PER_ELEMENT - 1 - byte_index))) & 0xFF;
             }
         }
@@ -49,7 +59,7 @@ cleanup:
     return return_code;
 }
 
-STATUS_CODE deserialize_matrix(int64_t*** out_matrix, uint32_t dimension, const uint8_t* data, uint32_t size)
+STATUS_CODE deserialize_matrix(int64_t*** out_matrix, uint32_t rows, uint32_t columns, const uint8_t* data, uint32_t size)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
     int64_t** result = NULL;
@@ -57,14 +67,14 @@ STATUS_CODE deserialize_matrix(int64_t*** out_matrix, uint32_t dimension, const 
     size_t index = 0;
     size_t row = 0, column = 0, byte_index = 0;
 
-    if (!out_matrix || !data || (0 == dimension))
+    if (!out_matrix || !data || (0 == rows) || (0 == columns))
     {
         log_error("[!] Invalid argument in deserialize_matrix.");
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
     }
 
-    expected_size = dimension * dimension * NUMBER_OF_BYTES_PER_ELEMENT * BYTE_SIZE;
+    expected_size = rows * columns * NUMBER_OF_BYTES_PER_ELEMENT * BYTE_SIZE;
     if (size != expected_size)
     {
         log_error("[!] Invalid file size in deserialize_matrix.");
@@ -72,7 +82,7 @@ STATUS_CODE deserialize_matrix(int64_t*** out_matrix, uint32_t dimension, const 
         goto cleanup;
     }
 
-    result = (int64_t**)malloc(dimension * sizeof(int64_t*));
+    result = (int64_t**)malloc(rows * sizeof(int64_t*));
     if (!result)
     {
         log_error("[!] Memory allocation failed in deserialize_matrix.");
@@ -80,9 +90,9 @@ STATUS_CODE deserialize_matrix(int64_t*** out_matrix, uint32_t dimension, const 
         goto cleanup;
     }
 
-    for (row = 0; row < dimension; ++row)
+    for (row = 0; row < rows; ++row)
     {
-        result[row] = (int64_t*)malloc(dimension * sizeof(int64_t));
+        result[row] = (int64_t*)malloc(columns * sizeof(int64_t));
         if (!result[row])
         {
             log_error("[!] Memory allocation failed for row in deserialize_matrix.");
@@ -90,9 +100,9 @@ STATUS_CODE deserialize_matrix(int64_t*** out_matrix, uint32_t dimension, const 
             goto cleanup;
         }
 
-        for (column = 0; column < dimension; ++column)
+        for (column = 0; column < columns; ++column)
         {
-            index = (row * dimension + column) * NUMBER_OF_BYTES_PER_ELEMENT;
+            index = (row * columns + column) * NUMBER_OF_BYTES_PER_ELEMENT;
             result[row][column] = 0;
             // Read key data as big endian
             for (byte_index = 0; byte_index < NUMBER_OF_BYTES_PER_ELEMENT; ++byte_index)
@@ -107,7 +117,7 @@ STATUS_CODE deserialize_matrix(int64_t*** out_matrix, uint32_t dimension, const 
     return_code = STATUS_CODE_SUCCESS;
 
 cleanup:
-    (void)free_int64_matrix(result, dimension);
+    (void)free_int64_matrix(result, rows);
 
     return return_code;
 }

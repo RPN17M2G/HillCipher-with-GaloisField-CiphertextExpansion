@@ -19,13 +19,37 @@
  * @param out_data - A pointer to an output vector.
  * @param out_size - A pointer to the size of the output vector.
  * @param matrix - The matrix to be serialized.
- * @param dimension - The dimension of the matrix.
+ * @param rows - The number of rows in the matrix.
+ * @param columns - The number of columns in the matrix.
  * @return STATUS_CODE - Status of the operation.
  */
-STATUS_CODE serialize_matrix(uint8_t** out_data, uint32_t* out_size, int64_t** matrix, uint32_t dimension);
+STATUS_CODE serialize_matrix(uint8_t** out_data, uint32_t* out_size, int64_t** matrix, uint32_t rows, uint32_t columns);
 
 /**
  * @brief Deserialize matrix from binary.
+ *
+ * @param out_matrix - A pointer to an output matrix.
+ * @param rows - The number of rows in the matrix.
+ * @param columns - The number of columns in the matrix.
+ * @param data - The data to be deserialized.
+ * @param size - The size of the data.
+ * @return STATUS_CODE - Status of the operation.
+ */
+STATUS_CODE deserialize_matrix(int64_t*** out_matrix, uint32_t rows, uint32_t columns, const uint8_t* data, uint32_t size);
+
+/**
+ * @brief Serialize square matrix to binary.
+ *
+ * @param out_data - A pointer to an output vector.
+ * @param out_size - A pointer to the size of the output vector.
+ * @param matrix - The matrix to be serialized.
+ * @param dimension - The dimension of the matrix.
+ * @return STATUS_CODE - Status of the operation.
+ */
+STATUS_CODE serialize_square_matrix(uint8_t** out_data, uint32_t* out_size, int64_t** matrix, uint32_t dimension);
+
+/**
+ * @brief Deserialize square matrix from binary.
  *
  * @param out_matrix - A pointer to an output matrix.
  * @param dimension - The dimension of the matrix.
@@ -33,7 +57,7 @@ STATUS_CODE serialize_matrix(uint8_t** out_data, uint32_t* out_size, int64_t** m
  * @param size - The size of the data.
  * @return STATUS_CODE - Status of the operation.
  */
-STATUS_CODE deserialize_matrix(int64_t*** out_matrix, uint32_t dimension, const uint8_t* data, uint32_t size);
+STATUS_CODE deserialize_square_matrix(int64_t*** out_matrix, uint32_t dimension, const uint8_t* data, uint32_t size);
 
 /**
  * @brief Serialize vector to binary.

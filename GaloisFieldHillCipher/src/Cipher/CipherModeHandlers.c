@@ -35,7 +35,7 @@ STATUS_CODE handle_generate_and_encrypt_mode(const ParsedArguments* args)
         print_matrix(encryption_matrix, args->dimension);
     }
 
-    return_code = serialize_matrix(&serialized_data, &serialized_size, encryption_matrix, args->dimension);
+    return_code = serialize_square_matrix(&serialized_data, &serialized_size, encryption_matrix, args->dimension);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
@@ -168,7 +168,7 @@ STATUS_CODE handle_key_generation_mode(const ParsedArguments* args)
         print_matrix(encryption_matrix, args->dimension);
     }
 
-    return_code = serialize_matrix(&serialized_data, &serialized_size, encryption_matrix, args->dimension);
+    return_code = serialize_square_matrix(&serialized_data, &serialized_size, encryption_matrix, args->dimension);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
@@ -221,7 +221,7 @@ STATUS_CODE handle_decryption_key_generation_mode(const ParsedArguments* args)
     }
 
     dimension = sqrt(key_size / (BYTE_SIZE * NUMBER_OF_BYTES_PER_ELEMENT));
-    return_code = deserialize_matrix(&encryption_matrix, dimension, key_data, key_size);
+    return_code = deserialize_square_matrix(&encryption_matrix, dimension, key_data, key_size);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
@@ -243,7 +243,7 @@ STATUS_CODE handle_decryption_key_generation_mode(const ParsedArguments* args)
         print_matrix(decryption_matrix, dimension);
     }
 
-    return_code = serialize_matrix(&serialized_data, &serialized_size, decryption_matrix, dimension);
+    return_code = serialize_square_matrix(&serialized_data, &serialized_size, decryption_matrix, dimension);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
@@ -318,7 +318,7 @@ STATUS_CODE handle_encrypt_mode(const ParsedArguments* args)
     }
 
     dimension = sqrt(key_size / (BYTE_SIZE * NUMBER_OF_BYTES_PER_ELEMENT));
-    return_code = deserialize_matrix(&encryption_matrix, dimension, key_data, key_size);
+    return_code = deserialize_square_matrix(&encryption_matrix, dimension, key_data, key_size);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
@@ -565,7 +565,7 @@ STATUS_CODE handle_generate_and_decrypt_mode(const ParsedArguments* args)
     }
 
     dimension = sqrt(key_size / (BYTE_SIZE * NUMBER_OF_BYTES_PER_ELEMENT));
-    return_code = deserialize_matrix(&encryption_matrix, dimension, key_data, key_size);
+    return_code = deserialize_square_matrix(&encryption_matrix, dimension, key_data, key_size);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
