@@ -278,10 +278,10 @@ STATUS_CODE serialize_matrix(uint8_t** out_data, uint32_t* out_size, int64_t** m
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
     uint8_t* buffer = NULL;
-    uint32_t size = 0;
-    size_t row = 0, column = 0, byte_index = 0;
-    int64_t value = 0;
-    uint32_t bytes_per_element = calculate_bytes_per_element(prime_field);
+    uint32_t total_size = 0;
+    uint8_t** row_buffers = NULL;
+    uint32_t* row_sizes = NULL;
+    size_t row = 0, offset = 0;
 
     if (!out_data || !out_size || !matrix || (0 == rows) || (0 == columns))
     {
@@ -290,101 +290,96 @@ STATUS_CODE serialize_matrix(uint8_t** out_data, uint32_t* out_size, int64_t** m
         goto cleanup;
     }
 
-    size = rows * columns * bytes_per_element;
-    buffer = (uint8_t*)malloc(size);
-    if (!buffer)
+    row_buffers = (uint8_t**)malloc(rows * sizeof(uint8_t*));
+    row_sizes = (uint32_t*)malloc(rows * sizeof(uint32_t));
+    if (!row_buffers || !row_sizes)
     {
-        log_error("[!] Memory allocation failed in serialize_matrix.");
+        log_error("[!] Memory allocation failed for row buffers or sizes.");
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
         goto cleanup;
     }
 
     for (row = 0; row < rows; ++row)
     {
-        for (column = 0; column < columns; ++column)
+        return_code = serialize_vector(&row_buffers[row], &row_sizes[row], matrix[row], columns, prime_field);
+        if (STATUS_FAILED(return_code))
         {
-            value = matrix[row][column];
-
-            // Store each value big endian
-            for (byte_index = 0; byte_index < bytes_per_element; ++byte_index)
-            {
-                buffer[(row * columns + column) * bytes_per_element + byte_index] =
-                    (value >> (BYTE_SIZE * (bytes_per_element - 1 - byte_index))) & 0xFF;
-            }
+            log_error("[!] Failed to serialize row %u.", row);
+            goto cleanup;
         }
+        total_size += row_sizes[row];
+    }
+
+    buffer = (uint8_t*)malloc(total_size);
+    if (!buffer)
+    {
+        log_error("[!] Memory allocation failed for matrix buffer.");
+        return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
+        goto cleanup;
+    }
+
+    for (row = 0; row < rows; ++row)
+    {
+        if (offset + row_sizes[row] > total_size)
+        {
+            log_error("[!] Buffer overflow detected while copying row %u.", row);
+            return_code = STATUS_CODE_ERROR_INVALID_SIZE;
+            goto cleanup;
+        }
+        memcpy_s(buffer + offset, total_size - offset, row_buffers[row], row_sizes[row]);
+        offset += row_sizes[row];
     }
 
     *out_data = buffer;
     buffer = NULL;
-    *out_size = size;
+    *out_size = total_size;
 
     return_code = STATUS_CODE_SUCCESS;
 cleanup:
+    (void)free_uint8_matrix(row_buffers, rows);
     free(buffer);
+    free(row_sizes);
     return return_code;
 }
 
 STATUS_CODE deserialize_matrix(int64_t*** out_matrix, uint32_t rows, uint32_t columns, const uint8_t* data, uint32_t size, uint32_t prime_field)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
-    int64_t** result = NULL;
-    uint32_t expected_size = 0;
-    size_t index = 0;
-    size_t row = 0, column = 0, byte_index = 0;
-    uint32_t bytes_per_element = calculate_bytes_per_element(prime_field);
+    int64_t** matrix = NULL;
+    size_t offset = 0, row = 0;
 
-    if (!out_matrix || !data || (0 == rows) || (0 == columns))
+    if (!out_matrix || !data || rows == 0 || columns == 0 || size == 0)
     {
         log_error("[!] Invalid argument in deserialize_matrix.");
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
     }
 
-    expected_size = rows * columns * bytes_per_element;
-    if (size != expected_size)
+    matrix = (int64_t**)malloc(rows * sizeof(int64_t*));
+    if (!matrix)
     {
-        log_error("[!] Invalid file size in deserialize_matrix.");
-        return_code = STATUS_CODE_ERROR_INVALID_FILE_SIZE;
-        goto cleanup;
-    }
-
-    result = (int64_t**)malloc(rows * sizeof(int64_t*));
-    if (!result)
-    {
-        log_error("[!] Memory allocation failed in deserialize_matrix.");
+        log_error("[!] Memory allocation failed for matrix.");
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
         goto cleanup;
     }
 
     for (row = 0; row < rows; ++row)
     {
-        result[row] = (int64_t*)malloc(columns * sizeof(int64_t));
-        if (!result[row])
+        return_code = deserialize_vector(&matrix[row], &columns, data + offset, size - offset, prime_field);
+        if (STATUS_FAILED(return_code))
         {
-            log_error("[!] Memory allocation failed for row in deserialize_matrix.");
-            return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
+            log_error("[!] Failed to deserialize row %u.", row);
             goto cleanup;
         }
-
-        for (column = 0; column < columns; ++column)
-        {
-            index = (row * columns + column) * bytes_per_element;
-            result[row][column] = 0;
-            // Read key data as big endian
-            for (byte_index = 0; byte_index < bytes_per_element; ++byte_index)
-            {
-                result[row][column] |= ((int64_t)data[index + byte_index]) << (BYTE_SIZE * (bytes_per_element - 1 - byte_index));
-            }
-        }
+        offset += columns * calculate_bytes_per_element(prime_field);
     }
 
-    *out_matrix = result;
-    result = NULL;
+    *out_matrix = matrix;
+    matrix = NULL;
     return_code = STATUS_CODE_SUCCESS;
 
 cleanup:
-    (void)free_int64_matrix(result, rows);
-
+    (void)free_int64_matrix(matrix, rows);
     return return_code;
 }
 
@@ -392,7 +387,7 @@ STATUS_CODE serialize_vector(uint8_t** out_data, uint32_t* out_size, int64_t* ve
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
     uint8_t* buffer = NULL;
-    size_t i = 0, byte_index = 0;
+    size_t element_index = 0, byte_index = 0;
     int64_t value = 0;
     uint32_t bytes_per_element = calculate_bytes_per_element(prime_field);
 
@@ -411,13 +406,13 @@ STATUS_CODE serialize_vector(uint8_t** out_data, uint32_t* out_size, int64_t* ve
         goto cleanup;
     }
 
-    for (i = 0; i < size; ++i)
+    for (element_index = 0; element_index < size; ++element_index)
     {
-        value = vector[i];
+        value = vector[element_index];
         for (byte_index = 0; byte_index < bytes_per_element; ++byte_index)
         {
-            buffer[i * bytes_per_element + byte_index] =
-                (value >> (BYTE_SIZE * (bytes_per_element - 1 - byte_index))) & 0xFF;
+            buffer[element_index * bytes_per_element + byte_index] =
+                (value >> (BYTE_SIZE * (bytes_per_element - 1 - byte_index))) & BYTE_MASK;
         }
     }
 
@@ -435,7 +430,7 @@ STATUS_CODE deserialize_vector(int64_t** out_vector, uint32_t* out_size, const u
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
     int64_t* result = NULL;
-    size_t i = 0, byte_index = 0;
+    size_t element_index = 0, byte_index = 0;
     uint32_t bytes_per_element = calculate_bytes_per_element(prime_field);
 
     if (!out_vector || !data || !out_size)
@@ -460,12 +455,12 @@ STATUS_CODE deserialize_vector(int64_t** out_vector, uint32_t* out_size, const u
         goto cleanup;
     }
 
-    for (i = 0; i < (data_size / bytes_per_element); ++i)
+    for (element_index = 0; element_index < (data_size / bytes_per_element); ++element_index)
     {
-        result[i] = 0;
+        result[element_index] = 0;
         for (byte_index = 0; byte_index < bytes_per_element; ++byte_index)
         {
-            result[i] |= ((int64_t)data[i * bytes_per_element + byte_index]) << (BYTE_SIZE * (bytes_per_element - 1 - byte_index));
+            result[element_index] |= ((int64_t)data[element_index * bytes_per_element + byte_index]) << (BYTE_SIZE * (bytes_per_element - 1 - byte_index));
         }
     }
 

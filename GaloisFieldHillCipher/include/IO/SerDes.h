@@ -14,6 +14,7 @@
 #include "Cipher/Cipher.h"
 
 #define NUMBER_OF_DIGITS (10)
+#define BYTE_MASK (0xFF)
 
 /**
  * @brief Calculate the number of bytes per element on the prime field.
