@@ -3,14 +3,16 @@
 void print_uint8_vector(const uint8_t* data, size_t size, const char* prefix)
 {
     size_t i = 0;
-    if (!data || !prefix) {
+    if (!data || !prefix)
+    {
         log_error("[!] Invalid argument in print_uint8_vector.");
         return;
     }
 
     size_t buffer_size = size * UINT8_HEX_CHARS_PER_ELEMENT + PRINT_BUFFER_EXTRA;
     char* buffer = (char*)malloc(buffer_size);
-    if (!buffer) {
+    if (!buffer)
+    {
         log_error("[!] Memory allocation failed in print_uint8_vector.");
         return;
     }
@@ -29,14 +31,16 @@ void print_uint8_vector(const uint8_t* data, size_t size, const char* prefix)
 void print_int64_vector(const int64_t* data, size_t size, const char* prefix)
 {
     size_t i = 0;
-    if (!data || !prefix) {
+    if (!data || !prefix)
+    {
         log_error("[!] Invalid argument in print_int64_vector.");
         return;
     }
 
     size_t buffer_size = size * INT64_HEX_CHARS_PER_ELEMENT + PRINT_BUFFER_EXTRA;
     char* buffer = (char*)malloc(buffer_size);
-    if (!buffer) {
+    if (!buffer)
+    {
         log_error("[!] Memory allocation failed in print_int64_vector.");
         return;
     }
@@ -58,13 +62,15 @@ void print_int64_vector(const int64_t* data, size_t size, const char* prefix)
 void print_matrix(int64_t** matrix, uint32_t dimension)
 {
     size_t row = 0, column = 0;
-    if (!matrix) {
+    if (!matrix)
+    {
         log_error("[!] Invalid argument in print_matrix.");
         return;
     }
     size_t buffer_size = dimension * dimension * MATRIX_HEX_CHARS_PER_ELEMENT + PRINT_BUFFER_EXTRA;
     char* buffer = (char*)malloc(buffer_size);
-    if (!buffer) {
+    if (!buffer)
+    {
         log_error("[!] Memory allocation failed in print_matrix.");
         return;
     }

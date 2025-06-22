@@ -50,7 +50,7 @@ STATUS_CODE serialize_secrets(uint8_t** out_data, uint32_t* out_size, Secrets se
         goto cleanup;
     }
 
-    permutation_vector_size = digits_per_element * secrets.number_of_digits_per_field_element_permutation;
+    permutation_vector_size = digits_per_element * secrets.dimension;
     permutation_vector_data = (uint8_t*)malloc(permutation_vector_size);
     if (!permutation_vector_data)
     {
@@ -60,7 +60,7 @@ STATUS_CODE serialize_secrets(uint8_t** out_data, uint32_t* out_size, Secrets se
     }
     memcpy_s(permutation_vector_data, permutation_vector_size, secrets.permutation_vector, permutation_vector_size);
 
-    buffer_size = key_matrix_size + error_vectors_size + ascii_mapping_size + permutation_vector_size + (sizeof(uint32_t) * 5);
+    buffer_size = key_matrix_size + error_vectors_size + ascii_mapping_size + permutation_vector_size + (sizeof(uint32_t) * 4);
     buffer = (uint8_t*)malloc(buffer_size);
     if (!buffer)
     {
@@ -145,14 +145,14 @@ STATUS_CODE deserialize_secrets(Secrets* out_secrets, uint8_t* data, uint32_t si
     Secrets secrets = {0};
     size_t offset = 0;
     uint32_t dimension = 0, number_of_error_vectors = 0, prime_field = 0;
-    uint32_t number_of_letters_for_each_digit_ascii_mapping = 0, number_of_digits_per_field_element_permutation = 0;
+    uint32_t number_of_letters_for_each_digit_ascii_mapping = 0;
     uint32_t bytes_per_element = 0, digits_per_element = 0;
     int64_t** key_matrix_buffer = NULL;
     int64_t** error_vectors_buffer = NULL;
     uint8_t** ascii_mapping_buffer = NULL;
     uint8_t* permutation_vector_buffer = NULL;
 
-    if (!out_secrets || !data || size < sizeof(uint32_t) * 5)
+    if (!out_secrets || !data || size < sizeof(uint32_t) * 4)
     {
         log_error("[!] Invalid argument in deserialize_secrets.");
         return_code = STATUS_CODE_INVALID_ARGUMENT;
@@ -191,18 +191,10 @@ STATUS_CODE deserialize_secrets(Secrets* out_secrets, uint8_t* data, uint32_t si
     memcpy_s(&number_of_letters_for_each_digit_ascii_mapping, sizeof(uint32_t), data + offset, sizeof(uint32_t));
     offset += sizeof(uint32_t);
 
-    if (offset + sizeof(uint32_t) > size)
-    {
-        return_code = STATUS_CODE_ERROR_INVALID_SIZE;
-        goto cleanup;
-    }
-    memcpy_s(&number_of_digits_per_field_element_permutation, sizeof(uint32_t), data + offset, sizeof(uint32_t));
-    offset += sizeof(uint32_t);
-
     bytes_per_element = calculate_bytes_per_element(prime_field);
     digits_per_element = calculate_digits_per_element(prime_field);
 
-    if (size < offset + (dimension * dimension * bytes_per_element) + (number_of_error_vectors * dimension * bytes_per_element) + (NUMBER_OF_DIGITS * number_of_letters_for_each_digit_ascii_mapping * bytes_per_element) + (digits_per_element * number_of_digits_per_field_element_permutation))
+    if (size < offset + (dimension * dimension * bytes_per_element) + (number_of_error_vectors * dimension * bytes_per_element) + (NUMBER_OF_DIGITS * number_of_letters_for_each_digit_ascii_mapping * bytes_per_element) + (digits_per_element * dimension))
     {
         log_error("[!] Invalid data size in deserialize_secrets.");
         return_code = STATUS_CODE_ERROR_INVALID_FILE_SIZE;
@@ -230,20 +222,19 @@ STATUS_CODE deserialize_secrets(Secrets* out_secrets, uint8_t* data, uint32_t si
     }
     offset += NUMBER_OF_DIGITS * number_of_letters_for_each_digit_ascii_mapping * bytes_per_element;
 
-    permutation_vector_buffer = (uint8_t*)malloc(digits_per_element * number_of_digits_per_field_element_permutation);
+    permutation_vector_buffer = (uint8_t*)malloc(digits_per_element * dimension);
     if (!permutation_vector_buffer)
     {
         log_error("[!] Memory allocation failed for permutation vector.");
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
         goto cleanup;
     }
-    memcpy_s(permutation_vector_buffer, digits_per_element * number_of_digits_per_field_element_permutation, data + offset, digits_per_element * number_of_digits_per_field_element_permutation);
+    memcpy_s(permutation_vector_buffer, digits_per_element * dimension, data + offset, digits_per_element * dimension);
 
     secrets.dimension = dimension;
     secrets.number_of_error_vectors = number_of_error_vectors;
     secrets.prime_field = prime_field;
     secrets.number_of_letters_for_each_digit_ascii_mapping = number_of_letters_for_each_digit_ascii_mapping;
-    secrets.number_of_digits_per_field_element_permutation = number_of_digits_per_field_element_permutation;
     secrets.key_matrix = key_matrix_buffer;
     key_matrix_buffer = NULL;
     secrets.error_vectors = error_vectors_buffer;

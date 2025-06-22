@@ -55,7 +55,8 @@ STATUS_CODE map_from_int64_to_ascii(uint8_t** out_ascii, uint32_t* out_ascii_siz
     }
 
     buffer_index = 0;
-    for (number_index = 0; number_index < data_size; ++number_index) {
+    for (number_index = 0; number_index < data_size; ++number_index)
+    {
         // Pad with leading zeros to ensure 7 digits per number
         snprintf(number_string, sizeof(number_string), "%0*lld", DIGITS_PER_NUMBER, data[number_index]);
 

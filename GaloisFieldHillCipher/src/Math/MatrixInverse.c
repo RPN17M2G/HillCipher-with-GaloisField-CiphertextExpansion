@@ -175,7 +175,8 @@ STATUS_CODE inverse_square_matrix_gauss_jordan(int64_t*** out_inverse_matrix, in
     }
 
     // Perform Gauss-Jordan elimination
-    for (row_iteration = 0; row_iteration < dimension; row_iteration++) {
+    for (row_iteration = 0; row_iteration < dimension; row_iteration++)
+    {
         // Find pivot
         pivot_row = row_iteration;
         for (row = row_iteration + 1; row < dimension; row++)
@@ -206,7 +207,8 @@ STATUS_CODE inverse_square_matrix_gauss_jordan(int64_t*** out_inverse_matrix, in
         pivot_element = augmented_matrix[row_iteration][row_iteration];
         pivot_inverse = raise_power_over_galois_field(pivot_element, prime_field - 2, prime_field);
 
-        for (column = 0; column < 2 * dimension; column++) {
+        for (column = 0; column < 2 * dimension; column++)
+    {
             augmented_matrix[row_iteration][column] = multiply_over_galois_field(augmented_matrix[row_iteration][column], pivot_inverse, prime_field);
         }
         // Eliminate other rows

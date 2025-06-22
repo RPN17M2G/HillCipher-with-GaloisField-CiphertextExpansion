@@ -4,49 +4,61 @@ int main(int argc, char** argv)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
     FILE* log_fp = NULL;
-    ParsedArguments parsed_args = { 0 };
-    return_code = parse_arguments(&parsed_args, argc, argv);
+    OPERATION_MODE mode = MODE_UNINITIALIZED;
+    GlobalArguments* global_arguments = NULL;
+    void* parsed_arguments = NULL;
+
+    return_code = parse_mode(&mode, argc, argv);
     if (STATUS_FAILED(return_code))
     {
-        printf("[!] Failed to parse arguments. Command line: ");
-        for (int i = 0; i < argc; ++i)
-        {
-            printf("%s ", argv[i]);
-        }
-        printf("\n");
-        return return_code;
+        log_error("[!] Failed to parse arguments.");
+        goto cleanup;
     }
 
-    if (parsed_args.verbose)
+    return_code = parse_global_arguments(&global_arguments, argc, argv);
+    if (STATUS_FAILED(return_code))
     {
-        printf("[*] Verbose mode is enabled.\n");
+        printf("[!] Failed to parse global arguments.\n");
+        goto cleanup;
     }
 
-    if (parsed_args.log_file)
+    if (global_arguments->verbose)
     {
-        log_fp = fopen(parsed_args.log_file, "a");
+        log_info("[*] Verbose mode is enabled.\n");
+    }
+
+    if (global_arguments->log_file)
+    {
+        log_fp = fopen(global_arguments->log_file, "a");
         log_add_fp(log_fp, LOG_TRACE);
     }
 
-    switch (parsed_args.mode)
+    return_code = parse_mode_arguments(&parsed_arguments, mode, argc, argv);
+    if (STATUS_FAILED(return_code))
+    {
+        log_error("[!] Failed to parse mode-specific arguments.");
+        goto cleanup;
+    }
+
+    switch (mode)
     {
     case KEY_GENERATION_MODE:
-        return_code = handle_key_generation_mode(&parsed_args);
+        return_code = handle_key_generation_mode((KeyGenerationArguments*)parsed_arguments);
         break;
     case DECRYPTION_KEY_GENERATION_MODE:
-        return_code = handle_decryption_key_generation_mode(&parsed_args);
+        return_code = handle_decryption_key_generation_mode((DecryptionKeyGenerationArguments*)parsed_arguments);
         break;
     case ENCRYPT_MODE:
-        return_code = handle_encrypt_mode(&parsed_args);
+        return_code = handle_encrypt_mode((EncryptArguments*)parsed_arguments);
         break;
     case DECRYPT_MODE:
-        return_code = handle_decrypt_mode(&parsed_args);
+        return_code = handle_decrypt_mode((DecryptArguments*)parsed_arguments);
         break;
     case GENERATE_AND_ENCRYPT_MODE:
-        return_code = handle_generate_and_encrypt_mode(&parsed_args);
+        return_code = handle_generate_and_encrypt_mode((GenerateAndEncryptArguments*)parsed_arguments);
         break;
     case GENERATE_AND_DECRYPT_MODE:
-        return_code = handle_generate_and_decrypt_mode(&parsed_args);
+        return_code = handle_generate_and_decrypt_mode((GenerateAndDecryptArguments*)parsed_arguments);
         break;
     default:
         printf("[!] Invalid mode specified.\n");
@@ -58,5 +70,6 @@ cleanup:
     {
         fclose(log_fp);
     }
+    free(global_arguments);
     return return_code;
 }

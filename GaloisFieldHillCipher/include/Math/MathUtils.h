@@ -48,4 +48,12 @@ STATUS_CODE add_two_vectors_over_gf(int64_t** out_vector, int64_t* first_vector,
  */
 STATUS_CODE substruct_two_vectors_over_gf(int64_t** out_vector, int64_t* first_vector, int64_t* second_vector, uint32_t length, uint32_t prime_field);
 
+/**
+ * @brief Checks if a number is prime.
+ *
+ * @param number - The number to check.
+ * @return true if the number is prime, false otherwise.
+ */
+bool is_prime(int64_t number);
+
 #endif

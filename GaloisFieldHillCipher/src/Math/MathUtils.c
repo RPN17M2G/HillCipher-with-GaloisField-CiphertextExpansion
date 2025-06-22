@@ -85,3 +85,31 @@ STATUS_CODE substruct_two_vectors_over_gf(int64_t** out_vector, int64_t* first_v
 		free(vector_buffer);
 	return return_code;
 }
+
+bool is_prime(int64_t number)
+{
+	int64_t divisor = 0;
+    if (number <= 1)
+    {
+        return false;
+    }
+    if (number <= 3)
+    {
+        return true; // 2 and 3 are prime
+    }
+    if (IS_EVEN(number) || (number % 3 == 0))
+    {
+        return false; // Eliminate multiples of 2 and 3
+    }
+
+    // Check divisors from 5 to sqrt(number)
+    for (divisor = 5; divisor * divisor <= number; divisor += 6)
+    {
+        if ((number % divisor == 0) || (number % (divisor + 2) == 0))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}

@@ -9,9 +9,10 @@
 
 #include "StatusCodes.h"
 #include "Math/MatrixUtils.h"
-#include "../Cipher/CipherParts/BlockDividing.h"
+#include "Cipher/CipherParts/BlockDividing.h"
 #include "log.h"
 #include "Cipher/Cipher.h"
+#include "Secrets.h"
 
 #define NUMBER_OF_DIGITS (10)
 #define BYTE_MASK (0xFF)

@@ -162,7 +162,8 @@ STATUS_CODE matrix_determinant_over_galois_field_gauss_jordan(int64_t* out_deter
         }
 
         // Swap rows if needed
-        if (pivot_row != row_iteration) {
+        if (pivot_row != row_iteration)
+    {
             temp_row = matrix_copy[row_iteration];
             matrix_copy[row_iteration] = matrix_copy[pivot_row];
             matrix_copy[pivot_row] = temp_row;
@@ -180,10 +181,13 @@ STATUS_CODE matrix_determinant_over_galois_field_gauss_jordan(int64_t* out_deter
             matrix_copy[row_iteration][column] = multiply_over_galois_field(matrix_copy[row_iteration][column], inverse_pivot, prime_field);
         }
         // Eliminate other rows
-        for (row = 0; row < dimension; row++) {
-            if (row != row_iteration && matrix_copy[row][row_iteration] != 0) {
+        for (row = 0; row < dimension; row++)
+    {
+            if (row != row_iteration && matrix_copy[row][row_iteration] != 0)
+    {
                 factor = matrix_copy[row][row_iteration];
-                for (column = row_iteration; column < dimension; column++) {
+                for (column = row_iteration; column < dimension; column++)
+    {
                     product = multiply_over_galois_field(factor, matrix_copy[row_iteration][column], prime_field);
                     matrix_copy[row][column] = add_over_galois_field(matrix_copy[row][column], negate_over_galois_field(product, prime_field), prime_field);
                 }
