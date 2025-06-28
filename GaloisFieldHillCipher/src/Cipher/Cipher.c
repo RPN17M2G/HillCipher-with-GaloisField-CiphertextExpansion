@@ -1,5 +1,7 @@
 #include "Cipher/Cipher.h"
 
+#include "IO/PrintUtils.h"
+
 STATUS_CODE encrypt(int64_t** out_ciphertext, uint32_t* out_ciphertext_bit_size, uint8_t* plaintext_vector, uint32_t vector_bit_size, Secrets secrets)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
@@ -15,7 +17,7 @@ STATUS_CODE encrypt(int64_t** out_ciphertext, uint32_t* out_ciphertext_bit_size,
 	int64_t* ciphertext_buffer = NULL;
 	int64_t* original_hill_cipher_block = NULL;
 
-	if ((NULL == out_ciphertext) || (NULL == out_ciphertext_bit_size) || (NULL == plaintext_vector) || (NULL == secrets.key_matrix) || (NULL == secrets.error_vectors))
+	if ((secrets.dimension > (UINT32_MAX / BYTE_SIZE)) || (NULL == out_ciphertext) || (NULL == out_ciphertext_bit_size) || (NULL == plaintext_vector) || (NULL == secrets.key_matrix) || (NULL == secrets.error_vectors))
 	{
 		return_code = STATUS_CODE_INVALID_ARGUMENT;
 		goto cleanup;
@@ -133,7 +135,6 @@ STATUS_CODE decrypt(uint8_t** out_plaintext, uint32_t* out_plaintext_bit_size, i
 		}
 
 		return_code = multiply_matrix_with_int64_t_vector(&plaintext_block, secrets.key_matrix, affine_subtracted_block, secrets.dimension, secrets.prime_field);
-		free(affine_subtracted_block);
 		if (STATUS_FAILED(return_code))
 		{
 			goto cleanup;
@@ -143,7 +144,9 @@ STATUS_CODE decrypt(uint8_t** out_plaintext, uint32_t* out_plaintext_bit_size, i
 			decrypted_plaintext_blocks[(block_number * secrets.dimension) + block_index] = plaintext_block[block_index];
 		}
 		free(plaintext_block);
+		plaintext_block = NULL;
 		free(affine_subtracted_block);
+		affine_subtracted_block = NULL;
 	}
 
 	return_code = remove_padding(&unpadded_plaintext, &unpadded_plaintext_bit_size, decrypted_plaintext_blocks, vector_bit_size_aligned_to_uint8_t);
@@ -249,19 +252,28 @@ void free_secrets(Secrets* secrets)
 {
 	size_t index = 0;
 
-	for (index = 0; index < secrets->dimension; ++index)
+	if (secrets->key_matrix != NULL)
 	{
-		free(secrets->key_matrix[index]);
+		for (index = 0; index < secrets->dimension; ++index)
+		{
+			free(secrets->key_matrix[index]);
+		}
 	}
 	free(secrets->key_matrix);
-	for (index = 0; index < secrets->number_of_error_vectors; ++index)
+	if (secrets->error_vectors != NULL)
 	{
-		free(secrets->error_vectors[index]);
+		for (index = 0; index < secrets->number_of_error_vectors; ++index)
+		{
+			free(secrets->error_vectors[index]);
+		}
 	}
 	free(secrets->error_vectors);
-	for (index = 0; index < NUMBER_OF_DIGITS; ++index)
+	if (secrets->ascii_mapping != NULL)
 	{
-		free(secrets->ascii_mapping[index]);
+		for (index = 0; index < NUMBER_OF_DIGITS; ++index)
+		{
+			free(secrets->ascii_mapping[index]);
+		}
 	}
 	free(secrets->ascii_mapping);
 	free(secrets->permutation_vector);

@@ -10,17 +10,24 @@ STATUS_CODE handle_generate_and_encrypt_mode(const GenerateAndEncryptArguments* 
         goto cleanup;
     }
 
+    log_info("Generating encryption key...");
+
     return_code = handle_key_generation_mode(args->key_generation_arguments);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
     }
 
+    log_info("Encrypting data...");
+
     return_code = handle_encrypt_mode(args->encrypt_arguments);
 
 cleanup:
-    free(args->encrypt_arguments);
-    free(args->key_generation_arguments);
+    if (STATUS_FAILED(return_code))
+    {
+        free((void*)args->encrypt_arguments);
+        free((void*)args->key_generation_arguments);
+    }
     free((void*)args);
     return return_code;
 }
@@ -97,6 +104,7 @@ STATUS_CODE handle_key_generation_mode(const KeyGenerationArguments* args)
             secrets.ascii_mapping[digit][letter] = (uint8_t)random_ascii_character;
         }
     }
+    log_info("[*] Successfully generated ASCII mapping...\n");
 
     secrets.number_of_letters_for_each_digit_ascii_mapping = args->number_of_letters_for_each_digit_ascii_mapping;
 
@@ -119,6 +127,7 @@ STATUS_CODE handle_key_generation_mode(const KeyGenerationArguments* args)
         }
         secrets.permutation_vector[index] = random_permutation_index;
     }
+    log_info("[*] Successfully generated permutation vector...\n");
 
     secrets.number_of_random_bits_to_add = args->number_of_random_bits_to_add;
 
@@ -133,9 +142,17 @@ STATUS_CODE handle_key_generation_mode(const KeyGenerationArguments* args)
 
     return_code = write_uint8_to_file(args->output_file, serialized_data, serialized_size);
 
+    if (STATUS_SUCCESS(return_code))
+    {
+        log_info("[*] Key file written successfully.\n");
+    }
+    else
+    {
+        log_error("[!] Failed to write key file: %s\n", args->output_file);
+    }
+
 cleanup:
     free(serialized_data);
-    free_int64_matrix(encryption_matrix, args->dimension);
     free_secrets(&secrets);
     return return_code;
 }
@@ -181,6 +198,8 @@ STATUS_CODE handle_encrypt_mode(const EncryptArguments* args)
     {
         goto cleanup;
     }
+
+    log_info("[*] Deserialized secrets:\n");
 
     print_matrix(secrets.key_matrix, secrets.dimension);
 
@@ -259,12 +278,15 @@ STATUS_CODE handle_decryption_key_generation_mode(const DecryptionKeyGenerationA
 
     print_uint8_vector(key_data, key_size / BYTE_SIZE, "[*] Key data:");
 
+    log_info("[*] Deserializing encryption secrets...\n");
+
     return_code = deserialize_secrets(&encryption_secrets, key_data, key_size);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
     }
 
+    log_info("[*] Successfully deserialized encryption secrets.\n");
     log_info("[*] Generating decryption matrix...\n");
 
     return_code = generate_decryption_matrix(&decryption_matrix, encryption_secrets.dimension,
@@ -274,7 +296,7 @@ STATUS_CODE handle_decryption_key_generation_mode(const DecryptionKeyGenerationA
         goto cleanup;
     }
 
-    log_info("[*] Decryption matrix generated.\n");
+    log_info("[*] Decryption matrix generated:\n");
 
     print_matrix(decryption_matrix, encryption_secrets.dimension);
 
@@ -301,7 +323,9 @@ STATUS_CODE handle_decryption_key_generation_mode(const DecryptionKeyGenerationA
     decryption_secrets.prime_field = encryption_secrets.prime_field;
     decryption_secrets.key_matrix = decryption_matrix;
     decryption_secrets.error_vectors = encryption_secrets.error_vectors;
+    encryption_secrets.error_vectors = NULL;
     decryption_secrets.ascii_mapping = encryption_secrets.ascii_mapping;
+    encryption_secrets.ascii_mapping = NULL;
     decryption_secrets.permutation_vector = reversed_permutation_vector;
     decryption_secrets.number_of_letters_for_each_digit_ascii_mapping = encryption_secrets.number_of_letters_for_each_digit_ascii_mapping;
     decryption_secrets.number_of_random_bits_to_add = encryption_secrets.number_of_random_bits_to_add;
@@ -316,6 +340,15 @@ STATUS_CODE handle_decryption_key_generation_mode(const DecryptionKeyGenerationA
     log_info("[*] Writing to key file: %s\n", args->output_file);
 
     return_code = write_uint8_to_file(args->output_file, serialized_data, serialized_size);
+
+    if (STATUS_SUCCESS(return_code))
+    {
+        log_info("[*] Key file written successfully.\n");
+    }
+    else
+    {
+        log_error("[!] Failed to write key file: %s\n", args->output_file);
+    }
 
 cleanup:
     free(serialized_data);
@@ -352,12 +385,16 @@ STATUS_CODE handle_decrypt_mode(const DecryptArguments* args)
 
     print_uint8_vector(key_data, key_size / BYTE_SIZE, "[*] Key data:");
 
+    log_info("[*] Deserializing secrets...\n");
+
     return_code = deserialize_secrets(&secrets, key_data, key_size);
     if (STATUS_FAILED(return_code))
     {
         log_error("[!] Failed to deserialize secrets.");
         goto cleanup;
     }
+
+    log_info("[*] Successfully deserialized secrets.\n");
 
     log_info("Reading ciphertext from: %s\n", args->input_file);
 
@@ -367,7 +404,7 @@ STATUS_CODE handle_decrypt_mode(const DecryptArguments* args)
         goto cleanup;
     }
 
-    if (STATUS_SUCCESS(validate_file_is_binary((const char*)serialized_ciphertext))) // Binary format
+    if (STATUS_SUCCESS(validate_file_is_binary(args->input_file))) // Binary format
     {
         log_info("[*] Deserializing ciphertext from binary...\n");
         return_code = deserialize_vector(&ciphertext, &ciphertext_size, serialized_ciphertext, serialized_ciphertext_size, secrets.prime_field);
@@ -441,8 +478,11 @@ STATUS_CODE handle_generate_and_decrypt_mode(const GenerateAndDecryptArguments* 
     return_code = handle_decrypt_mode(decrypt_arguments);
 
 cleanup:
-    free(args->decrypt_arguments);
-    free(args->key_generation_arguments);
+    if (STATUS_FAILED(return_code))
+    {
+        free(args->decrypt_arguments);
+        free(args->key_generation_arguments);
+    }
     free((void*)args);
     return return_code;
 }

@@ -2,11 +2,31 @@
 
 uint32_t calculate_bytes_per_element(uint32_t prime_field)
 {
-    return (uint32_t)ceil(log2(prime_field) / BYTE_SIZE);
+    uint32_t bits = 0;
+    uint32_t value = prime_field - 1;
+
+    if (prime_field == 0)
+    {
+        return 0;
+    }
+    while (value)
+    {
+        value >>= 1;
+        if (value == 1)
+        {
+            continue;
+        }
+        bits++;
+    }
+    return (bits + BYTE_SIZE - 1) / BYTE_SIZE;
 }
 
 uint32_t calculate_digits_per_element(uint32_t prime_field)
 {
+    if (prime_field == 0)
+    {
+        return 0;
+    }
     return (uint32_t)ceil(log10(prime_field));
 }
 
@@ -26,10 +46,22 @@ STATUS_CODE serialize_secrets(uint8_t** out_data, uint32_t* out_size, Secrets se
     uint32_t buffer_size = 0;
     size_t offset = 0;
 
-    if (!out_data || !out_size || !secrets.key_matrix || !secrets.error_vectors || !secrets.ascii_mapping || !secrets.permutation_vector || secrets.dimension == 0 || secrets.number_of_error_vectors == 0)
+    if (!out_data || !out_size || !secrets.key_matrix || !secrets.error_vectors || !secrets.ascii_mapping || !secrets.permutation_vector || (0 == secrets.dimension) || (secrets.dimension > (UINT32_MAX / digits_per_element)) || secrets.number_of_error_vectors == 0)
     {
         log_error("[!] Invalid argument in serialize_secrets.");
         return STATUS_CODE_INVALID_ARGUMENT;
+    }
+
+    if ((0 == secrets.dimension) || (secrets.dimension > (UINT32_MAX / calculate_digits_per_element(secrets.prime_field))))
+    {
+        log_error("[!] Dimension overflow or invalid value in serialize_secrets.");
+        return STATUS_CODE_ERROR_INVALID_SIZE;
+    }
+
+    if (secrets.number_of_error_vectors > (UINT32_MAX / secrets.dimension))
+    {
+        log_error("[!] Number of error vectors overflow in serialize_secrets.");
+        return STATUS_CODE_ERROR_INVALID_SIZE;
     }
 
     return_code = serialize_square_matrix(&key_matrix_data, &key_matrix_size, secrets.key_matrix, secrets.dimension, secrets.prime_field);
@@ -60,7 +92,14 @@ STATUS_CODE serialize_secrets(uint8_t** out_data, uint32_t* out_size, Secrets se
     }
     memcpy_s(permutation_vector_data, permutation_vector_size, secrets.permutation_vector, permutation_vector_size);
 
-    buffer_size = key_matrix_size + error_vectors_size + ascii_mapping_size + permutation_vector_size + (sizeof(uint32_t) * 4);
+    if (permutation_vector_size > (UINT32_MAX - key_matrix_size - error_vectors_size - ascii_mapping_size - (sizeof(uint32_t) * NUMBER_OF_UINT32_SECRETS)))
+    {
+        log_error("[!] Buffer size overflow in serialize_secrets.");
+        return_code = STATUS_CODE_ERROR_INVALID_SIZE;
+        goto cleanup;
+    }
+
+    buffer_size = key_matrix_size + error_vectors_size + ascii_mapping_size + permutation_vector_size + (sizeof(uint32_t) * NUMBER_OF_UINT32_SECRETS);
     buffer = (uint8_t*)malloc(buffer_size);
     if (!buffer)
     {
@@ -91,6 +130,14 @@ STATUS_CODE serialize_secrets(uint8_t** out_data, uint32_t* out_size, Secrets se
         goto cleanup;
     }
     memcpy_s(buffer + offset, buffer_size - offset, &secrets.prime_field, sizeof(uint32_t));
+    offset += sizeof(uint32_t);
+
+    if (offset + sizeof(uint32_t) > buffer_size)
+    {
+        return_code = STATUS_CODE_ERROR_INVALID_SIZE;
+        goto cleanup;
+    }
+    memcpy_s(buffer + offset, buffer_size - offset, &secrets.number_of_letters_for_each_digit_ascii_mapping, sizeof(uint32_t));
     offset += sizeof(uint32_t);
 
     if (offset + key_matrix_size > buffer_size)
@@ -152,7 +199,7 @@ STATUS_CODE deserialize_secrets(Secrets* out_secrets, uint8_t* data, uint32_t si
     uint8_t** ascii_mapping_buffer = NULL;
     uint8_t* permutation_vector_buffer = NULL;
 
-    if (!out_secrets || !data || size < sizeof(uint32_t) * 4)
+    if (!out_secrets || !data || size < sizeof(uint32_t) * NUMBER_OF_UINT32_SECRETS)
     {
         log_error("[!] Invalid argument in deserialize_secrets.");
         return_code = STATUS_CODE_INVALID_ARGUMENT;
@@ -194,9 +241,26 @@ STATUS_CODE deserialize_secrets(Secrets* out_secrets, uint8_t* data, uint32_t si
     bytes_per_element = calculate_bytes_per_element(prime_field);
     digits_per_element = calculate_digits_per_element(prime_field);
 
-    if (size < offset + (dimension * dimension * bytes_per_element) + (number_of_error_vectors * dimension * bytes_per_element) + (NUMBER_OF_DIGITS * number_of_letters_for_each_digit_ascii_mapping * bytes_per_element) + (digits_per_element * dimension))
+    if ((0 == dimension) || (dimension > (UINT32_MAX / calculate_digits_per_element(prime_field))))
     {
-        log_error("[!] Invalid data size in deserialize_secrets.");
+        log_error("[!] Dimension overflow or invalid value in deserialize_secrets.");
+        return_code = STATUS_CODE_ERROR_INVALID_SIZE;
+        goto cleanup;
+    }
+
+    if (number_of_error_vectors > (UINT32_MAX / dimension))
+    {
+        log_error("[!] Number of error vectors overflow in deserialize_secrets.");
+        return_code = STATUS_CODE_ERROR_INVALID_FILE_SIZE;
+        goto cleanup;
+    }
+
+    if (size < offset + (dimension * dimension * bytes_per_element) +
+            (number_of_error_vectors * dimension * bytes_per_element) +
+            (NUMBER_OF_DIGITS * number_of_letters_for_each_digit_ascii_mapping * bytes_per_element) +
+            (digits_per_element * dimension))
+    {
+        log_error("[!] Data size underflow in deserialize_secrets.");
         return_code = STATUS_CODE_ERROR_INVALID_FILE_SIZE;
         goto cleanup;
     }
@@ -221,6 +285,13 @@ STATUS_CODE deserialize_secrets(Secrets* out_secrets, uint8_t* data, uint32_t si
         goto cleanup;
     }
     offset += NUMBER_OF_DIGITS * number_of_letters_for_each_digit_ascii_mapping * bytes_per_element;
+
+    if (digits_per_element > (UINT32_MAX / dimension))
+    {
+        log_error("[!] Overflow detected in deserialize_secrets.");
+        return_code = STATUS_CODE_ERROR_INVALID_SIZE;
+        goto cleanup;
+    }
 
     permutation_vector_buffer = (uint8_t*)malloc(digits_per_element * dimension);
     if (!permutation_vector_buffer)
@@ -281,6 +352,12 @@ STATUS_CODE serialize_matrix(uint8_t** out_data, uint32_t* out_size, int64_t** m
         goto cleanup;
     }
 
+    if ((0 == rows) || (0 == columns) || (rows > (UINT32_MAX / columns)))
+    {
+        log_error("[!] Invalid rows or columns in serialize_matrix.");
+        return STATUS_CODE_ERROR_INVALID_SIZE;
+    }
+
     row_buffers = (uint8_t**)malloc(rows * sizeof(uint8_t*));
     row_sizes = (uint32_t*)malloc(rows * sizeof(uint32_t));
     if (!row_buffers || !row_sizes)
@@ -298,6 +375,13 @@ STATUS_CODE serialize_matrix(uint8_t** out_data, uint32_t* out_size, int64_t** m
             log_error("[!] Failed to serialize row %u.", row);
             goto cleanup;
         }
+        if (total_size > (UINT32_MAX - row_sizes[row]))
+        {
+            log_error("[!] Buffer size overflow detected in serialize_matrix.");
+            return_code = STATUS_CODE_ERROR_INVALID_SIZE;
+            goto cleanup;
+        }
+
         total_size += row_sizes[row];
     }
 
@@ -338,12 +422,26 @@ STATUS_CODE deserialize_matrix(int64_t*** out_matrix, uint32_t rows, uint32_t co
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
     int64_t** matrix = NULL;
     size_t offset = 0, row = 0;
+    uint32_t vector_size = 0;
+    uint32_t bytes_per_element = calculate_bytes_per_element(prime_field);
 
     if (!out_matrix || !data || rows == 0 || columns == 0 || size == 0)
     {
         log_error("[!] Invalid argument in deserialize_matrix.");
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
+    }
+
+    if (rows > (UINT32_MAX / columns))
+    {
+        log_error("[!] Invalid rows or columns in deserialize_matrix.");
+        return STATUS_CODE_ERROR_INVALID_SIZE;
+    }
+
+    if (size < (rows * columns * bytes_per_element))
+    {
+        log_error("[!] Data size underflow in deserialize_matrix.");
+        return STATUS_CODE_ERROR_INVALID_FILE_SIZE;
     }
 
     matrix = (int64_t**)malloc(rows * sizeof(int64_t*));
@@ -356,13 +454,13 @@ STATUS_CODE deserialize_matrix(int64_t*** out_matrix, uint32_t rows, uint32_t co
 
     for (row = 0; row < rows; ++row)
     {
-        return_code = deserialize_vector(&matrix[row], &columns, data + offset, size - offset, prime_field);
-        if (STATUS_FAILED(return_code))
+        return_code = deserialize_vector(&matrix[row], &vector_size, data + offset, columns * bytes_per_element, prime_field);
+        if (STATUS_FAILED(return_code) || (vector_size != (columns * sizeof(int64_t))))
         {
             log_error("[!] Failed to deserialize row %u.", row);
             goto cleanup;
         }
-        offset += columns * calculate_bytes_per_element(prime_field);
+        offset += columns * bytes_per_element;
     }
 
     *out_matrix = matrix;
@@ -382,11 +480,17 @@ STATUS_CODE serialize_vector(uint8_t** out_data, uint32_t* out_size, int64_t* ve
     int64_t value = 0;
     uint32_t bytes_per_element = calculate_bytes_per_element(prime_field);
 
-    if (!out_data || !out_size || !vector || (0 == size))
+    if (!out_data || !out_size || !vector || (0 == size) || (size > (UINT32_MAX / bytes_per_element)))
     {
         log_error("[!] Invalid argument in serialize_vector.");
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
+    }
+
+    if (size > (UINT32_MAX / calculate_bytes_per_element(prime_field)))
+    {
+        log_error("[!] Invalid size in serialize_vector.");
+        return STATUS_CODE_ERROR_INVALID_SIZE;
     }
 
     buffer = (uint8_t*)malloc(size * bytes_per_element);
@@ -469,22 +573,11 @@ STATUS_CODE serialize_uint8_matrix(uint8_t** out_data, uint32_t* out_size, uint8
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
     int64_t** int64_matrix = NULL;
-    uint8_t* buffer = NULL;
-    size_t size = 0;
 
-    if (!out_data || !out_size || !matrix || rows == 0 || columns == 0)
+    if (!out_data || !out_size || !matrix || rows == 0 || columns == 0 || (rows > (UINT32_MAX / columns)))
     {
         log_error("[!] Invalid argument in serialize_uint8_matrix.");
         return_code = STATUS_CODE_INVALID_ARGUMENT;
-        goto cleanup;
-    }
-
-    size = rows * columns;
-    buffer = (uint8_t*)malloc(size);
-    if (!buffer)
-    {
-        log_error("[!] Memory allocation failed in serialize_uint8_matrix.");
-        return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
         goto cleanup;
     }
 
@@ -609,4 +702,3 @@ cleanup:
 
     return return_code;
 }
-;

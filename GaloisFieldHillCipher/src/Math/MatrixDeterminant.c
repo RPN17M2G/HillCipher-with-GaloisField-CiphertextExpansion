@@ -182,12 +182,12 @@ STATUS_CODE matrix_determinant_over_galois_field_gauss_jordan(int64_t* out_deter
         }
         // Eliminate other rows
         for (row = 0; row < dimension; row++)
-    {
+		{
             if (row != row_iteration && matrix_copy[row][row_iteration] != 0)
-    {
+			{
                 factor = matrix_copy[row][row_iteration];
                 for (column = row_iteration; column < dimension; column++)
-    {
+				{
                     product = multiply_over_galois_field(factor, matrix_copy[row_iteration][column], prime_field);
                     matrix_copy[row][column] = add_over_galois_field(matrix_copy[row][column], negate_over_galois_field(product, prime_field), prime_field);
                 }

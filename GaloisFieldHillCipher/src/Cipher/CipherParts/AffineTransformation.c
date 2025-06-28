@@ -20,6 +20,7 @@ STATUS_CODE add_affine_transformation(int64_t** out_transformed_vector, int64_t*
         goto cleanup;
     }
 
+    memcpy_s(transformed_vector, dimension * sizeof(int64_t), vector_to_transform, dimension * sizeof(int64_t));
     for (error_vector_index = 0; error_vector_index < number_of_error_vectors; ++error_vector_index)
     {
         return_code = add_two_vectors_over_gf(&temp_vector, transformed_vector, error_vectors[error_vector_index], dimension, prime_field);
@@ -62,6 +63,7 @@ STATUS_CODE substruct_affine_transformation(int64_t** out_transformed_vector, in
         goto cleanup;
     }
 
+    memcpy_s(transformed_vector, dimension * sizeof(int64_t), vector_to_transform, dimension * sizeof(int64_t));
     for (error_vector_index = 0; error_vector_index < number_of_error_vectors; ++error_vector_index)
     {
         return_code = substruct_two_vectors_over_gf(&temp_vector, transformed_vector, error_vectors[error_vector_index], dimension, prime_field);

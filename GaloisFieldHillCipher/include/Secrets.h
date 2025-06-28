@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#define NUMBER_OF_UINT32_SECRETS (5)
+
 struct Secrets {
     int64_t** key_matrix;
     uint32_t dimension;

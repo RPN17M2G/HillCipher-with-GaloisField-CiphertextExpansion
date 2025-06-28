@@ -40,7 +40,7 @@ STATUS_CODE map_from_int64_to_ascii(uint8_t** out_ascii, uint32_t* out_ascii_siz
     char number_string[DIGITS_PER_NUMBER + 1] = {0};
     uint32_t random_number = 0;
 
-    if (!out_ascii || !out_ascii_size || !data || (data_size == 0))
+    if (!out_ascii || !out_ascii_size || !data || (data_size == 0) || (data_size > (UINT32_MAX / DIGITS_PER_NUMBER)))
     {
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;

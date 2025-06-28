@@ -58,7 +58,7 @@ STATUS_CODE free_uint8_matrix(uint8_t** matrix, uint32_t rows)
 
 	if (NULL == matrix)
 	{
-		log_error("[!] Invalid argument: matrix is NULL in free_uint8_matrix.");
+		log_warn("[!] Invalid argument: matrix is NULL in free_uint8_matrix.");
 		return_code = STATUS_CODE_INVALID_ARGUMENT;
 		goto cleanup;
 	}

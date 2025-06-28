@@ -36,10 +36,11 @@ STATUS_CODE parse_key_generation_arguments(KeyGenerationArguments** out_argument
         goto cleanup;
     }
 
-    if (!output_file || !validate_file_is_writeable(output_file) || (0 == dimension) || (0 == number_of_error_vectors) ||
-        (0 == number_of_letters_for_each_digit_ascii_mapping) || (0 == prime_field))
+    if (!output_file || STATUS_FAILED(validate_file_is_writeable(output_file)) || (0 == dimension) ||
+        (0 == number_of_error_vectors) || (0 == number_of_letters_for_each_digit_ascii_mapping) || (0 == prime_field))
     {
-        log_error("[!] Missing or Invalid required arguments for KEY_GENERATION_MODE.");
+        log_error("[!] Invalid arguments for KEY_GENERATION_MODE.");
+        fprintf(stderr, "%s", USAGE_KEY_GENERATION_MODE);
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
     }
@@ -95,9 +96,11 @@ STATUS_CODE parse_decryption_key_generation_arguments(DecryptionKeyGenerationArg
         goto cleanup;
     }
 
-    if (!key || !output_file || !validate_file_is_writeable(output_file) || !validate_file_is_readable(key) || !validate_file_is_binary(key))
+    if (!key || !output_file || STATUS_FAILED(validate_file_is_writeable(output_file)) ||
+        STATUS_FAILED(validate_file_is_readable(key)) || STATUS_FAILED(validate_file_is_binary(key)))
     {
-        log_error("[!] Missing required arguments for DECRYPTION_KEY_GENERATION_MODE.");
+        log_error("[!] Invalid arguments for DECRYPTION_KEY_GENERATION_MODE.");
+        fprintf(stderr, "%s", USAGE_DECRYPTION_KEY_GENERATION_MODE);
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
     }
@@ -136,8 +139,9 @@ STATUS_CODE parse_decrypt_arguments(DecryptArguments** out_arguments, int argc, 
         OPT_END(),
     };
 
-    if (!out_arguments || !argv || !output_file || !validate_file_is_writeable(output_file) || !validate_file_is_readable(key) || !validate_file_is_binary(key)
-        || !input_file || !validate_file_is_readable(input_file))
+    if (!out_arguments || !argv || STATUS_FAILED(validate_file_is_writeable(output_file)) ||
+        STATUS_FAILED(validate_file_is_readable(key)) || STATUS_FAILED(validate_file_is_binary(key)) ||
+        STATUS_FAILED(validate_file_is_readable(input_file)))
     {
         log_error("[!] Invalid argument: out_arguments or argv is NULL in parse_decrypt_arguments.");
         return_code = STATUS_CODE_INVALID_ARGUMENT;
@@ -154,7 +158,8 @@ STATUS_CODE parse_decrypt_arguments(DecryptArguments** out_arguments, int argc, 
 
     if (!input_file || !output_file || !key) 
     {
-        log_error("[!] Missing required arguments for DECRYPT_MODE.");
+        log_error("[!] Invalid arguments for DECRYPT_MODE.");
+        fprintf(stderr, "%s", USAGE_DECRYPT_MODE);
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
     }
@@ -194,8 +199,9 @@ STATUS_CODE parse_encrypt_arguments(EncryptArguments** out_arguments, int argc, 
         OPT_END(),
     };
 
-    if (!out_arguments || !argv || !output_file || !validate_file_is_writeable(output_file) || !validate_file_is_readable(key) || !validate_file_is_binary(key)
-        || !input_file || !validate_file_is_readable(input_file))
+    if (!out_arguments || !argv || STATUS_FAILED(validate_file_is_writeable(output_file)) ||
+        STATUS_FAILED(validate_file_is_readable(key)) || STATUS_FAILED(validate_file_is_binary(key)) ||
+        STATUS_FAILED(validate_file_is_readable(input_file)))
     {
         log_error("[!] Invalid argument: out_arguments or argv is NULL in parse_encrypt_arguments.");
         return_code = STATUS_CODE_INVALID_ARGUMENT;
@@ -212,7 +218,8 @@ STATUS_CODE parse_encrypt_arguments(EncryptArguments** out_arguments, int argc, 
 
     if (!input_file || !output_file || !key) 
     {
-        log_error("[!] Missing required arguments for ENCRYPT_MODE.");
+        log_error("[!] Invalid arguments for ENCRYPT_MODE.");
+        fprintf(stderr, "%s", USAGE_ENCRYPT_MODE);
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
     }
@@ -279,11 +286,13 @@ STATUS_CODE parse_generate_and_encrypt_arguments(GenerateAndEncryptArguments** o
         goto cleanup;
     }
 
-    if (!input_file ||!output_file || !validate_file_is_writeable(output_file) || !validate_file_is_readable(key_file) || !validate_file_is_binary(key_file)
-        || !input_file || !validate_file_is_readable(input_file) || (0 == dimension) || (0 == number_of_error_vectors) ||
-        (0 == number_of_letters_for_each_digit_ascii_mapping) || (0 == prime_field))
+    if (!input_file || !output_file || STATUS_FAILED(validate_file_is_writeable(output_file)) ||
+        STATUS_FAILED(validate_file_is_readable(key_file)) || STATUS_FAILED(validate_file_is_binary(key_file)) ||
+        STATUS_FAILED(validate_file_is_readable(input_file)) || (0 == dimension) ||
+        (0 == number_of_error_vectors) || (0 == number_of_letters_for_each_digit_ascii_mapping) || (0 == prime_field))
     {
-        log_error("[!] Missing required arguments for GENERATE_AND_ENCRYPT_MODE.");
+        log_error("[!] Invalid arguments for GENERATE_AND_ENCRYPT_MODE.");
+        fprintf(stderr, "%s", USAGE_GENERATE_AND_ENCRYPT_MODE);
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
     }
@@ -318,7 +327,7 @@ STATUS_CODE parse_generate_and_encrypt_arguments(GenerateAndEncryptArguments** o
     parsed_arguments->encrypt_arguments->input_file = input_file;
     parsed_arguments->encrypt_arguments->output_file = output_file;
     parsed_arguments->encrypt_arguments->key = key_file;
-    parsed_arguments->key_generation_arguments->output_file = key_file;
+    parsed_arguments->key_generation_arguments->output_file = strdup(key_file);
     parsed_arguments->key_generation_arguments->dimension = dimension;
     parsed_arguments->key_generation_arguments->number_of_error_vectors = number_of_error_vectors;
     parsed_arguments->key_generation_arguments->prime_field = prime_field;
@@ -369,10 +378,14 @@ STATUS_CODE parse_generate_and_decrypt_arguments(GenerateAndDecryptArguments** o
         goto cleanup;
     }
 
-    if (!output_file || !validate_file_is_writeable(output_file) || !validate_file_is_readable(encryption_key_file) || !validate_file_is_binary(encryption_key_file)
-        || !input_file || !validate_file_is_readable(input_file) || !decryption_key_output_file || !validate_file_is_writeable(decryption_key_output_file) || !validate_file_is_binary(decryption_key_output_file))
+    if (!output_file || STATUS_FAILED(validate_file_is_writeable(output_file)) ||
+        STATUS_FAILED(validate_file_is_readable(encryption_key_file)) || STATUS_FAILED(validate_file_is_binary(encryption_key_file)) ||
+        STATUS_FAILED(validate_file_is_readable(input_file)) || !decryption_key_output_file ||
+        STATUS_FAILED(validate_file_is_writeable(decryption_key_output_file)) ||
+        STATUS_FAILED(validate_file_is_binary(decryption_key_output_file)))
     {
-        log_error("[!] Missing or invalid required arguments for GENERATE_AND_DECRYPT_MODE.");
+        log_error("[!] Invalid arguments for GENERATE_AND_DECRYPT_MODE.");
+        fprintf(stderr, "%s", USAGE_GENERATE_AND_DECRYPT_MODE);
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
     }
@@ -408,8 +421,8 @@ STATUS_CODE parse_generate_and_decrypt_arguments(GenerateAndDecryptArguments** o
 
     parsed_arguments->decrypt_arguments->input_file = input_file;
     parsed_arguments->decrypt_arguments->output_file = output_file;
-    parsed_arguments->decrypt_arguments->key = encryption_key_file;
-    parsed_arguments->key_generation_arguments->key = decryption_key_output_file;
+    parsed_arguments->decrypt_arguments->key = strdup(decryption_key_output_file);
+    parsed_arguments->key_generation_arguments->key = encryption_key_file;
     parsed_arguments->key_generation_arguments->output_file = decryption_key_output_file;
 
     *out_arguments = parsed_arguments;
