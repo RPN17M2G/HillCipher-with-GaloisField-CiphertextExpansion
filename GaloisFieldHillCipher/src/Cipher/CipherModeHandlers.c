@@ -1,5 +1,7 @@
 #include "Cipher/CipherModeHandlers.h"
 
+#include "Cipher/CipherParts/Permutation.h"
+
 STATUS_CODE handle_generate_and_encrypt_mode(const GenerateAndEncryptArguments* args)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
@@ -35,6 +37,7 @@ cleanup:
 STATUS_CODE handle_key_generation_mode(const KeyGenerationArguments* args)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
+    uint8_t* used_indexes = NULL;
     int64_t** encryption_matrix = NULL;
     uint8_t* serialized_data = NULL;
     uint32_t serialized_size = 0;
@@ -117,16 +120,29 @@ STATUS_CODE handle_key_generation_mode(const KeyGenerationArguments* args)
         goto cleanup;
     }
 
+    used_indexes = (uint8_t*)calloc(number_of_digits_per_field_element, sizeof(uint8_t));
+    if (!used_indexes)
+    {
+        return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
+        goto cleanup;
+    }
+
     for (index = 0; index < number_of_digits_per_field_element; ++index)
     {
-        return_code = generate_secure_random_number(&random_permutation_index, 0, number_of_digits_per_field_element);
-        if (STATUS_FAILED(return_code))
+        do
         {
-            log_error("[!] Failed to generate random permutation index.");
-            goto cleanup;
-        }
+            return_code = generate_secure_random_number(&random_permutation_index, 0, number_of_digits_per_field_element);
+            if (STATUS_FAILED(return_code))
+            {
+                log_error("[!] Failed to generate random permutation index.");
+                goto cleanup;
+            }
+        } while (used_indexes[random_permutation_index]);
+
         secrets.permutation_vector[index] = random_permutation_index;
+        used_indexes[random_permutation_index] = 1;
     }
+
     log_info("[*] Successfully generated permutation vector...\n");
 
     secrets.number_of_random_bits_to_add = args->number_of_random_bits_to_add;
@@ -153,6 +169,7 @@ STATUS_CODE handle_key_generation_mode(const KeyGenerationArguments* args)
 
 cleanup:
     free(serialized_data);
+    free(used_indexes);
     free_secrets(&secrets);
     return return_code;
 }
@@ -163,6 +180,7 @@ STATUS_CODE handle_encrypt_mode(const EncryptArguments* args)
     uint8_t* plaintext = NULL;
     uint8_t* key_data = NULL;
     int64_t* ciphertext = NULL;
+    uint8_t* mapped_ciphertext = NULL;
     uint32_t plaintext_size = 0, ciphertext_size = 0, key_size = 0;
     uint8_t* serialized_ciphertext = NULL;
     uint32_t serialized_ciphertext_size = 0;
@@ -219,16 +237,33 @@ STATUS_CODE handle_encrypt_mode(const EncryptArguments* args)
     {
         log_info("[*] Serializing ciphertext to binary...\n");
         return_code = serialize_vector(&serialized_ciphertext, &serialized_ciphertext_size, ciphertext, ciphertext_size, secrets.prime_field);
+        if (STATUS_FAILED(return_code))
+        {
+            log_error("[!] Failed to serialize ciphertext to compact binary.");
+            goto cleanup;
+        }
+
     }
     else // Text format
     {
         log_info("[*] Mapping int64 ciphertext to text...\n");
-        return_code = map_from_int64_to_ascii(&serialized_ciphertext, &serialized_ciphertext_size, ciphertext, ciphertext_size);
-        // TODO: Add permutation
-    }
-    if (STATUS_FAILED(return_code))
-    {
-        goto cleanup;
+        return_code = map_from_int64_to_ascii(&mapped_ciphertext, &serialized_ciphertext_size, ciphertext, ciphertext_size, secrets.ascii_mapping, secrets.number_of_letters_for_each_digit_ascii_mapping, calculate_digits_per_element(secrets.prime_field));
+        if (STATUS_FAILED(return_code))
+        {
+            log_error("[!] Failed to map int64 ciphertext to ASCII.");
+            goto cleanup;
+        }
+        log_info("[*] Successfully mapped int64 ciphertext to ASCII.");
+
+        log_info("[*] Permutating ASCII ciphertext...\n");
+        return_code = permutate_uint8_vector(&serialized_ciphertext, mapped_ciphertext, serialized_ciphertext_size, secrets.permutation_vector, calculate_digits_per_element(secrets.prime_field));
+        if (STATUS_FAILED(return_code))
+        {
+            log_error("[!] Failed to permutate ASCII ciphertext.");
+            goto cleanup;
+        }
+        log_info("[*] Successfully permutated ASCII ciphertext");
+
     }
 
     print_uint8_vector(serialized_ciphertext, serialized_ciphertext_size, "[*] Serialized ciphertext data:");
@@ -245,6 +280,7 @@ cleanup:
     free(serialized_ciphertext);
     free(key_data);
     free(ciphertext);
+    free(mapped_ciphertext);
     free_secrets(&secrets);
     free((void*)args);
     return return_code;
@@ -366,6 +402,7 @@ STATUS_CODE handle_decrypt_mode(const DecryptArguments* args)
     uint8_t* decrypted_text = NULL;
     int64_t* ciphertext = NULL;
     uint32_t serialized_ciphertext_size = 0;
+    uint8_t* ciphertext_permutated = NULL;
     uint8_t* serialized_ciphertext = NULL;
     uint32_t ciphertext_size = 0, decrypted_size = 0, key_size = 0;
     Secrets secrets = {0};
@@ -416,14 +453,27 @@ STATUS_CODE handle_decrypt_mode(const DecryptArguments* args)
     }
     else // Text format
     {
-        // TODO: Add permutation
+        log_info("[*] Permutating ASCII ciphertext...\n");
+
+        return_code = permutate_uint8_vector(&ciphertext_permutated, serialized_ciphertext, serialized_ciphertext_size, secrets.permutation_vector, calculate_digits_per_element(secrets.prime_field));
+        if (STATUS_FAILED(return_code))
+        {
+            log_error("[!] Failed to permutate ASCII ciphertext.");
+            goto cleanup;
+        }
+
+        log_info("[*] Successfully permutated ASCII ciphertext.\n");
+
         log_info("[*] Mapping ASCII ciphertext to int64...\n");
-        return_code = map_from_ascii_to_int64(&ciphertext, &ciphertext_size, serialized_ciphertext, serialized_ciphertext_size);
+
+        return_code = map_from_ascii_to_int64(&ciphertext, &ciphertext_size, ciphertext_permutated, serialized_ciphertext_size, secrets.ascii_mapping, secrets.number_of_letters_for_each_digit_ascii_mapping, calculate_digits_per_element(secrets.prime_field));
         if (STATUS_FAILED(return_code))
         {
             log_error("[!] Failed to map ASCII ciphertext to int64.");
             goto cleanup;
         }
+
+        log_info("[*] Successfully mapped ASCII ciphertext to int64.\n");
     }
 
     print_int64_vector(ciphertext, ciphertext_size / (sizeof(int64_t) * BYTE_SIZE), "[*] Ciphertext data:");
@@ -452,6 +502,7 @@ cleanup:
     free(serialized_ciphertext);
     free(ciphertext);
     free(decrypted_text);
+    free(ciphertext_permutated);
     free_secrets(&secrets);
     free((void*)args);
     return return_code;

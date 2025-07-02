@@ -10,6 +10,7 @@
 #include "CipherParts/BlockDividing.h"
 #include "Cipher.h"
 #include "CipherParts/AsciiMapping.h"
+#include "CipherParts/Permutation.h"
 #include "log.h"
 
 #define MINIMUM_ASCII_PRINTABLE_CHARACTER (33)
