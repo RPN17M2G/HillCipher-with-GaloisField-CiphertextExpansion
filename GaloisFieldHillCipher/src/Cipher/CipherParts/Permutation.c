@@ -19,7 +19,7 @@ STATUS_CODE permutate_uint8_vector(uint8_t** out_vector, uint8_t* vector, uint32
         goto cleanup;
     }
 
-    buffer = (uint8_t*)malloc(vector_size * sizeof(uint8_t));
+    buffer = (uint8_t*)malloc(vector_size + 1);
     if (NULL == buffer)
     {
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
@@ -40,6 +40,7 @@ STATUS_CODE permutate_uint8_vector(uint8_t** out_vector, uint8_t* vector, uint32
             buffer[group_index + letter_index] = vector[group_index + permuted_index];
         }
     }
+    buffer[vector_size] = '\0';
 
     *out_vector = buffer;
     buffer = NULL;

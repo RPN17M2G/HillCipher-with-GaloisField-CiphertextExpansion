@@ -264,6 +264,7 @@ STATUS_CODE handle_encrypt_mode(const EncryptArguments* args)
         }
         log_info("[*] Successfully permutated ASCII ciphertext");
 
+        serialized_ciphertext_size++; // Add one for the null terminator
     }
 
     print_uint8_vector(serialized_ciphertext, serialized_ciphertext_size, "[*] Serialized ciphertext data:");
@@ -454,6 +455,8 @@ STATUS_CODE handle_decrypt_mode(const DecryptArguments* args)
     else // Text format
     {
         log_info("[*] Permutating ASCII ciphertext...\n");
+
+        serialized_ciphertext_size = (serialized_ciphertext_size / sizeof(int64_t)) - 1; // Size is returned as bits and includes NULL terminator
 
         return_code = permutate_uint8_vector(&ciphertext_permutated, serialized_ciphertext, serialized_ciphertext_size, secrets.permutation_vector, calculate_digits_per_element(secrets.prime_field));
         if (STATUS_FAILED(return_code))

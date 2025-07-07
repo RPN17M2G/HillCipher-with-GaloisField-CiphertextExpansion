@@ -16,12 +16,12 @@
  * @brief Maps an ASCII char into the corresponding digit.
  *
  * @param out_digit - Pointer to the output digit (0-9).
- * @param input - Pointer to the input char.
+ * @param input - The input char.
  * @param digit_to_ascii - The digit-to-ASCII mapping matrix.
  * @param number_of_letters - Number of letters for each digit.
  * @return STATUS_CODE - Status of the operation.
 */
-STATUS_CODE ascii_char_to_digit(uint8_t* out_digit, char input, uint8_t** digit_to_ascii, uint32_t number_of_letters);
+STATUS_CODE ascii_char_to_digit(uint8_t* out_digit, uint8_t input, uint8_t** digit_to_ascii, uint32_t number_of_letters);
 
 /**
  * @brief Maps an int64_t vector into ASCII values for reducing entropy.

@@ -1,6 +1,8 @@
 #include "Cipher/CipherParts/AsciiMapping.h"
 
-STATUS_CODE ascii_char_to_digit(uint8_t* out_digit, char input, uint8_t** digit_to_ascii, uint32_t number_of_letters)
+#include "Cipher/CipherParts/Padding.h"
+
+STATUS_CODE ascii_char_to_digit(uint8_t* out_digit, uint8_t input, uint8_t** digit_to_ascii, uint32_t number_of_letters)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
     size_t variant = 0, digit = 0;
@@ -47,7 +49,7 @@ STATUS_CODE map_from_int64_to_ascii(uint8_t** out_ascii, uint32_t* out_ascii_siz
     }
 
     buffer_size = data_size * number_of_digits_per_field_element;
-    buffer = (uint8_t*)malloc(buffer_size);
+    buffer = (uint8_t*)malloc(buffer_size + 1);
     if (!buffer)
     {
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
@@ -74,6 +76,7 @@ STATUS_CODE map_from_int64_to_ascii(uint8_t** out_ascii, uint32_t* out_ascii_siz
             buffer[buffer_index++] = (uint8_t)digit_to_ascii[digit][random_number];
         }
     }
+    buffer[buffer_index] = '\0';
 
     *out_ascii = buffer;
     buffer = NULL;
@@ -118,7 +121,7 @@ STATUS_CODE map_from_ascii_to_int64(int64_t** out_int64, uint32_t* out_int64_siz
     {
         for (digit_index = 0; digit_index < number_of_digits_per_field_element; ++digit_index)
         {
-            return_code = ascii_char_to_digit(&digit, (char)data[buffer_index++], digit_to_ascii, number_of_letters);
+            return_code = ascii_char_to_digit(&digit, data[buffer_index++], digit_to_ascii, number_of_letters);
             if (STATUS_FAILED(return_code))
             {
                 goto cleanup;
@@ -131,7 +134,7 @@ STATUS_CODE map_from_ascii_to_int64(int64_t** out_int64, uint32_t* out_int64_siz
 
     *out_int64 = buffer;
     buffer = NULL;
-    *out_int64_size = number_of_output_numbers * sizeof(int64_t);
+    *out_int64_size = number_of_output_numbers * sizeof(int64_t) * BYTE_SIZE;
 
     return_code = STATUS_CODE_SUCCESS;
 cleanup:

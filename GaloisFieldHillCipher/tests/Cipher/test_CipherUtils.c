@@ -1,5 +1,7 @@
 #include "test_CipherUtils.h"
 
+#include "Cipher/CipherParts/AsciiMapping.h"
+
 void test_add_random_bits_between_bytes_Sanity()
 {
     // Arrange
@@ -41,8 +43,7 @@ void test_add_random_bits_between_bytes_EmptyInput()
     STATUS_CODE status = add_random_bits_between_bytes(&output, &output_bit_size, input, input_bit_length, number_of_random_bits_between_bytes);
 
     // Assert
-    TEST_ASSERT_EQUAL(STATUS_CODE_SUCCESS, status);
-    TEST_ASSERT_EQUAL(0, output_bit_size);
+    TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGUMENT, status);
 
     free(output);
 }
@@ -274,6 +275,56 @@ void test_divide_int64_t_into_blocks_UnevenSize()
     TEST_ASSERT_NOT_EQUAL(STATUS_CODE_SUCCESS, status);
 }
 
+// TODO: Refactor test
+void test_ascii_mapping_sanity() {
+    // Arrange
+    uint8_t** digitToAsciiTable = malloc(10  * sizeof(uint8_t*));
+    for (uint8_t d = 0; d < 10; ++d) {
+        digitToAsciiTable[d] = malloc(1);
+        digitToAsciiTable[d][0] = (uint8_t)('0' + d);
+    }
+    int64_t value = 7;
+    const uint32_t digits = 3;
+    const char expected[] = "007";
+    uint8_t* ascii = NULL;
+    uint32_t ascii_len = 0;
+    int64_t* decoded = NULL;
+    uint32_t decoded_len = 0;
+
+    // Act
+    STATUS_CODE rc1 = map_from_int64_to_ascii(
+        &ascii,
+        &ascii_len,
+        &value,
+        1,
+        digitToAsciiTable,
+        1,
+        digits
+    );
+    STATUS_CODE rc2 = map_from_ascii_to_int64(
+        &decoded,
+        &decoded_len,
+        ascii,
+        ascii_len,
+        (uint8_t**)digitToAsciiTable,
+        1,
+        digits
+    );
+
+    // Assert
+    TEST_ASSERT_EQUAL(STATUS_CODE_SUCCESS, rc1);
+    TEST_ASSERT_EQUAL(0, memcmp(ascii, expected, digits));
+    TEST_ASSERT_EQUAL(STATUS_CODE_SUCCESS, rc2);
+    TEST_ASSERT_EQUAL_INT64(value, decoded[0]);
+
+    for (uint8_t d = 0; d < 10; ++d) {
+        free(digitToAsciiTable[d]);
+    }
+    free(digitToAsciiTable);
+    free(ascii);
+    free(decoded);
+}
+
 void run_all_CipherUtils_tests()
 {
     #ifdef NDEBUG
@@ -296,4 +347,6 @@ void run_all_CipherUtils_tests()
     RUN_TEST(test_divide_uint8_t_into_blocks_UnevenSize);
     RUN_TEST(test_divide_int64_t_into_blocks_sanity);
     RUN_TEST(test_divide_int64_t_into_blocks_UnevenSize);
+
+    RUN_TEST(test_ascii_mapping_sanity);
 }

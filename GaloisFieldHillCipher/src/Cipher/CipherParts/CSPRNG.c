@@ -23,7 +23,7 @@ STATUS_CODE generate_secure_random_number(uint32_t* out_number, uint32_t minimum
 		goto cleanup;
 	}
 	
-	if ((NULL == out_number) || (maximum_value <= minimum_value))
+	if ((NULL == out_number) || (maximum_value < minimum_value))
 	{
 		return_code = STATUS_CODE_INVALID_ARGUMENT;
 		goto cleanup;

@@ -21,6 +21,7 @@ void test_divide_uint8_t_into_blocks_sanity();
 void test_divide_uint8_t_into_blocks_UnevenSize();
 void test_divide_int64_t_into_blocks_sanity();
 void test_divide_int64_t_into_blocks_UnevenSize();
+void test_ascii_mapping_sanity();
 
 void run_all_CipherUtils_tests();
 
