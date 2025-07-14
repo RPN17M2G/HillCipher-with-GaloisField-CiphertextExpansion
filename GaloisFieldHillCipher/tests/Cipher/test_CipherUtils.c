@@ -1,7 +1,5 @@
 #include "test_CipherUtils.h"
 
-#include "Cipher/CipherParts/AsciiMapping.h"
-
 void test_add_random_bits_between_bytes_Sanity()
 {
     // Arrange
@@ -275,6 +273,66 @@ void test_divide_int64_t_into_blocks_UnevenSize()
     TEST_ASSERT_NOT_EQUAL(STATUS_CODE_SUCCESS, status);
 }
 
+
+
+// TODO: Refactor test
+void test_permutation_vector_with_numbers_and_larger_group()
+{
+    // Arrange
+    const uint8_t input[] = { 10, 20, 30, 40, 50, 60, 70, 80 };
+    const uint8_t expected[] = { 40, 10, 30, 20, 80, 50, 70, 60 };
+    const uint8_t permutation[] = { 3, 0, 2, 1 };
+    const uint32_t group_size = 4;
+    const uint32_t vector_size = sizeof(input);
+    uint8_t* output = NULL;
+
+    // Act
+    STATUS_CODE rc = permutate_uint8_vector(
+        &output,
+        (uint8_t*)input,
+        vector_size,
+        (uint8_t*)permutation,
+        group_size
+    );
+
+    // Assert
+    TEST_ASSERT_EQUAL(STATUS_CODE_SUCCESS, rc);
+    TEST_ASSERT_NOT_NULL(output);
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(expected, output, vector_size);
+
+    // Cleanup
+    free(output);
+}
+
+// TODO: Refactor test
+void test_permutation_vector_ascii_sanity()
+{
+    // Arrange
+    const uint8_t input[] = { 'A', 'B', 'C', 'D', 'E', 'F' };
+    const uint8_t expected[] = { 'B', 'A', 'C', 'E', 'D', 'F' };
+    const uint8_t permutation[] = { 1, 0, 2 };
+    const uint32_t group_size = 3;
+    const uint32_t vector_size = sizeof(input);
+    uint8_t* output = NULL;
+
+    // Act
+    STATUS_CODE rc = permutate_uint8_vector(
+        &output,
+        (uint8_t*)input,
+        vector_size,
+        (uint8_t*)permutation,
+        group_size
+    );
+
+    // Assert
+    TEST_ASSERT_EQUAL(STATUS_CODE_SUCCESS, rc);
+    TEST_ASSERT_NOT_NULL(output);
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(expected, output, vector_size);
+
+    // Cleanup
+    free(output);
+}
+
 // TODO: Refactor test
 void test_ascii_mapping_sanity() {
     // Arrange
@@ -349,4 +407,6 @@ void run_all_CipherUtils_tests()
     RUN_TEST(test_divide_int64_t_into_blocks_UnevenSize);
 
     RUN_TEST(test_ascii_mapping_sanity);
+    RUN_TEST(test_permutation_vector_with_numbers_and_larger_group);
+    RUN_TEST(test_permutation_vector_ascii_sanity);
 }

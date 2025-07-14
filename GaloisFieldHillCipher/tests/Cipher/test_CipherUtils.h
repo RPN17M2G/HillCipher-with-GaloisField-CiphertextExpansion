@@ -4,9 +4,11 @@
 #include <stdlib.h>
 
 #include "unity.h"
-#include "../../include/Cipher/CipherParts/BlockDividing.h"
-#include "../../include/Cipher/CipherParts/CiphertextExpansion.h"
-#include "../../include/Cipher/CipherParts/Padding.h"
+#include "Cipher/CipherParts/BlockDividing.h"
+#include "Cipher/CipherParts/CiphertextExpansion.h"
+#include "Cipher/CipherParts/Padding.h"
+#include "Cipher/CipherParts/AsciiMapping.h"
+#include "Cipher/CipherParts/Permutation.h"
 
 void test_add_random_bits_between_bytes_Sanity();
 void test_add_random_bits_between_bytes_EmptyInput();
