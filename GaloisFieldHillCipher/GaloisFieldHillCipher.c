@@ -3,7 +3,7 @@
 int main(int argc, char** argv)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
-    FILE* log_fp = NULL;
+    FILE* log_file = NULL;
     OPERATION_MODE mode = MODE_UNINITIALIZED;
     GlobalArguments* global_arguments = NULL;
     void* parsed_arguments = NULL;
@@ -22,15 +22,12 @@ int main(int argc, char** argv)
         goto cleanup;
     }
 
-    if (global_arguments->verbose)
-    {
-        log_info("[*] Verbose mode is enabled.\n");
-    }
+    set_verbose_mode(global_arguments->verbose);
 
     if (global_arguments->log_file)
     {
-        log_fp = fopen(global_arguments->log_file, "a");
-        log_add_fp(log_fp, LOG_TRACE);
+        log_file = fopen(global_arguments->log_file, "a");
+        log_add_fp(log_file, LOG_TRACE);
     }
 
     return_code = parse_mode_arguments(&parsed_arguments, mode, argc, argv);
@@ -66,9 +63,9 @@ int main(int argc, char** argv)
     }
 
 cleanup:
-    if (log_fp)
+    if (log_file)
     {
-        fclose(log_fp);
+        fclose(log_file);
     }
     free(global_arguments);
     return return_code;

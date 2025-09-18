@@ -10,6 +10,7 @@
 #include "StatusCodes.h"
 #include "Math/FieldBasicOperations.h"
 #include "Math/MatrixDeterminant.h"
+#include "log.h"
 
 #define IS_ODD(x) ((x) % 2 != 0)
 #define IS_EVEN(x) ((x) % 2 == 0)

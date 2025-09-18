@@ -1,4 +1,4 @@
-#include "../../../include/Cipher/CipherParts/Padding.h"
+#include "Cipher/CipherParts/Padding.h"
 
 STATUS_CODE pad_to_length(uint8_t** out, uint32_t* out_bit_length, uint8_t* value, uint32_t value_bit_length, uint32_t target_bit_length, uint32_t block_bit_size)
 {
@@ -8,47 +8,61 @@ STATUS_CODE pad_to_length(uint8_t** out, uint32_t* out_bit_length, uint8_t* valu
 
     if ((NULL == out) || (NULL == value) || (NULL == out_bit_length))
     {
+        log_error("Invalid arguments in pad_to_length: %s",
+            !out ? "out is NULL" : !value ? "value is NULL" : "out_bit_length is NULL");
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
     }
 
     if (value_bit_length > target_bit_length)
     {
+        log_error("Input length (%u bits) exceeds target length (%u bits)",
+                 value_bit_length, target_bit_length);
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
     }
 
+    log_debug("Padding data: current=%u bits, target=%u bits, block_size=%u bits",
+             value_bit_length, target_bit_length, block_bit_size);
+
     if (target_bit_length == value_bit_length)
     {
         target_bit_length += block_bit_size;
+        log_debug("Adding extra block for padding, new target=%u bits", target_bit_length);
     }
 
     out_buffer = (uint8_t*)malloc(target_bit_length / BYTE_SIZE);
     if (NULL == out_buffer)
     {
+        log_error("Memory allocation failed for padding buffer (size: %u bytes)",
+                 target_bit_length / BYTE_SIZE);
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
         goto cleanup;
     }
 
-
     // Copy the original value to the output array
     for (index = 0; index < value_bit_length / BYTE_SIZE; ++index)
     {
-        (out_buffer)[index] = value[index];
+        out_buffer[index] = value[index];
     }
-
-    // Pad the remaining bytes with 0
-    for (index = value_bit_length / BYTE_SIZE; index < target_bit_length / BYTE_SIZE; ++index)
-    {
-        (out_buffer)[index] = 0;
-    }
+    log_debug("Copied %zu bytes of original data", value_bit_length / BYTE_SIZE);
 
     // Set the padding magic byte
-    (out_buffer)[value_bit_length / BYTE_SIZE] = PADDING_MAGIC;
+    out_buffer[value_bit_length / BYTE_SIZE] = PADDING_MAGIC;
+    log_debug("Added padding magic byte at position %zu", value_bit_length / BYTE_SIZE);
+
+    // Pad the remaining bytes with 0
+    for (index = value_bit_length / BYTE_SIZE + 1; index < target_bit_length / BYTE_SIZE; ++index)
+    {
+        out_buffer[index] = 0;
+    }
+    log_debug("Padded remaining %zu bytes with zeros",
+             (target_bit_length - value_bit_length) / BYTE_SIZE - 1);
 
     *out = out_buffer;
     out_buffer = NULL;
     *out_bit_length = target_bit_length;
+    log_debug("Padding complete: final size=%u bits", target_bit_length);
 
     return_code = STATUS_CODE_SUCCESS;
 cleanup:
@@ -59,55 +73,57 @@ cleanup:
 STATUS_CODE remove_padding(uint8_t** out, uint32_t* out_bit_length, uint8_t* value, uint32_t value_bit_length)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
-	bool out_flag_check = false;
-    size_t byte_number = 0, copy_index = 0;
-    uint32_t out_bit_length_buffer = 0;
+    uint32_t i = 0;
     uint8_t* out_buffer = NULL;
+    uint32_t original_bit_length = 0;
 
     if ((NULL == out) || (NULL == value) || (NULL == out_bit_length))
     {
+        log_error("Invalid arguments in remove_padding: %s",
+            !out ? "out is NULL" : !value ? "value is NULL" : "out_bit_length is NULL");
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
     }
 
-	for (byte_number = 0; byte_number < value_bit_length / BYTE_SIZE; ++byte_number)
-	{
-		// Check if the magic byte is part of the padding
-        if (out_flag_check && (value[byte_number] != 0))
-        {
-            out_flag_check = false;
-        }
+    log_debug("Removing padding from data of length %u bits", value_bit_length);
 
-		// Check if the byte is the padding magic number
-		if (value[byte_number] == PADDING_MAGIC)
-		{
-			out_bit_length_buffer = (byte_number * BYTE_SIZE);
-            out_flag_check = true;
-		}
-	}
-
-    if (!out_flag_check)
+    // Find the padding magic byte
+    for (i = 0; i < value_bit_length / BYTE_SIZE; ++i)
     {
-        return_code = STATUS_CODE_NO_PADDING;
+        if (PADDING_MAGIC == value[i])
+        {
+            original_bit_length = i * BYTE_SIZE;
+            log_debug("Found padding magic byte at position %u, original length=%u bits",
+                     i, original_bit_length);
+            break;
+        }
+    }
+
+    if (i >= value_bit_length / BYTE_SIZE)
+    {
+        log_error("Padding magic byte not found in data");
+        return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
     }
 
-    out_buffer = (uint8_t*)malloc(out_bit_length_buffer / BYTE_SIZE);
+    out_buffer = (uint8_t*)malloc(original_bit_length / BYTE_SIZE);
     if (NULL == out_buffer)
     {
+        log_error("Memory allocation failed for unpadded buffer (size: %u bytes)",
+                 original_bit_length / BYTE_SIZE);
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
         goto cleanup;
     }
 
-    // Copy the original value to the output array
-    for (copy_index = 0; copy_index < (out_bit_length_buffer / BYTE_SIZE); ++copy_index)
+    for (i = 0; i < original_bit_length / BYTE_SIZE; ++i)
     {
-        (out_buffer)[copy_index] = value[copy_index];
+        out_buffer[i] = value[i];
     }
 
     *out = out_buffer;
     out_buffer = NULL;
-    *out_bit_length = out_bit_length_buffer;
+    *out_bit_length = original_bit_length;
+    log_debug("Successfully removed padding: final size=%u bits", original_bit_length);
 
     return_code = STATUS_CODE_SUCCESS;
 cleanup:

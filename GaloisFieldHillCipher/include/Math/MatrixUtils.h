@@ -65,13 +65,13 @@ STATUS_CODE is_matrix_invertible(bool* out_is_invertible, int64_t** matrix, uint
 /**
  * @brief Builds a minor matrix by removing a specified row and column from the input matrix.
  *
- * @param out_matrix - Pointer to the output minor matrix - allocated inside the function and memory released if fails.
+ * @param out_minor_matrix - Pointer to the output minor matrix - allocated inside the function and memory released if fails.
  * @param matrix - Pointer to the input matrix.
  * @param dimension - Dimension of the square matrix.
- * @param row - Row to be removed.
- * @param column - Column to be removed.
+ * @param row_to_exclude - Row to be removed.
+ * @param column_to_exclude - Column to be removed.
  * @return STATUS_CODE - Status of the operation.
  */
-STATUS_CODE build_minor_matrix(int64_t*** out_matrix, int64_t** matrix, uint32_t dimension, uint32_t row, uint32_t column);
+STATUS_CODE build_minor_matrix(int64_t*** out_minor_matrix, int64_t** matrix, uint32_t dimension, uint32_t row_to_exclude, size_t column_to_exclude);
 
 #endif

@@ -15,6 +15,9 @@
 #include "Cipher/CipherParts/AffineTransformation.h"
 #include "IO/SerDes.h"
 #include "Secrets.h"
+#include "IO/PrintUtils.h"
+#include "log.h"
+
 
 /**
  * @brief Encrypts a plaintext vector using the Extended Hill Cipher algorithm with affine transformation (error vectors).

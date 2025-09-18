@@ -1,4 +1,3 @@
-
 #ifndef ASCIIMAPPING_H
 #define ASCIIMAPPING_H
 
@@ -9,6 +8,8 @@
 
 #include "StatusCodes.h"
 #include "CSPRNG.h"
+#include "Cipher/CipherParts/Padding.h"
+#include "log.h"
 
 #define MAX_DIGIT (9)
 

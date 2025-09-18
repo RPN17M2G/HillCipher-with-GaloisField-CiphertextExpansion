@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#include "log.h"
+
 /**
  * @brief Multiplies two elements over a finite field.
  *

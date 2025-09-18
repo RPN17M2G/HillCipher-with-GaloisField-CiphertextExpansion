@@ -10,7 +10,7 @@
 #include "StatusCodes.h"
 #include "MatrixUtils.h"
 #include "FieldBasicOperations.h"
-#include "../Cipher/CipherParts/CSPRNG.h"
+#include "Cipher/CipherParts/CSPRNG.h"
 #include "Math/MatrixDeterminant.h"
 #include "log.h"
 

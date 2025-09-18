@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #include "StatusCodes.h"
+#include "log.h"
 
 /**
  * @brief Permutates a vector of uint8_t values based on a given permutation vector.

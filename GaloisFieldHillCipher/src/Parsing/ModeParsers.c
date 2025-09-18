@@ -287,7 +287,7 @@ STATUS_CODE parse_generate_and_encrypt_arguments(GenerateAndEncryptArguments** o
     }
 
     if (!input_file || !output_file || STATUS_FAILED(validate_file_is_writeable(output_file)) ||
-        STATUS_FAILED(validate_file_is_readable(key_file)) || STATUS_FAILED(validate_file_is_binary(key_file)) ||
+        STATUS_FAILED(validate_file_is_binary(key_file)) || STATUS_FAILED(validate_file_is_writeable(key_file)) ||
         STATUS_FAILED(validate_file_is_readable(input_file)) || (0 == dimension) ||
         (0 == number_of_error_vectors) || (0 == number_of_letters_for_each_digit_ascii_mapping) || (0 == prime_field))
     {
