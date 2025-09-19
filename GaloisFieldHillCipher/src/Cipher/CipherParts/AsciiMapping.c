@@ -159,7 +159,7 @@ STATUS_CODE map_from_ascii_to_int64(int64_t** out_numbers, uint32_t* out_size, u
 
     *out_numbers = buffer;
     buffer = NULL;
-    *out_size = buffer_size;
+    *out_size = buffer_size * sizeof(int64_t);
     log_debug("Successfully mapped %u ASCII characters to %u numbers", data_size, buffer_size);
     return_code = STATUS_CODE_SUCCESS;
 

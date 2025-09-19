@@ -3,6 +3,7 @@
 STATUS_CODE handle_generate_and_encrypt_mode(const GenerateAndEncryptArguments* args)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
+    bool reached_encryption = false;
 
     if (!args || !args->encrypt_arguments || !args->key_generation_arguments)
     {
@@ -26,6 +27,8 @@ STATUS_CODE handle_generate_and_encrypt_mode(const GenerateAndEncryptArguments* 
     }
     log_debug("Key generation completed successfully");
 
+    reached_encryption = true;
+
     log_info("Encrypting data...");
     return_code = handle_encrypt_mode(args->encrypt_arguments);
     if (STATUS_FAILED(return_code))
@@ -38,7 +41,8 @@ STATUS_CODE handle_generate_and_encrypt_mode(const GenerateAndEncryptArguments* 
 cleanup:
     if (STATUS_FAILED(return_code))
     {
-        free((void*)args->encrypt_arguments);
+        if (reached_encryption)
+            free((void*)args->encrypt_arguments);
         free((void*)args->key_generation_arguments);
     }
     free((void*)args);
@@ -48,14 +52,17 @@ cleanup:
 STATUS_CODE handle_key_generation_mode(const KeyGenerationArguments* args)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
-    uint8_t* used_indexes = NULL;
+    bool* used_indexes = NULL;
+    bool* used_ascii_characters = NULL;
     int64_t** encryption_matrix = NULL;
     uint8_t* serialized_data = NULL;
     uint32_t serialized_size = 0;
     Secrets secrets = {0};
-    int64_t number_of_digits_per_field_element = 0;
+    int64_t number_of_digits_per_field_element = calculate_digits_per_element(args->prime_field);
     size_t digit = 0, letter = 0, index = 0;
     uint32_t random_ascii_character = 0, random_permutation_index = 0;
+    uint32_t number_of_required_letters = 0;
+    uint32_t printable_range = 0;
 
     if (!args || !args->output_file || (0 == args->dimension))
     {
@@ -98,10 +105,27 @@ STATUS_CODE handle_key_generation_mode(const KeyGenerationArguments* args)
 
     log_debug("Generating ASCII mapping with %u letters per digit",
               args->number_of_letters_for_each_digit_ascii_mapping);
+    printable_range = MAXIMUM_ASCII_PRINTABLE_CHARACTER - MINIMUM_ASCII_PRINTABLE_CHARACTER + 1;
+    number_of_required_letters = NUMBER_OF_DIGITS * args->number_of_letters_for_each_digit_ascii_mapping;
+    if (number_of_required_letters > printable_range)
+    {
+        log_error("Not enough unique printable ASCII characters: required=%u range=%u", number_of_required_letters, printable_range);
+        return_code = STATUS_CODE_INVALID_ARGUMENT;
+        goto cleanup;
+    }
+
     secrets.ascii_mapping = (uint8_t**)malloc(NUMBER_OF_DIGITS * sizeof(uint8_t*));
     if (!secrets.ascii_mapping)
     {
         log_error("Memory allocation failed for ASCII mapping");
+        return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
+        goto cleanup;
+    }
+
+    used_ascii_characters = (bool*)calloc(printable_range, sizeof(bool));
+    if (!used_ascii_characters)
+    {
+        log_error("Memory allocation failed for ASCII mapping tracking");
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
         goto cleanup;
     }
@@ -118,20 +142,27 @@ STATUS_CODE handle_key_generation_mode(const KeyGenerationArguments* args)
 
         for (letter = 0; letter < args->number_of_letters_for_each_digit_ascii_mapping; ++letter)
         {
-            return_code = generate_secure_random_number(&random_ascii_character,
-                                                      MINIMUM_ASCII_PRINTABLE_CHARACTER,
-                                                      MAXIMUM_ASCII_PRINTABLE_CHARACTER);
-            if (STATUS_FAILED(return_code))
-            {
-                log_error("Failed to generate random ASCII character for digit %zu, letter %zu",
-                         digit, letter);
-                goto cleanup;
-            }
+            do {
+                return_code = generate_secure_random_number(&random_ascii_character,
+                                                                      MINIMUM_ASCII_PRINTABLE_CHARACTER,
+                                                                      MAXIMUM_ASCII_PRINTABLE_CHARACTER);
+                if (STATUS_FAILED(return_code))
+                {
+                    log_error("Failed to generate random ASCII character for digit %zu, letter %zu",
+                             digit, letter);
+                    goto cleanup;
+                }
+            } while (used_ascii_characters[random_ascii_character]);
+
             secrets.ascii_mapping[digit][letter] = (uint8_t)random_ascii_character;
+            used_ascii_characters[random_ascii_character] = true;
             log_debug("Generated random ASCII char for digit %zu: '%c' (0x%02x)",
                      digit, random_ascii_character, random_ascii_character);
         }
     }
+
+    secrets.number_of_letters_for_each_digit_ascii_mapping = args->number_of_letters_for_each_digit_ascii_mapping;
+
     log_info("Successfully generated ASCII mapping");
 
     log_debug("Generating permutation vector of size %u", number_of_digits_per_field_element);
@@ -143,7 +174,7 @@ STATUS_CODE handle_key_generation_mode(const KeyGenerationArguments* args)
         goto cleanup;
     }
 
-    used_indexes = (uint8_t*)calloc(number_of_digits_per_field_element, sizeof(uint8_t));
+    used_indexes = (bool*)calloc(number_of_digits_per_field_element, sizeof(bool));
     if (!used_indexes)
     {
         log_error("Memory allocation failed for permutation tracking");
@@ -164,46 +195,10 @@ STATUS_CODE handle_key_generation_mode(const KeyGenerationArguments* args)
         } while (used_indexes[random_permutation_index]);
 
         secrets.permutation_vector[index] = random_permutation_index;
-        used_indexes[random_permutation_index] = 1;
+        used_indexes[random_permutation_index] = true;
         log_debug("Generated permutation: index %zu -> %u", index, random_permutation_index);
     }
     log_info("Successfully generated permutation vector");
-
-    secrets.number_of_letters_for_each_digit_ascii_mapping = args->number_of_letters_for_each_digit_ascii_mapping;
-
-    log_info("[*] Generating permutation vector...\n");
-    number_of_digits_per_field_element = calculate_digits_per_element(args->prime_field);
-    secrets.permutation_vector = (uint8_t*)malloc(number_of_digits_per_field_element * sizeof(uint8_t));
-    if (!secrets.permutation_vector)
-    {
-        return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
-        goto cleanup;
-    }
-
-    used_indexes = (uint8_t*)calloc(number_of_digits_per_field_element, sizeof(uint8_t));
-    if (!used_indexes)
-    {
-        return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
-        goto cleanup;
-    }
-
-    for (index = 0; index < number_of_digits_per_field_element; ++index)
-    {
-        do
-        {
-            return_code = generate_secure_random_number(&random_permutation_index, 0, number_of_digits_per_field_element);
-            if (STATUS_FAILED(return_code))
-            {
-                log_error("[!] Failed to generate random permutation index.");
-                goto cleanup;
-            }
-        } while (used_indexes[random_permutation_index]);
-
-        secrets.permutation_vector[index] = random_permutation_index;
-        used_indexes[random_permutation_index] = 1;
-    }
-
-    log_info("[*] Successfully generated permutation vector...\n");
 
     secrets.number_of_random_bits_to_add = args->number_of_random_bits_to_add;
 
@@ -230,6 +225,7 @@ STATUS_CODE handle_key_generation_mode(const KeyGenerationArguments* args)
 cleanup:
     free(serialized_data);
     free(used_indexes);
+    free(used_ascii_characters);
     free_secrets(&secrets);
     return return_code;
 }
@@ -549,7 +545,7 @@ STATUS_CODE handle_decrypt_mode(const DecryptArguments* args)
         log_info("[*] Successfully mapped ASCII ciphertext to int64.\n");
     }
 
-    print_int64_vector(ciphertext, ciphertext_size / (sizeof(int64_t) * BYTE_SIZE), "[*] Ciphertext data:", false);
+    print_int64_vector(ciphertext, ciphertext_size / sizeof(int64_t), "[*] Ciphertext data:", false);
 
     return_code = decrypt(&decrypted_text, &decrypted_size, ciphertext, ciphertext_size * BYTE_SIZE, secrets);
     if (STATUS_FAILED(return_code))

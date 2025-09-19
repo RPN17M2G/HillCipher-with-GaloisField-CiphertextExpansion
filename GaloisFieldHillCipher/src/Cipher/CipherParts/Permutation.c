@@ -53,9 +53,9 @@ STATUS_CODE permutate_uint8_vector(uint8_t** out_vector, uint8_t* vector, uint32
             }
 
             buffer[group_index + letter_index] = vector[group_index + permuted_index];
-            log_debug("Permuted: letter[%zu] -> position %zu (char '%c' -> '%c')",
+            log_debug("Permuted: original position: %zu -> new position: %zu (original char at that position: '%c' -> new char at that position: '%c')",
                      permuted_index, letter_index,
-                     vector[group_index + permuted_index],
+                     vector[group_index + letter_index],
                      buffer[group_index + letter_index]);
         }
     }
