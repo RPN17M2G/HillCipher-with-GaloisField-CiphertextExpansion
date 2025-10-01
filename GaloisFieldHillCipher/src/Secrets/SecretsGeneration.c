@@ -317,7 +317,7 @@ STATUS_CODE build_decryption_secrets(Secrets** out_secrets, Secrets* encryption_
 
     log_info("Building decryption secrets from encryption secrets...");
 
-    log_info("[*] Generating decryption matrix...\n");
+    log_info("Generating decryption matrix...\n");
     return_code = generate_decryption_matrix(&decryption_matrix, encryption_secrets->dimension,
                                            encryption_secrets->key_matrix, encryption_secrets->prime_field);
     if (STATUS_FAILED(return_code))
@@ -325,7 +325,7 @@ STATUS_CODE build_decryption_secrets(Secrets** out_secrets, Secrets* encryption_
         log_error("Failed to generate decryption matrix");
         goto cleanup;
     }
-    print_matrix(decryption_matrix, encryption_secrets->dimension, "Decryption matrix generated:\n", true);
+    log_matrix(decryption_matrix, encryption_secrets->dimension, "Decryption matrix generated:\n", true);
 
     log_info("Reversing permutation vector...");
     if (encryption_secrets->permutation_vector)

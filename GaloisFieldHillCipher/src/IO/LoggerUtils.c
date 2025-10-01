@@ -1,4 +1,4 @@
-#include "IO/PrintUtils.h"
+#include "IO/LoggerUtils.h"
 
 void log_uint8_vector(const uint8_t* data, size_t size, const char* prefix, bool is_verbose_only)
 {
@@ -9,7 +9,7 @@ void log_uint8_vector(const uint8_t* data, size_t size, const char* prefix, bool
         return;
     }
 
-    log_debug("Printing uint8 vector: size=%zu bytes", size);
+    log_debug("Logging uint8 vector: size=%zu bytes", size);
 
     size_t buffer_size = size * UINT8_HEX_CHARS_PER_ELEMENT + PRINT_BUFFER_EXTRA;
     char* buffer = (char*)malloc(buffer_size);
@@ -30,23 +30,24 @@ void log_uint8_vector(const uint8_t* data, size_t size, const char* prefix, bool
     }
     snprintf(buffer + offset, buffer_size - offset, "\n");
 
-    if (is_verbose_mode())
-    {
-        printf("%s", buffer);
+    if (is_verbose_mode()) {
+        log_debug("%s", buffer);
+    } else {
+        log_info("%s", buffer);
     }
     free(buffer);
 }
 
-void print_int64_vector(const int64_t* data, size_t size, const char* prefix, bool is_verbose_only)
+void log_int64_vector(const int64_t* data, size_t size, const char* prefix, bool is_verbose_only)
 {
     size_t i = 0;
     if (!data || !prefix)
     {
-        log_error("Invalid argument in print_int64_vector: %s", !data ? "data is NULL" : "prefix is NULL");
+        log_error("Invalid argument in log_int64_vector: %s", !data ? "data is NULL" : "prefix is NULL");
         return;
     }
 
-    log_debug("Printing int64 vector: size=%zu elements", size);
+    log_debug("Logging int64 vector: size=%zu elements", size);
 
     size_t buffer_size = size * INT64_HEX_CHARS_PER_ELEMENT + PRINT_BUFFER_EXTRA;
     char* buffer = (char*)malloc(buffer_size);
@@ -70,14 +71,15 @@ void print_int64_vector(const int64_t* data, size_t size, const char* prefix, bo
     }
     snprintf(buffer + offset, buffer_size - offset, "\n");
 
-    if (is_verbose_mode())
-    {
-        printf("%s", buffer);
+    if (is_verbose_mode()) {
+        log_debug("%s", buffer);
+    } else {
+        log_info("%s", buffer);
     }
     free(buffer);
 }
 
-void print_matrix(int64_t** matrix, uint32_t dimension, const char* prefix, bool is_verbose_only)
+void log_matrix(int64_t** matrix, uint32_t dimension, const char* prefix, bool is_verbose_only)
 {
     if (!matrix)
     {
@@ -85,7 +87,7 @@ void print_matrix(int64_t** matrix, uint32_t dimension, const char* prefix, bool
         return;
     }
 
-    log_debug("Printing matrix: dimension=%u", dimension);
+    log_debug("Logging matrix: dimension=%u", dimension);
 
     size_t buffer_size = dimension * dimension * MATRIX_HEX_CHARS_PER_ELEMENT + PRINT_BUFFER_EXTRA;
     char* buffer = (char*)malloc(buffer_size);
@@ -115,7 +117,7 @@ void print_matrix(int64_t** matrix, uint32_t dimension, const char* prefix, bool
 
     if (is_verbose_mode() || !is_verbose_only)
     {
-        printf("%s", buffer);
+        log_info("%s", buffer);
     }
     free(buffer);
 }

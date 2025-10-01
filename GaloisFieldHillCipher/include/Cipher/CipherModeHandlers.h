@@ -12,6 +12,7 @@
 #include "CipherParts/AsciiMapping.h"
 #include "CipherParts/Permutation.h"
 #include "Secrets/SecretsGeneration.h"
+#include "IO/LoggerUtils.h"
 #include "log.h"
 
 /**

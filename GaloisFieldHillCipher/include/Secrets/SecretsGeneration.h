@@ -8,6 +8,7 @@
 #include "Cipher/CipherParts/CSPRNG.h"
 #include "IO/SerDes.h"
 #include "Math/MatrixUtils.h"
+#include "IO/LoggerUtils.h"
 
 #define MINIMUM_ASCII_PRINTABLE_CHARACTER (33)
 #define MAXIMUM_ASCII_PRINTABLE_CHARACTER (94)
