@@ -11,10 +11,8 @@
 #include "Cipher.h"
 #include "CipherParts/AsciiMapping.h"
 #include "CipherParts/Permutation.h"
+#include "Secrets/SecretsGeneration.h"
 #include "log.h"
-
-#define MINIMUM_ASCII_PRINTABLE_CHARACTER (33)
-#define MAXIMUM_ASCII_PRINTABLE_CHARACTER (94)
 
 /**
  * @brief Handle key generation mode - Generate a key and write it to the specified file.

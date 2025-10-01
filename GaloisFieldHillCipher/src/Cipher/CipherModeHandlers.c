@@ -54,15 +54,9 @@ STATUS_CODE handle_key_generation_mode(const KeyGenerationArguments* args)
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
     bool* used_indexes = NULL;
     bool* used_ascii_characters = NULL;
-    int64_t** encryption_matrix = NULL;
     uint8_t* serialized_data = NULL;
     uint32_t serialized_size = 0;
-    Secrets secrets = {0};
-    int64_t number_of_digits_per_field_element = calculate_digits_per_element(args->prime_field);
-    size_t digit = 0, letter = 0, index = 0;
-    uint32_t random_ascii_character = 0, random_permutation_index = 0;
-    uint32_t number_of_required_letters = 0;
-    uint32_t printable_range = 0;
+    Secrets* secrets = NULL;
 
     if (!args || !args->output_file || (0 == args->dimension))
     {
@@ -73,136 +67,14 @@ STATUS_CODE handle_key_generation_mode(const KeyGenerationArguments* args)
         return STATUS_CODE_INVALID_ARGUMENT;
     }
 
-    log_info("Starting key generation with parameters: dimension=%u, prime_field=%u, error_vectors=%u",
-             args->dimension, args->prime_field, args->number_of_error_vectors);
-
-    log_debug("Generating encryption matrix...");
-    return_code = generate_encryption_matrix(&encryption_matrix, args->dimension, args->prime_field, 3);
+    return_code = build_encryption_secrets(&secrets, args);
     if (STATUS_FAILED(return_code))
     {
-        log_error("Failed to generate encryption matrix");
+        log_error("Failed to build encryption secrets");
         goto cleanup;
     }
 
-    log_info("Encryption matrix generated.");
-    print_matrix(encryption_matrix, args->dimension, "Encryption matrix generated.", true);
-
-    secrets.key_matrix = encryption_matrix;
-    secrets.dimension = args->dimension;
-    secrets.prime_field = args->prime_field;
-    secrets.number_of_error_vectors = args->number_of_error_vectors;
-
-    // Generate error vectors
-    if (args->number_of_error_vectors > 0)
-    {
-        return_code = generate_matrix_over_field(&secrets.error_vectors, args->number_of_error_vectors, args->dimension, args->prime_field);
-        if (STATUS_FAILED(return_code))
-        {
-            log_error("Failed to generate error vectors");
-            goto cleanup;
-        }
-    }
-
-    log_debug("Generating ASCII mapping with %u letters per digit",
-              args->number_of_letters_for_each_digit_ascii_mapping);
-    printable_range = MAXIMUM_ASCII_PRINTABLE_CHARACTER - MINIMUM_ASCII_PRINTABLE_CHARACTER + 1;
-    number_of_required_letters = NUMBER_OF_DIGITS * args->number_of_letters_for_each_digit_ascii_mapping;
-    if (number_of_required_letters > printable_range)
-    {
-        log_error("Not enough unique printable ASCII characters: required=%u range=%u", number_of_required_letters, printable_range);
-        return_code = STATUS_CODE_INVALID_ARGUMENT;
-        goto cleanup;
-    }
-
-    secrets.ascii_mapping = (uint8_t**)malloc(NUMBER_OF_DIGITS * sizeof(uint8_t*));
-    if (!secrets.ascii_mapping)
-    {
-        log_error("Memory allocation failed for ASCII mapping");
-        return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
-        goto cleanup;
-    }
-
-    used_ascii_characters = (bool*)calloc(printable_range, sizeof(bool));
-    if (!used_ascii_characters)
-    {
-        log_error("Memory allocation failed for ASCII mapping tracking");
-        return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
-        goto cleanup;
-    }
-
-    for (digit = 0; digit < NUMBER_OF_DIGITS; ++digit)
-    {
-        secrets.ascii_mapping[digit] = (uint8_t*)malloc(args->number_of_letters_for_each_digit_ascii_mapping * sizeof(uint8_t));
-        if (!secrets.ascii_mapping[digit])
-        {
-            log_error("Memory allocation failed for ASCII mapping digit %zu", digit);
-            return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
-            goto cleanup;
-        }
-
-        for (letter = 0; letter < args->number_of_letters_for_each_digit_ascii_mapping; ++letter)
-        {
-            do {
-                return_code = generate_secure_random_number(&random_ascii_character,
-                                                                      MINIMUM_ASCII_PRINTABLE_CHARACTER,
-                                                                      MAXIMUM_ASCII_PRINTABLE_CHARACTER);
-                if (STATUS_FAILED(return_code))
-                {
-                    log_error("Failed to generate random ASCII character for digit %zu, letter %zu",
-                             digit, letter);
-                    goto cleanup;
-                }
-            } while (used_ascii_characters[random_ascii_character]);
-
-            secrets.ascii_mapping[digit][letter] = (uint8_t)random_ascii_character;
-            used_ascii_characters[random_ascii_character] = true;
-            log_debug("Generated random ASCII char for digit %zu: '%c' (0x%02x)",
-                     digit, random_ascii_character, random_ascii_character);
-        }
-    }
-
-    secrets.number_of_letters_for_each_digit_ascii_mapping = args->number_of_letters_for_each_digit_ascii_mapping;
-
-    log_info("Successfully generated ASCII mapping");
-
-    log_debug("Generating permutation vector of size %u", number_of_digits_per_field_element);
-    secrets.permutation_vector = (uint8_t*)malloc(number_of_digits_per_field_element * sizeof(uint8_t));
-    if (!secrets.permutation_vector)
-    {
-        log_error("Memory allocation failed for permutation vector");
-        return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
-        goto cleanup;
-    }
-
-    used_indexes = (bool*)calloc(number_of_digits_per_field_element, sizeof(bool));
-    if (!used_indexes)
-    {
-        log_error("Memory allocation failed for permutation tracking");
-        return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
-        goto cleanup;
-    }
-
-    for (index = 0; index < number_of_digits_per_field_element; ++index)
-    {
-        do {
-            return_code = generate_secure_random_number(&random_permutation_index, 0,
-                                                      number_of_digits_per_field_element);
-            if (STATUS_FAILED(return_code))
-            {
-                log_error("Failed to generate random permutation index at position %zu", index);
-                goto cleanup;
-            }
-        } while (used_indexes[random_permutation_index]);
-
-        secrets.permutation_vector[index] = random_permutation_index;
-        used_indexes[random_permutation_index] = true;
-        log_debug("Generated permutation: index %zu -> %u", index, random_permutation_index);
-    }
-    log_info("Successfully generated permutation vector");
-
-    secrets.number_of_random_bits_to_add = args->number_of_random_bits_to_add;
-
-    return_code = serialize_secrets(&serialized_data, &serialized_size, secrets);
+    return_code = serialize_secrets(&serialized_data, &serialized_size, *secrets);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
@@ -226,7 +98,8 @@ cleanup:
     free(serialized_data);
     free(used_indexes);
     free(used_ascii_characters);
-    free_secrets(&secrets);
+    free_secrets(secrets);
+    free(secrets);
     return return_code;
 }
 
@@ -350,14 +223,11 @@ STATUS_CODE handle_decryption_key_generation_mode(const DecryptionKeyGenerationA
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
     uint8_t* key_data = NULL;
-    int64_t** decryption_matrix = NULL;
     uint32_t key_size = 0;
     uint8_t* serialized_data = NULL;
     uint32_t serialized_size = 0;
     Secrets encryption_secrets = {0};
-    Secrets decryption_secrets = {0};
-    uint8_t* reversed_permutation_vector = NULL;
-    size_t permutation_size = 0, index = 0;
+    Secrets* decryption_secrets = NULL;
 
     if (!args || !args->key || !args->output_file)
     {
@@ -384,53 +254,17 @@ STATUS_CODE handle_decryption_key_generation_mode(const DecryptionKeyGenerationA
         log_error("Failed to deserialize encryption secrets");
         goto cleanup;
     }
-
     log_info("[*] Successfully deserialized encryption secrets.\n");
-    log_info("[*] Generating decryption matrix...\n");
 
-    return_code = generate_decryption_matrix(&decryption_matrix, encryption_secrets.dimension,
-                                           encryption_secrets.key_matrix, encryption_secrets.prime_field);
+    return_code = build_decryption_secrets(&decryption_secrets, &encryption_secrets);
     if (STATUS_FAILED(return_code))
     {
-        log_error("Failed to generate decryption matrix");
+        log_error("Failed to build decryption secrets");
         goto cleanup;
     }
+    log_info("[*] Successfully built decryption secrets.\n");
 
-    log_info("[*] Decryption matrix generated:\n");
-
-    print_matrix(decryption_matrix, encryption_secrets.dimension, "Decryption matrix generated:\n", true);
-
-    // Reverse the permutation vector
-    if (encryption_secrets.permutation_vector)
-    {
-        permutation_size = calculate_digits_per_element(encryption_secrets.prime_field);
-        reversed_permutation_vector = (uint8_t*)malloc(permutation_size * sizeof(uint8_t));
-        if (!reversed_permutation_vector)
-        {
-            log_error("[!] Memory allocation failed for reversed permutation vector.");
-            return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
-            goto cleanup;
-        }
-
-        for (index = 0; index < permutation_size; ++index)
-        {
-            reversed_permutation_vector[encryption_secrets.permutation_vector[index]] = (uint8_t)index;
-        }
-    }
-
-    decryption_secrets.dimension = encryption_secrets.dimension;
-    decryption_secrets.number_of_error_vectors = encryption_secrets.number_of_error_vectors;
-    decryption_secrets.prime_field = encryption_secrets.prime_field;
-    decryption_secrets.key_matrix = decryption_matrix;
-    decryption_secrets.error_vectors = encryption_secrets.error_vectors;
-    encryption_secrets.error_vectors = NULL;
-    decryption_secrets.ascii_mapping = encryption_secrets.ascii_mapping;
-    encryption_secrets.ascii_mapping = NULL;
-    decryption_secrets.permutation_vector = reversed_permutation_vector;
-    decryption_secrets.number_of_letters_for_each_digit_ascii_mapping = encryption_secrets.number_of_letters_for_each_digit_ascii_mapping;
-    decryption_secrets.number_of_random_bits_to_add = encryption_secrets.number_of_random_bits_to_add;
-
-    return_code = serialize_secrets(&serialized_data, &serialized_size, decryption_secrets);
+    return_code = serialize_secrets(&serialized_data, &serialized_size, *decryption_secrets);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
@@ -453,9 +287,9 @@ STATUS_CODE handle_decryption_key_generation_mode(const DecryptionKeyGenerationA
 cleanup:
     free(serialized_data);
     free(key_data);
-    free_int64_matrix(decryption_matrix, decryption_secrets.dimension);
-    free(reversed_permutation_vector);
     free_secrets(&encryption_secrets);
+    free_secrets(decryption_secrets);
+    free(decryption_secrets);
     return return_code;
 }
 

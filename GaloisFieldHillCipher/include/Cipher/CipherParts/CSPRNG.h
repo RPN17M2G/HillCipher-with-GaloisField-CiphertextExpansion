@@ -7,6 +7,7 @@
 #include <sodium.h>
 
 #include "StatusCodes.h"
+#include "log.h"
 
 /**
  * @brief Initialize sodium.
@@ -24,5 +25,14 @@ STATUS_CODE initialize_sodium_library();
  * @return STATUS_CODE - Status of the operation.
  */
 STATUS_CODE generate_secure_random_number(uint32_t* out_number, uint32_t minimum_value, uint32_t maximum_value);
+
+/**
+ * @brief Perform a secure Fisher-Yates shuffle on an array.
+ *
+ * @param array - The array to be shuffled.
+ * @param length - The length of the array.
+ * @return STATUS_CODE - Status of the operation.
+ */
+STATUS_CODE secure_fisher_yates_shuffle(uint8_t *array, size_t length);
 
 #endif
