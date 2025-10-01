@@ -7,7 +7,7 @@ STATUS_CODE ascii_char_to_digit(uint8_t* out_digit, uint8_t input, uint8_t** dig
 
     if (!out_digit || !digit_to_ascii)
     {
-        log_error("Invalid arguments in ascii_char_to_digit: %s",
+        log_error("[!] Invalid arguments in ascii_char_to_digit: %s",
                   !out_digit ? "out_digit is NULL" : "digit_to_ascii is NULL");
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
@@ -29,7 +29,7 @@ STATUS_CODE ascii_char_to_digit(uint8_t* out_digit, uint8_t input, uint8_t** dig
         }
     }
 
-    log_error("No mapping found for ASCII character '%c' (0x%02x)", input, input);
+    log_error("[!] No mapping found for ASCII character '%c' (0x%02x)", input, input);
     return_code = STATUS_CODE_INVALID_ARGUMENT;
 
 cleanup:
@@ -52,7 +52,7 @@ STATUS_CODE map_from_int64_to_ascii(uint8_t** out_ascii, uint32_t* out_ascii_siz
     if (!out_ascii || !out_ascii_size || !data || (data_size == 0) ||
         (data_size > (UINT32_MAX / number_of_digits_per_field_element)) || !digit_to_ascii)
     {
-        log_error("Invalid arguments in map_from_int64_to_ascii");
+        log_error("[!] Invalid arguments in map_from_int64_to_ascii");
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
     }
@@ -64,7 +64,7 @@ STATUS_CODE map_from_int64_to_ascii(uint8_t** out_ascii, uint32_t* out_ascii_siz
     buffer = (uint8_t*)malloc(buffer_size);
     if (!buffer)
     {
-        log_error("Memory allocation failed for ASCII buffer (size: %u)", buffer_size);
+        log_error("[!] Memory allocation failed for ASCII buffer (size: %u)", buffer_size);
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
         goto cleanup;
     }
@@ -83,7 +83,7 @@ STATUS_CODE map_from_int64_to_ascii(uint8_t** out_ascii, uint32_t* out_ascii_siz
             return_code = generate_secure_random_number(&random_number, 0, number_of_letters - 1);
             if (STATUS_FAILED(return_code))
             {
-                log_error("Failed to generate random mapping for digit %c", digit_char);
+                log_error("[!] Failed to generate random mapping for digit %c", digit_char);
                 goto cleanup;
             }
 
@@ -117,7 +117,7 @@ STATUS_CODE map_from_ascii_to_int64(int64_t** out_numbers, uint32_t* out_size, u
     if (!out_numbers || !out_size || !data || (data_size == 0) || !digit_to_ascii ||
         (data_size % number_of_digits_per_field_element != 0))
     {
-        log_error("Invalid arguments in map_from_ascii_to_int64");
+        log_error("[!] Invalid arguments in map_from_ascii_to_int64");
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
     }
@@ -129,7 +129,7 @@ STATUS_CODE map_from_ascii_to_int64(int64_t** out_numbers, uint32_t* out_size, u
     buffer = (int64_t*)malloc(buffer_size * sizeof(int64_t));
     if (!buffer)
     {
-        log_error("Memory allocation failed for number buffer (size: %u)", buffer_size);
+        log_error("[!] Memory allocation failed for number buffer (size: %u)", buffer_size);
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
         goto cleanup;
     }

@@ -8,7 +8,7 @@ STATUS_CODE is_matrix_invertible(bool* out_is_invertible, int64_t** matrix, uint
 
     if (!out_is_invertible || !matrix)
     {
-        log_error("Invalid arguments in is_matrix_invertible");
+        log_error("[!] Invalid arguments in is_matrix_invertible");
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
     }
@@ -18,7 +18,7 @@ STATUS_CODE is_matrix_invertible(bool* out_is_invertible, int64_t** matrix, uint
     return_code = matrix_determinant_over_galois_field_gauss_jordan(&determinant, matrix, dimension, prime_field);
     if (STATUS_FAILED(return_code))
     {
-        log_error("Failed to compute determinant for invertibility check");
+        log_error("[!] Failed to compute determinant for invertibility check");
         goto cleanup;
     }
     log_debug("Matrix determinant: %ld", determinant);
@@ -26,7 +26,7 @@ STATUS_CODE is_matrix_invertible(bool* out_is_invertible, int64_t** matrix, uint
     return_code = gcd(&gcd_result, (int64_t)prime_field, determinant);
     if (STATUS_FAILED(return_code))
     {
-        log_error("Failed to compute GCD(prime_field, determinant)");
+        log_error("[!] Failed to compute GCD(prime_field, determinant)");
         goto cleanup;
     }
     log_debug("GCD(prime_field, determinant) = %ld", gcd_result);
@@ -149,7 +149,7 @@ STATUS_CODE generate_square_matrix_over_field(int64_t*** out_matrix, uint32_t di
 
     if (!out_matrix)
     {
-        log_error("Invalid argument: out_matrix is NULL");
+        log_error("[!] Invalid argument: out_matrix is NULL");
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
     }
@@ -159,7 +159,7 @@ STATUS_CODE generate_square_matrix_over_field(int64_t*** out_matrix, uint32_t di
     matrix = (int64_t**)malloc(dimension * sizeof(int64_t*));
     if (!matrix)
     {
-        log_error("Memory allocation failed for matrix rows");
+        log_error("[!] Memory allocation failed for matrix rows");
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
         goto cleanup;
     }
@@ -169,7 +169,7 @@ STATUS_CODE generate_square_matrix_over_field(int64_t*** out_matrix, uint32_t di
         matrix[row] = (int64_t*)malloc(dimension * sizeof(int64_t));
         if (!matrix[row])
         {
-            log_error("Memory allocation failed for matrix row %zu", row);
+            log_error("[!] Memory allocation failed for matrix row %zu", row);
             return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
             goto cleanup;
         }
@@ -179,7 +179,7 @@ STATUS_CODE generate_square_matrix_over_field(int64_t*** out_matrix, uint32_t di
             return_code = generate_secure_random_number(&random_number, 0, prime_field);
             if (STATUS_FAILED(return_code))
             {
-                log_error("Failed to generate random number for matrix[%zu][%zu]", row, column);
+                log_error("[!] Failed to generate random number for matrix[%zu][%zu]", row, column);
                 goto cleanup;
             }
             matrix[row][column] = random_number;
@@ -208,7 +208,7 @@ STATUS_CODE build_minor_matrix(int64_t*** out_minor_matrix, int64_t** matrix, ui
 
     if (!out_minor_matrix || !matrix)
     {
-        log_error("Invalid arguments in build_minor_matrix");
+        log_error("[!] Invalid arguments in build_minor_matrix");
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
     }
@@ -219,7 +219,7 @@ STATUS_CODE build_minor_matrix(int64_t*** out_minor_matrix, int64_t** matrix, ui
     minor_matrix = (int64_t**)malloc((dimension - 1) * sizeof(int64_t*));
     if (!minor_matrix)
     {
-        log_error("Memory allocation failed for minor matrix rows");
+        log_error("[!] Memory allocation failed for minor matrix rows");
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
         goto cleanup;
     }
@@ -229,7 +229,7 @@ STATUS_CODE build_minor_matrix(int64_t*** out_minor_matrix, int64_t** matrix, ui
         minor_matrix[current_row] = (int64_t*)malloc((dimension - 1) * sizeof(int64_t));
         if (!minor_matrix[current_row])
         {
-            log_error("Memory allocation failed for minor matrix row %zu", current_row);
+            log_error("[!] Memory allocation failed for minor matrix row %zu", current_row);
             return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
             goto cleanup;
         }

@@ -10,7 +10,7 @@ STATUS_CODE multiply_matrix_with_uint8_t_vector(int64_t** out_vector, int64_t** 
 
     if ((NULL == out_vector) || (NULL == matrix) || (NULL == vector))
     {
-        log_error("Invalid arguments in matrix-vector multiplication");
+        log_error("[!] Invalid arguments in matrix-vector multiplication");
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
     }
@@ -20,7 +20,7 @@ STATUS_CODE multiply_matrix_with_uint8_t_vector(int64_t** out_vector, int64_t** 
     out_vector_buffer = (int64_t*)malloc(dimension * sizeof(int64_t));
     if (NULL == out_vector_buffer)
     {
-        log_error("Memory allocation failed for result vector");
+        log_error("[!] Memory allocation failed for result vector");
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
         goto cleanup;
     }
@@ -56,7 +56,7 @@ STATUS_CODE multiply_matrix_with_int64_t_vector(uint8_t** out_vector, int64_t** 
 
     if ((NULL == out_vector) || (NULL == matrix) || (NULL == vector))
     {
-        log_error("Invalid arguments in matrix-vector multiplication (int64)");
+        log_error("[!] Invalid arguments in matrix-vector multiplication (int64)");
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
     }
@@ -66,7 +66,7 @@ STATUS_CODE multiply_matrix_with_int64_t_vector(uint8_t** out_vector, int64_t** 
     out_vector_buffer = (uint8_t*)malloc(dimension * sizeof(uint8_t));
     if (NULL == out_vector_buffer)
     {
-        log_error("Memory allocation failed for result vector");
+        log_error("[!] Memory allocation failed for result vector");
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
         goto cleanup;
     }
@@ -82,7 +82,7 @@ STATUS_CODE multiply_matrix_with_int64_t_vector(uint8_t** out_vector, int64_t** 
 
         if (temp_result > UINT8_MAX)
         {
-            log_error("Result width too large in multiply_matrix_with_int64_t_vector: %llu > %u",
+            log_error("[!] Result width too large in multiply_matrix_with_int64_t_vector: %llu > %u",
                      (unsigned long long)temp_result, UINT8_MAX);
             return_code = STATUS_CODE_INVALID_RESULT_WIDTH;
             goto cleanup;

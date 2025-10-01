@@ -8,7 +8,7 @@ STATUS_CODE pad_to_length(uint8_t** out, uint32_t* out_bit_length, uint8_t* valu
 
     if ((NULL == out) || (NULL == value) || (NULL == out_bit_length))
     {
-        log_error("Invalid arguments in pad_to_length: %s",
+        log_error("[!] Invalid arguments in pad_to_length: %s",
             !out ? "out is NULL" : !value ? "value is NULL" : "out_bit_length is NULL");
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
@@ -16,7 +16,7 @@ STATUS_CODE pad_to_length(uint8_t** out, uint32_t* out_bit_length, uint8_t* valu
 
     if (value_bit_length > target_bit_length)
     {
-        log_error("Input length (%u bits) exceeds target length (%u bits)",
+        log_error("[!] Input length (%u bits) exceeds target length (%u bits)",
                  value_bit_length, target_bit_length);
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
@@ -34,7 +34,7 @@ STATUS_CODE pad_to_length(uint8_t** out, uint32_t* out_bit_length, uint8_t* valu
     out_buffer = (uint8_t*)malloc(target_bit_length / BYTE_SIZE);
     if (NULL == out_buffer)
     {
-        log_error("Memory allocation failed for padding buffer (size: %u bytes)",
+        log_error("[!] Memory allocation failed for padding buffer (size: %u bytes)",
                  target_bit_length / BYTE_SIZE);
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
         goto cleanup;
@@ -79,7 +79,7 @@ STATUS_CODE remove_padding(uint8_t** out, uint32_t* out_bit_length, uint8_t* val
 
     if ((NULL == out) || (NULL == value) || (NULL == out_bit_length))
     {
-        log_error("Invalid arguments in remove_padding: %s",
+        log_error("[!] Invalid arguments in remove_padding: %s",
             !out ? "out is NULL" : !value ? "value is NULL" : "out_bit_length is NULL");
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
@@ -101,7 +101,7 @@ STATUS_CODE remove_padding(uint8_t** out, uint32_t* out_bit_length, uint8_t* val
 
     if (i >= value_bit_length / BYTE_SIZE)
     {
-        log_error("Padding magic byte not found in data");
+        log_error("[!] Padding magic byte not found in data");
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
     }
@@ -109,7 +109,7 @@ STATUS_CODE remove_padding(uint8_t** out, uint32_t* out_bit_length, uint8_t* val
     out_buffer = (uint8_t*)malloc(original_bit_length / BYTE_SIZE);
     if (NULL == out_buffer)
     {
-        log_error("Memory allocation failed for unpadded buffer (size: %u bytes)",
+        log_error("[!] Memory allocation failed for unpadded buffer (size: %u bytes)",
                  original_bit_length / BYTE_SIZE);
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
         goto cleanup;

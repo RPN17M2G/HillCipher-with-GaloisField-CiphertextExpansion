@@ -13,7 +13,7 @@ STATUS_CODE matrix_determinant_laplace_expansion(int64_t* out_determinant, int64
 
 	if ((NULL == matrix) || (NULL == out_determinant) || (0 == dimension))
 	{
-		log_error("Invalid argument!");
+		log_error("[!] Invalid argument!");
 		return_code = STATUS_CODE_INVALID_ARGUMENT;
 		goto cleanup;
 	}
@@ -46,7 +46,7 @@ STATUS_CODE matrix_determinant_laplace_expansion(int64_t* out_determinant, int64
 		return_code = build_minor_matrix(&minor_matrix, matrix, dimension, row, column);
 		if (STATUS_FAILED(return_code))
 		{
-			log_error("Failed to build minor matrix for element (%u,%zu)", row, column);
+			log_error("[!] Failed to build minor matrix for element (%u,%zu)", row, column);
 			goto cleanup;
 		}
 
@@ -54,7 +54,7 @@ STATUS_CODE matrix_determinant_laplace_expansion(int64_t* out_determinant, int64
 		return_code = matrix_determinant_laplace_expansion(&minor_matrix_determinant, minor_matrix, dimension - 1, prime_field);
 		if (STATUS_FAILED(return_code))
 		{
-			log_error("Failed to compute minor matrix determinant for element (%u,%zu)", row, column);
+			log_error("[!] Failed to compute minor matrix determinant for element (%u,%zu)", row, column);
 			goto cleanup;
 		}
 
@@ -94,7 +94,7 @@ STATUS_CODE matrix_determinant_over_galois_field_laplace_expansion(int64_t* out_
 
 	if ((NULL == matrix) || (NULL == out_determinant))
 	{
-		log_error("Invalid argument: matrix or out_determinant is NULL");
+		log_error("[!] Invalid argument: matrix or out_determinant is NULL");
 		return_code = STATUS_CODE_INVALID_ARGUMENT;
 		goto cleanup;
 	}
@@ -104,7 +104,7 @@ STATUS_CODE matrix_determinant_over_galois_field_laplace_expansion(int64_t* out_
 	return_code = matrix_determinant_laplace_expansion(&determinant_buffer, matrix, dimension, prime_field);
 	if (STATUS_FAILED(return_code))
 	{
-		log_error("Failed to compute matrix determinant");
+		log_error("[!] Failed to compute matrix determinant");
 		goto cleanup;
 	}
 

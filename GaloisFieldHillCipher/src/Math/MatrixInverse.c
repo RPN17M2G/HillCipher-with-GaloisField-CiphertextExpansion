@@ -17,13 +17,13 @@ STATUS_CODE inverse_square_matrix_adjugate_method(int64_t*** out_inverse_matrix,
 	return_code = is_matrix_invertible(&is_invertible, matrix, dimension, prime_field);
 	if (STATUS_FAILED(return_code))
 	{
-		log_error("Failed to check if matrix is invertible");
+		log_error("[!] Failed to check if matrix is invertible");
 		goto cleanup;
 	}
 
 	if (!is_invertible)
 	{
-		log_error("Matrix is not invertible");
+		log_error("[!] Matrix is not invertible");
 		return_code = STATUS_CODE_MATRIX_NOT_INVERTIBLE;
 		goto cleanup;
 	}
@@ -32,7 +32,7 @@ STATUS_CODE inverse_square_matrix_adjugate_method(int64_t*** out_inverse_matrix,
 	return_code = matrix_determinant_over_galois_field_laplace_expansion(&determinant, matrix, dimension, prime_field);
 	if (STATUS_FAILED(return_code))
 	{
-		log_error("Failed to compute determinant");
+		log_error("[!] Failed to compute determinant");
 		goto cleanup;
 	}
 	log_debug("Matrix determinant: %ld", determinant);

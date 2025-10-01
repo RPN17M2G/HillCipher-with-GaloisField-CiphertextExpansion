@@ -9,7 +9,7 @@ STATUS_CODE write_uint8_to_file(const char* filepath, const uint8_t* data, uint3
 
     if (!filepath || !data || (0 == size))
     {
-        log_error("Invalid arguments in write_uint8_to_file: %s", !filepath ? "filepath is NULL" :
+        log_error("[!] Invalid arguments in write_uint8_to_file: %s", !filepath ? "filepath is NULL" :
             !data ? "data is NULL" : "size is 0");
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
@@ -21,7 +21,7 @@ STATUS_CODE write_uint8_to_file(const char* filepath, const uint8_t* data, uint3
     file = fopen(filepath, writing_mode);
     if (!file)
     {
-        log_error("Failed to create output file: %s", filepath);
+        log_error("[!] Failed to create output file: %s", filepath);
         return_code = STATUS_CODE_COULDNT_CREATE_OUTPUT_FILE;
         goto cleanup;
     }
@@ -29,7 +29,7 @@ STATUS_CODE write_uint8_to_file(const char* filepath, const uint8_t* data, uint3
     size_written = fwrite(data, 1, size, file);
     if (size_written != size)
     {
-        log_error("Failed to write complete data to file %s (wrote %zu of %u bytes)",
+        log_error("[!] Failed to write complete data to file %s (wrote %zu of %u bytes)",
             filepath, size_written, size);
         fclose(file);
         return_code = STATUS_CODE_COULDNT_WRITE_FILE;
@@ -55,7 +55,7 @@ STATUS_CODE read_uint8_from_file(uint8_t** out_data, uint32_t* out_size, const c
 
     if (!out_data || !out_size || !filepath)
     {
-        log_error("Invalid arguments in read_uint8_from_file: %s", !out_data ? "out_data is NULL" :
+        log_error("[!] Invalid arguments in read_uint8_from_file: %s", !out_data ? "out_data is NULL" :
             !out_size ? "out_size is NULL" : "filepath is NULL");
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
@@ -67,14 +67,14 @@ STATUS_CODE read_uint8_from_file(uint8_t** out_data, uint32_t* out_size, const c
     file = fopen(filepath, reading_mode);
     if (!file)
     {
-        log_error("Failed to open file for reading: %s", filepath);
+        log_error("[!] Failed to open file for reading: %s", filepath);
         return_code = STATUS_CODE_COULDNT_READ_FILE;
         goto cleanup;
     }
 
     if (fseek(file, 0, SEEK_END) != 0)
     {
-        log_error("Failed to seek to end of file %s", filepath);
+        log_error("[!] Failed to seek to end of file %s", filepath);
         return_code = STATUS_CODE_COULDNT_READ_FILE;
         goto cleanup;
     }
@@ -82,14 +82,14 @@ STATUS_CODE read_uint8_from_file(uint8_t** out_data, uint32_t* out_size, const c
     size = (uint32_t)ftell(file);
     if (size == (uint32_t)-1)
     {
-        log_error("Failed to get file size for %s", filepath);
+        log_error("[!] Failed to get file size for %s", filepath);
         return_code = STATUS_CODE_COULDNT_READ_FILE;
         goto cleanup;
     }
 
     if (fseek(file, 0, SEEK_SET) != 0)
     {
-        log_error("Failed to seek back to start of file %s", filepath);
+        log_error("[!] Failed to seek back to start of file %s", filepath);
         return_code = STATUS_CODE_COULDNT_READ_FILE;
         goto cleanup;
     }
@@ -97,7 +97,7 @@ STATUS_CODE read_uint8_from_file(uint8_t** out_data, uint32_t* out_size, const c
     data = (uint8_t*)malloc(size);
     if (!data)
     {
-        log_error("Failed to allocate memory for file contents (%u bytes)", size);
+        log_error("[!] Failed to allocate memory for file contents (%u bytes)", size);
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
         goto cleanup;
     }
@@ -105,7 +105,7 @@ STATUS_CODE read_uint8_from_file(uint8_t** out_data, uint32_t* out_size, const c
     size_read = (uint32_t)fread(data, 1, size, file);
     if (size_read != size)
     {
-        log_error("Failed to read complete file %s (read %u of %u bytes)",
+        log_error("[!] Failed to read complete file %s (read %u of %u bytes)",
             filepath, size_read, size);
         return_code = STATUS_CODE_COULDNT_READ_FILE;
         goto cleanup;

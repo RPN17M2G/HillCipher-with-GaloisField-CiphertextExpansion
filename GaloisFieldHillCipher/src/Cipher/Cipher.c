@@ -19,7 +19,7 @@ STATUS_CODE encrypt(int64_t** out_ciphertext, uint32_t* out_ciphertext_bit_size,
         (NULL == out_ciphertext_bit_size) || (NULL == plaintext_vector) ||
         (NULL == secrets.key_matrix) || (NULL == secrets.error_vectors))
     {
-        log_error("Invalid arguments in encrypt: %s",
+        log_error("[!] Invalid arguments in encrypt: %s",
                  secrets.dimension > (UINT32_MAX / BYTE_SIZE) ? "dimension overflow" :
                  !out_ciphertext ? "out_ciphertext is NULL" :
                  !out_ciphertext_bit_size ? "out_ciphertext_bit_size is NULL" :
@@ -37,7 +37,7 @@ STATUS_CODE encrypt(int64_t** out_ciphertext, uint32_t* out_ciphertext_bit_size,
         secrets.number_of_random_bits_to_add);
     if (STATUS_FAILED(return_code))
 	{
-		log_error("Failed to add random bits between bytes");
+		log_error("[!] Failed to add random bits between bytes");
 		goto cleanup;
 	}
 	log_debug("Added random bits: original_size=%u bits, new_size=%u bits",
@@ -51,7 +51,7 @@ STATUS_CODE encrypt(int64_t** out_ciphertext, uint32_t* out_ciphertext_bit_size,
 		block_size_in_bits);
 	if (STATUS_FAILED(return_code))
 	{
-		log_error("Failed to pad plaintext to block size");
+		log_error("[!] Failed to pad plaintext to block size");
 		goto cleanup;
 	}
 	log_debug("Padded plaintext to length %u bits", padded_plaintext_bit_size);
@@ -60,7 +60,7 @@ STATUS_CODE encrypt(int64_t** out_ciphertext, uint32_t* out_ciphertext_bit_size,
 		padded_plaintext_bit_size, block_size_in_bits);
 	if (STATUS_FAILED(return_code))
 	{
-		log_error("Failed to divide plaintext into blocks");
+		log_error("[!] Failed to divide plaintext into blocks");
 		goto cleanup;
 	}
 	log_debug("Divided plaintext into %u blocks of %u bits each", number_of_blocks, block_size_in_bits);
@@ -129,7 +129,7 @@ STATUS_CODE decrypt(uint8_t** out_plaintext, uint32_t* out_plaintext_bit_size, i
 	if ((NULL == out_plaintext) || (NULL == out_plaintext_bit_size) || (NULL == ciphertext_vector) ||
         (NULL == secrets.key_matrix) || (NULL == secrets.error_vectors))
     {
-        log_error("Invalid arguments in decrypt function");
+        log_error("[!] Invalid arguments in decrypt function");
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
     }
@@ -140,7 +140,7 @@ STATUS_CODE decrypt(uint8_t** out_plaintext, uint32_t* out_plaintext_bit_size, i
         vector_bit_size, block_size_in_bits_aligned_to_int64_t);
     if (STATUS_FAILED(return_code))
 	{
-		log_error("Failed to divide ciphertext into blocks");
+		log_error("[!] Failed to divide ciphertext into blocks");
 		goto cleanup;
 	}
 	log_debug("Divided ciphertext into %u blocks of %u bits each", number_of_blocks, block_size_in_bits_aligned_to_int64_t);
@@ -179,7 +179,7 @@ STATUS_CODE decrypt(uint8_t** out_plaintext, uint32_t* out_plaintext_bit_size, i
         decrypted_plaintext_blocks, vector_bit_size_aligned_to_uint8_t);
 	if (STATUS_FAILED(return_code))
 	{
-		log_error("Failed to remove padding from decrypted plaintext");
+		log_error("[!] Failed to remove padding from decrypted plaintext");
 		goto cleanup;
 	}
 	log_debug("Removed padding: size after removal %u bits", unpadded_plaintext_bit_size);
@@ -188,7 +188,7 @@ STATUS_CODE decrypt(uint8_t** out_plaintext, uint32_t* out_plaintext_bit_size, i
         unpadded_plaintext, unpadded_plaintext_bit_size, secrets.number_of_random_bits_to_add);
     if (STATUS_FAILED(return_code))
     {
-        log_error("Failed to remove random bits between bytes");
+        log_error("[!] Failed to remove random bits between bytes");
         goto cleanup;
     }
     log_debug("Removed random bits: final plaintext size %u bits", original_plaintext_bit_size);

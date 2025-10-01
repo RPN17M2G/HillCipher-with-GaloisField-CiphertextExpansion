@@ -7,7 +7,7 @@ STATUS_CODE handle_generate_and_encrypt_mode(const GenerateAndEncryptArguments* 
 
     if (!args || !args->encrypt_arguments || !args->key_generation_arguments)
     {
-        log_error("Invalid arguments in generate_and_encrypt_mode");
+        log_error("[!] Invalid arguments in generate_and_encrypt_mode");
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
     }
@@ -26,7 +26,7 @@ STATUS_CODE handle_generate_and_encrypt_mode(const GenerateAndEncryptArguments* 
     return_code = handle_key_generation_mode(args->key_generation_arguments);
     if (STATUS_FAILED(return_code))
     {
-        log_error("Failed to generate encryption key");
+        log_error("[!] Failed to generate encryption key");
         goto cleanup;
     }
 
@@ -35,7 +35,7 @@ STATUS_CODE handle_generate_and_encrypt_mode(const GenerateAndEncryptArguments* 
     return_code = handle_encrypt_mode(args->encrypt_arguments);
     if (STATUS_FAILED(return_code))
     {
-        log_error("Failed to encrypt data");
+        log_error("[!] Failed to encrypt data");
         printf("Failed to encrypt data");
         goto cleanup;
     }
@@ -65,7 +65,7 @@ STATUS_CODE handle_key_generation_mode(const KeyGenerationArguments* args)
 
     if (!args || !args->output_file || (0 == args->dimension))
     {
-        log_error("Invalid arguments in key_generation_mode: %s",
+        log_error("[!] Invalid arguments in key_generation_mode: %s",
             !args ? "args is NULL" :
             !args->output_file ? "output_file is NULL" :
             "dimension is 0");
@@ -78,7 +78,7 @@ STATUS_CODE handle_key_generation_mode(const KeyGenerationArguments* args)
     return_code = build_encryption_secrets(&secrets, args);
     if (STATUS_FAILED(return_code))
     {
-        log_error("Failed to build encryption secrets");
+        log_error("[!] Failed to build encryption secrets");
         goto cleanup;
     }
 
@@ -129,7 +129,7 @@ STATUS_CODE handle_encrypt_mode(const EncryptArguments* args)
 
     if (!args || !args->input_file || !args->key || !args->output_file)
     {
-        log_error("Invalid arguments in encrypt_mode");
+        log_error("[!] Invalid arguments in encrypt_mode");
         return STATUS_CODE_INVALID_ARGUMENT;
     }
 
@@ -141,7 +141,7 @@ STATUS_CODE handle_encrypt_mode(const EncryptArguments* args)
     return_code = read_uint8_from_file(&plaintext, &plaintext_size, args->input_file);
     if (STATUS_FAILED(return_code))
     {
-        log_error("Failed to read plaintext file");
+        log_error("[!] Failed to read plaintext file");
         goto cleanup;
     }
 
@@ -152,7 +152,7 @@ STATUS_CODE handle_encrypt_mode(const EncryptArguments* args)
     return_code = read_uint8_from_file(&key_data, &key_size, args->key);
     if (STATUS_FAILED(return_code))
     {
-        log_error("Failed to read key file");
+        log_error("[!] Failed to read key file");
         goto cleanup;
     }
 

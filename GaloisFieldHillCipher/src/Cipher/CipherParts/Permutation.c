@@ -9,7 +9,7 @@ STATUS_CODE permutate_uint8_vector(uint8_t** out_vector, uint8_t* vector, uint32
 
     if ((NULL == out_vector) || (NULL == vector) || (NULL == permutation_vector) || (number_of_letters_per_element == 0))
     {
-        log_error("Invalid arguments in permutate_uint8_vector: %s",
+        log_error("[!] Invalid arguments in permutate_uint8_vector: %s",
             !out_vector ? "out_vector is NULL" :
             !vector ? "vector is NULL" :
             !permutation_vector ? "permutation_vector is NULL" :
@@ -20,7 +20,7 @@ STATUS_CODE permutate_uint8_vector(uint8_t** out_vector, uint8_t* vector, uint32
 
     if ((vector_size % number_of_letters_per_element) != 0)
     {
-        log_error("Vector size (%u) is not divisible by number of letters per element (%u)",
+        log_error("[!] Vector size (%u) is not divisible by number of letters per element (%u)",
                  vector_size, number_of_letters_per_element);
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
@@ -32,7 +32,7 @@ STATUS_CODE permutate_uint8_vector(uint8_t** out_vector, uint8_t* vector, uint32
     buffer = (uint8_t*)malloc(vector_size + 1);
     if (NULL == buffer)
     {
-        log_error("Memory allocation failed for permutation buffer (size: %u bytes)",
+        log_error("[!] Memory allocation failed for permutation buffer (size: %u bytes)",
                  vector_size + 1);
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
         goto cleanup;
@@ -46,7 +46,7 @@ STATUS_CODE permutate_uint8_vector(uint8_t** out_vector, uint8_t* vector, uint32
             permuted_index = permutation_vector[letter_index];
             if (permuted_index >= number_of_letters_per_element)
             {
-                log_error("Invalid permutation index: %u >= %u",
+                log_error("[!] Invalid permutation index: %u >= %u",
                          permuted_index, number_of_letters_per_element);
                 return_code = STATUS_CODE_INVALID_ARGUMENT;
                 goto cleanup;

@@ -7,7 +7,7 @@ uint32_t calculate_bytes_per_element(uint32_t prime_field)
 
     if (prime_field == 0)
     {
-        log_error("Invalid prime field value: 0");
+        log_error("[!] Invalid prime field value: 0");
         return 0;
     }
 
@@ -30,7 +30,7 @@ uint32_t calculate_digits_per_element(uint32_t prime_field)
 {
     if (prime_field == 0)
     {
-        log_error("Invalid prime field value: 0");
+        log_error("[!] Invalid prime field value: 0");
         return 0;
     }
 
@@ -60,7 +60,7 @@ STATUS_CODE serialize_secrets(uint8_t** out_data, uint32_t* out_size, Secrets se
         (secrets.dimension > (UINT32_MAX / digits_per_element)) ||
         secrets.number_of_error_vectors == 0)
     {
-        log_error("Invalid arguments in serialize_secrets: %s",
+        log_error("[!] Invalid arguments in serialize_secrets: %s",
             !out_data ? "out_data is NULL" :
             !out_size ? "out_size is NULL" :
             !secrets.key_matrix ? "key_matrix is NULL" :

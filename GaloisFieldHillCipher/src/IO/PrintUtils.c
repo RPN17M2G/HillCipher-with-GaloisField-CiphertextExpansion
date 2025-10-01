@@ -5,7 +5,7 @@ void log_uint8_vector(const uint8_t* data, size_t size, const char* prefix, bool
     size_t i = 0;
     if (!data || !prefix)
     {
-        log_error("Invalid argument in log_uint8_vector: %s", !data ? "data is NULL" : "prefix is NULL");
+        log_error("[!] Invalid argument in log_uint8_vector: %s", !data ? "data is NULL" : "prefix is NULL");
         return;
     }
 
@@ -15,7 +15,7 @@ void log_uint8_vector(const uint8_t* data, size_t size, const char* prefix, bool
     char* buffer = (char*)malloc(buffer_size);
     if (!buffer)
     {
-        log_error("Memory allocation failed for print buffer (size: %zu)", buffer_size);
+        log_error("[!] Memory allocation failed for print buffer (size: %zu)", buffer_size);
         return;
     }
 
@@ -42,7 +42,7 @@ void print_int64_vector(const int64_t* data, size_t size, const char* prefix, bo
     size_t i = 0;
     if (!data || !prefix)
     {
-        log_error("Invalid argument in print_int64_vector: %s", !data ? "data is NULL" : "prefix is NULL");
+        log_error("[!] Invalid argument in print_int64_vector: %s", !data ? "data is NULL" : "prefix is NULL");
         return;
     }
 
@@ -52,7 +52,7 @@ void print_int64_vector(const int64_t* data, size_t size, const char* prefix, bo
     char* buffer = (char*)malloc(buffer_size);
     if (!buffer)
     {
-        log_error("Memory allocation failed for print buffer (size: %zu)", buffer_size);
+        log_error("[!] Memory allocation failed for print buffer (size: %zu)", buffer_size);
         return;
     }
 
@@ -81,7 +81,7 @@ void print_matrix(int64_t** matrix, uint32_t dimension, const char* prefix, bool
 {
     if (!matrix)
     {
-        log_error("Invalid argument: matrix is NULL");
+        log_error("[!] Invalid argument: matrix is NULL");
         return;
     }
 
@@ -91,7 +91,7 @@ void print_matrix(int64_t** matrix, uint32_t dimension, const char* prefix, bool
     char* buffer = (char*)malloc(buffer_size);
     if (!buffer)
     {
-        log_error("Memory allocation failed for print buffer (size: %zu)", buffer_size);
+        log_error("[!] Memory allocation failed for print buffer (size: %zu)", buffer_size);
         return;
     }
 
@@ -101,7 +101,7 @@ void print_matrix(int64_t** matrix, uint32_t dimension, const char* prefix, bool
     for (size_t row = 0; row < dimension; ++row)
     {
         if (!matrix[row]) {
-            log_error("Invalid matrix: row %zu is NULL", row);
+            log_error("[!] Invalid matrix: row %zu is NULL", row);
             free(buffer);
             return;
         }

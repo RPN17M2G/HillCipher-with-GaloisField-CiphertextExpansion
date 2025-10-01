@@ -32,7 +32,7 @@ int64_t raise_power_over_galois_field(int64_t base, int64_t exponent, int64_t fi
 {
     if (base < 0 || exponent < 0 || field <= 0)
     {
-        log_error("Invalid arguments in raise_power_over_galois_field: base=%ld, exponent=%ld, field=%ld",
+        log_error("[!] Invalid arguments in raise_power_over_galois_field: base=%ld, exponent=%ld, field=%ld",
                  base, exponent, field);
         return -1;
     }

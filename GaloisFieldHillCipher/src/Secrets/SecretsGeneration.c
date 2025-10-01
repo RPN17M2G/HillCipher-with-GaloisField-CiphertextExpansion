@@ -12,7 +12,7 @@ STATUS_CODE generate_ascii_mapping(uint8_t*** out_mapping, uint32_t letters_per_
     if ((NULL == out_mapping) || (letters_per_digit == 0) || (base == 0) ||
         (base > (printable_range / letters_per_digit)))
     {
-        log_error("Invalid arguments in generate_ascii_mapping: %s",
+        log_error("[!] Invalid arguments in generate_ascii_mapping: %s",
                   !out_mapping ? "out_mapping is NULL" :
                   letters_per_digit == 0 ? "letters_per_digit is 0" :
                   base == 0 ? "base is 0" :
@@ -53,7 +53,7 @@ STATUS_CODE generate_ascii_mapping(uint8_t*** out_mapping, uint32_t letters_per_
         mapping[digit] = (uint8_t*)malloc(letters_per_digit);
         if (!mapping[digit])
         {
-            log_error("Memory allocation failed for ASCII out_mapping digit %zu", digit);
+            log_error("[!] Memory allocation failed for ASCII out_mapping digit %zu", digit);
             return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
             goto cleanup;
         }
@@ -127,7 +127,7 @@ STATUS_CODE generate_encryption_matrix(int64_t*** out_matrix, uint32_t dimension
 
     if (NULL == out_matrix)
     {
-        log_error("Invalid argument: out_matrix is NULL in generate_encryption_matrix");
+        log_error("[!] Invalid argument: out_matrix is NULL in generate_encryption_matrix");
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
     }
@@ -164,7 +164,7 @@ STATUS_CODE generate_encryption_matrix(int64_t*** out_matrix, uint32_t dimension
 
     if (attempt_number >= max_attempts)
     {
-        log_error("Failed to generate invertible matrix after %u attempts", max_attempts);
+        log_error("[!] Failed to generate invertible matrix after %u attempts", max_attempts);
         return_code = STATUS_CODE_MATRIX_NOT_INVERTIBLE;
         goto cleanup;
     }
@@ -184,7 +184,7 @@ STATUS_CODE generate_decryption_matrix(int64_t*** out_matrix, uint32_t dimension
 
     if (!out_matrix || !encryption_matrix)
     {
-        log_error("Invalid arguments in generate_decryption_matrix");
+        log_error("[!] Invalid arguments in generate_decryption_matrix");
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
     }
@@ -194,7 +194,7 @@ STATUS_CODE generate_decryption_matrix(int64_t*** out_matrix, uint32_t dimension
     return_code = inverse_square_matrix_gauss_jordan(out_matrix, encryption_matrix, dimension, prime_field);
     if (STATUS_FAILED(return_code))
     {
-        log_error("Failed to generate inverse matrix using Gauss-Jordan elimination");
+        log_error("[!] Failed to generate inverse matrix using Gauss-Jordan elimination");
         goto cleanup;
     }
 
@@ -214,7 +214,7 @@ STATUS_CODE build_encryption_secrets(Secrets** out_secrets, const KeyGenerationA
 
     if ((NULL == out_secrets) || (NULL == args))
     {
-        log_error("Invalid arguments in build_encryption_secrets");
+        log_error("[!] Invalid arguments in build_encryption_secrets");
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
     }
@@ -238,7 +238,7 @@ STATUS_CODE build_encryption_secrets(Secrets** out_secrets, const KeyGenerationA
                                              3);
     if (STATUS_FAILED(return_code))
     {
-        log_error("Failed to generate encryption matrix");
+        log_error("[!] Failed to generate encryption matrix");
         goto cleanup;
     }
     log_info("Encryption matrix generated.");
@@ -255,7 +255,7 @@ STATUS_CODE build_encryption_secrets(Secrets** out_secrets, const KeyGenerationA
                                                  args->prime_field);
         if (STATUS_FAILED(return_code))
         {
-            log_error("Failed to generate error vectors");
+            log_error("[!] Failed to generate error vectors");
             goto cleanup;
         }
     }

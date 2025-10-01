@@ -54,7 +54,7 @@ STATUS_CODE secure_fisher_yates_shuffle(uint8_t *array, size_t length)
 		return_code = generate_secure_random_number(&secure_random_index, 0, current_index);
 		if (STATUS_FAILED(return_code))
 		{
-			log_error("Failed to generate secure random number for Fisher-Yates");
+			log_error("[!] Failed to generate secure random number for Fisher-Yates");
 			goto cleanup;
 		}
 		temporary_value = array[current_index];

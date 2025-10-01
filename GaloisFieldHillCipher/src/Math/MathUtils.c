@@ -7,7 +7,7 @@ STATUS_CODE gcd(int64_t* out_gcd, int64_t first_element, int64_t second_element)
 
     if ((0 == first_element) && (0 == second_element))
     {
-        log_error("Invalid argument: both elements are zero in GCD computation");
+        log_error("[!] Invalid argument: both elements are zero in GCD computation");
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
     }
@@ -43,7 +43,7 @@ STATUS_CODE add_two_vectors_over_gf(int64_t** out_vector, int64_t* first_vector,
 
     if (!out_vector || !first_vector || !second_vector)
     {
-        log_error("Invalid arguments in vector addition: %s",
+        log_error("[!] Invalid arguments in vector addition: %s",
             !out_vector ? "out_vector is NULL" :
             !first_vector ? "first_vector is NULL" :
             "second_vector is NULL");
@@ -56,7 +56,7 @@ STATUS_CODE add_two_vectors_over_gf(int64_t** out_vector, int64_t* first_vector,
     vector_buffer = (int64_t*)malloc(length * sizeof(int64_t));
     if (NULL == vector_buffer)
     {
-        log_error("Memory allocation failed for vector addition (size: %u)", length);
+        log_error("[!] Memory allocation failed for vector addition (size: %u)", length);
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
         goto cleanup;
     }
@@ -86,7 +86,7 @@ STATUS_CODE substruct_two_vectors_over_gf(int64_t** out_vector, int64_t* first_v
 
     if (!out_vector || !first_vector || !second_vector)
     {
-        log_error("Invalid arguments in vector subtraction: %s",
+        log_error("[!] Invalid arguments in vector subtraction: %s",
             !out_vector ? "out_vector is NULL" :
             !first_vector ? "first_vector is NULL" :
             "second_vector is NULL");
@@ -99,7 +99,7 @@ STATUS_CODE substruct_two_vectors_over_gf(int64_t** out_vector, int64_t* first_v
     vector_buffer = (int64_t*)malloc(length * sizeof(int64_t));
     if (NULL == vector_buffer)
     {
-        log_error("Memory allocation failed for vector subtraction (size: %u)", length);
+        log_error("[!] Memory allocation failed for vector subtraction (size: %u)", length);
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
         goto cleanup;
     }
