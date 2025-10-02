@@ -64,8 +64,6 @@ STATUS_CODE add_two_vectors_over_gf(int64_t** out_vector, int64_t* first_vector,
     for (index = 0; index < length; ++index)
     {
         vector_buffer[index] = add_over_galois_field(first_vector[index], second_vector[index], prime_field);
-        log_debug("Element %zu: %ld + %ld = %ld (mod %u)",
-                 index, first_vector[index], second_vector[index], vector_buffer[index], prime_field);
     }
 
     log_debug("Vector addition completed successfully");
@@ -108,8 +106,6 @@ STATUS_CODE substruct_two_vectors_over_gf(int64_t** out_vector, int64_t* first_v
     {
         int64_t negated = negate_over_galois_field(second_vector[index], prime_field);
         vector_buffer[index] = add_over_galois_field(first_vector[index], negated, prime_field);
-        log_debug("Element %zu: %ld - %ld = %ld (mod %u)",
-                 index, first_vector[index], second_vector[index], vector_buffer[index], prime_field);
     }
 
     log_debug("Vector subtraction completed successfully");

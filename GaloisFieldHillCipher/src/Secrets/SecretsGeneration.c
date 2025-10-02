@@ -231,7 +231,6 @@ STATUS_CODE build_encryption_secrets(Secrets** out_secrets, const KeyGenerationA
     log_info("Starting key generation with parameters: dimension=%u, prime_field=%u, error_vectors=%u",
          args->dimension, args->prime_field, args->number_of_error_vectors);
 
-    log_debug("Generating encryption matrix...");
     return_code = generate_encryption_matrix(&encryption_matrix,
                                              args->dimension,
                                              args->prime_field,
@@ -317,7 +316,7 @@ STATUS_CODE build_decryption_secrets(Secrets** out_secrets, Secrets* encryption_
 
     log_info("Building decryption secrets from encryption secrets...");
 
-    log_info("Generating decryption matrix...\n");
+    log_info("Generating decryption matrix...");
     return_code = generate_decryption_matrix(&decryption_matrix, encryption_secrets->dimension,
                                            encryption_secrets->key_matrix, encryption_secrets->prime_field);
     if (STATUS_FAILED(return_code))
@@ -325,7 +324,7 @@ STATUS_CODE build_decryption_secrets(Secrets** out_secrets, Secrets* encryption_
         log_error("Failed to generate decryption matrix");
         goto cleanup;
     }
-    log_matrix(decryption_matrix, encryption_secrets->dimension, "Decryption matrix generated:\n", true);
+    log_matrix(decryption_matrix, encryption_secrets->dimension, "Decryption matrix generated:", true);
 
     log_info("Reversing permutation vector...");
     if (encryption_secrets->permutation_vector)
