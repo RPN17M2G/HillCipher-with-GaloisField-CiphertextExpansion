@@ -1,4 +1,4 @@
-#include "../../../include/Cipher/CipherParts/CiphertextExpansion.h"
+#include "Cipher/CipherParts/CiphertextExpansion.h"
 
 STATUS_CODE add_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_size, uint8_t* value, uint32_t value_bit_length, uint32_t number_of_random_bits_to_add)
 {
