@@ -1,6 +1,6 @@
 #include "IO/PrintUtils.h"
 
-void log_uint8_vector(const uint8_t* data, size_t size, const char* prefix, bool is_verbose_only)
+void print_uint8_vector(const uint8_t* data, size_t size, const char* prefix, bool is_verbose_only)
 {
     size_t i = 0;
     if (!data || !prefix)

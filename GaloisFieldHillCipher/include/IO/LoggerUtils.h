@@ -8,6 +8,7 @@
 
 #include "log.h"
 #include "IO/VerbosityControl.h"
+#include "IO/PrintUtils.h"
 
 #define UINT8_HEX_CHARS_PER_ELEMENT 4
 #define INT64_HEX_CHARS_PER_ELEMENT 24
@@ -43,6 +44,5 @@ void log_int64_vector(const int64_t* data, size_t size, const char* prefix, bool
  * @param is_verbose_only If true, logs only in verbose mode
  */
 void log_matrix(int64_t** matrix, uint32_t dimension, const char* prefix, bool is_verbose_only);
-
 
 #endif //LOGGERUTILS_H

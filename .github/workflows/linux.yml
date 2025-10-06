@@ -78,4 +78,34 @@ jobs:
       - name: Print Valgrind log on failure - ${{ matrix.test.name }}
         if: failure()
         run: cat valgrind-${{ matrix.test.name }}.txt
-    
+
+  codeql:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: cpp
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake
+
+      - name: Configure with CMake
+        run: cmake -S GaloisFieldHillCipher -B GaloisFieldHillCipher/build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build with CMake
+        run: cmake --build GaloisFieldHillCipher/build --config Release --parallel
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
