@@ -21,7 +21,6 @@ file(GLOB_RECURSE TESTS_INCLUDES tests/*.h)
 
 add_executable(GaloisFieldHillCipher
         ${SOURCES}
-        ${INCLUDES}
 )
 
 include(FetchContent)
@@ -48,9 +47,7 @@ target_include_directories(GaloisFieldHillCipher PRIVATE
 
 add_executable(UnitTests
         ${TESTS_SOURCES}
-        ${TESTS_INCLUDES}
         ${SOURCES_WITHOUT_MAIN}
-        ${INCLUDES}
 )
 
 target_include_directories(UnitTests PRIVATE

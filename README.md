@@ -8,27 +8,39 @@
 
 ### Modes
 
-| Mode | Description | Required Flags |
-|------|-------------|----------------|
-| `ek` | Key generation | `-o <output_file> -d <dimension>` `[-v]` |
-| `dk` | Decryption key generation | `-k <key> -o <output_file> -d <dimension>` `[-v]` |
-| `e`  | Encrypt | `-i <input_file> -o <output_file> -k <key> -d <dimension>` `[-v]` |
-| `d`  | Decrypt | `-i <input_file> -o <output_file> -k <key> -d <dimension>` `[-v]` |
-| `ge` | Generate key and encrypt | `-i <input_file> -o <output_file> -k <key> -d <dimension>` `[-v]` |
-| `gd` | Generate key and decrypt | `-i <input_file> -o <output_file> -k <key> -d <dimension>` `[-v]` |
+| **Mode** | **Name**                      | **Description**                                                      | **Required Arguments**                                                                                                      | **Optional Arguments**                                                  | **Example Command**                                                                                                  |
+| -------- | ----------------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `kg`     | **Key Generation**            | Generates an encryption key matrix.                                  | `-m kg` `-o <output_file>` `-d <dimension>`                                                                                 | `-f <prime_field>` `-r <random_bits>` `-v`                              | `GaloisFieldHillCipher -m kg -o key.bin -d 4 -v`                                                                     |
+| `dkg`    | **Decryption Key Generation** | Generates the decryption key matrix from an existing encryption key. | `-m dkg` `-k <key_file>` `-o <output_file>`                                                                                 | `-v`                                                                    | `GaloisFieldHillCipher -m dkg -k key.bin -o decryption_key.bin -v`                                                   |
+| `e`      | **Encrypt (Text/Binary)**     | Encrypts an input file using a key file.                             | `-m e` `-i <input_file>` `-o <output_file>` `-k <key_file>`                                                                 | `-v` `-r <random_bits>` `-a <ascii_mapping_letters>`                    | `GaloisFieldHillCipher -m e -i plaintext.txt -o encrypted.bin -k key.bin -v`                                         |
+| `d`      | **Decrypt (Text/Binary)**     | Decrypts an encrypted file using a key file.                         | `-m d` `-i <input_file>` `-o <output_file>` `-k <key_file>`                                                                 | `-v`                                                                    | `GaloisFieldHillCipher -m d -i encrypted.bin -o decrypted.txt -k decryption_key.bin -v`                              |
+| `kge`    | **Generate and Encrypt**      | Generates a key and encrypts a file in one step.                     | `-m kge` `-i <input_file>` `-o <output_file>` `-k <key_output_file>` `-d <dimension>`                                       | `-r <random_bits>` `-f <prime_field>` `-a <ascii_mapping_letters>` `-v` | `GaloisFieldHillCipher -m kge -i plaintext.txt -o encrypted.bin -k key.bin -d 4 -v`                                  |
+| `kgd`    | **Generate and Decrypt**      | Generates a decryption key and decrypts a file in one step.          | `-m kgd` `-i <input_file>` `-o <output_file>` `-k <encryption_key_file>` `-y <decryption_key_output_file>` `-d <dimension>` | `-v`                                                                    | `GaloisFieldHillCipher -m kgd -i encrypted.bin -o decrypted.txt -k encryption_key.bin -y decryption_key.bin -d 4 -v` |
+
+---
+
 
 ### Flags
 
-| Flag | Description |
-|------|-------------|
-| `-i`, `--input_file`    | Path to input file |
-| `-o`, `--output_file`   | Path to output file |
-| `-d`, `--dimension`     | Matrix/key dimension (`uint32_t`) |
-| `-v`, `--verbose`       | Enable verbose output |
-| `-m`, `--mode`          | Cipher mode of operation |
-| `-k`, `--key`           | Path to key file |
-| `-l`, `--log_file`      | Path to log file |
+| **Flag**                        | **Description**                                                                                                  |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `-i`, `--input`                 | Specify the input file(.bin or .txt).    |
+| `-o`, `--output`                | Specify the output file (.bin or .txt).                                                                |
+| `-k`, `--key`                   | Specify the key file. |
+| `-y`, `--decryption-key-output` | Specify the decryption key output file.                                 |
+| `-d`, `--dimension`             | Specify the key matrix dimension.                       |
+| `-f`, `--prime-field`           | Specify the prime field (optional, default: `16777619`).                                                         |
+| `-r`, `--random-bits`           | Specify the number of random bits to add between bytes (optional, default: `2`).                                 |
+| `-a`, `--ascii-mapping-letters` | Specify the number of letters mapped for each digit in the ASCII mapping (optional).                                                      |
+| `-l`, `--log`                   | Specify the log file (optional).                                                                                 |
+| `-m`, `--mode`                  | Specify the mode of operation (`kg`, `dkg`, `e`, `d`, `kge`, `kgd`).                                                |
+| `-v`, `--verbose`               | Enable verbose output (optional).                                                                                |
 
+#### Notes
+
+* **Text vs Binary encryption mode** – Defines how the cipher operates:
+  * **Text encryption**: less compact but more secure, with reduced entropy.
+  * **Binary encryption**: much more compact, optimized for storage and performance.
 
 ## Overview 
 
@@ -153,8 +165,7 @@ Determinated by the extension of the output file.
 
 ###### Binary Compact Storage
 
-My chosen GF is 25bits long, what means that every member of this GF fits inside 24bits == 3bytes.
-So there is an option to store the ciphertext in blocks of 3bytes each in the most compact way possible.
+When storing encrypted data in binary format, the program calculates the minimum number of bits required for each element within the chosen finite field and stores the elements consecutively, without padding, to ensure compact storage.
 
 ###### ASCII Mapping
 
