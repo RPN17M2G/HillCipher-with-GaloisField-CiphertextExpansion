@@ -40,29 +40,41 @@ jobs:
           path: ./GaloisFieldHillCipher/build
       - run: chmod +x ./GaloisFieldHillCipher/build/UnitTests
       - run: ./GaloisFieldHillCipher/build/UnitTests
-  
+
   valgrind-memory-test-release:
     needs: build-release
     runs-on: ubuntu-latest
     strategy:
       matrix:
         test:
-          - { name: ek, args: "-m ek -v -o ./encryption_key.bin -d 3" }
-          - { name: dk, args: "-m dk -v -k ./GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -o ./decryption_key.bin -d 3" }
-          - { name: e,  args: "-m e -v -i ./GaloisFieldHillCipher/Examples/Samples/example_plaintext.txt -o ./encrypted.bin -k ./GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -d 3" }
-          - { name: d,  args: "-m d -v -i ./GaloisFieldHillCipher/Examples/Samples/encrypted.bin -o ./decrypted.txt -k ./GaloisFieldHillCipher/Examples/Samples/decryption_key.bin -d 3" }
-          - { name: ge, args: "-m ge -v -i ./GaloisFieldHillCipher/Examples/Samples/example_plaintext.txt -o ./ge_encrypted.bin -k ./encryption_key.bin -d 3" }
-          - { name: gd, args: "-m gd -v -i ./GaloisFieldHillCipher/Examples/Samples/encrypted.bin -o ./gd_decrypted.txt -k ./GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -d 3" }
-          
+          - { name: kg,  args: "-m kg -v -o ./encryption_key.bin -d 3" }
+          - { name: dkg, args: "-m dkg -v -k ./GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -o ./decryption_key.bin -d 3" }
+
+          # Encryption (text)
+          - { name: e_text, args: "-m e -v -i ./GaloisFieldHillCipher/Examples/Samples/example_plaintext.txt -o ./encrypted_text.bin -k ./GaloisFieldHillCipher/Examples/Samples/encryption_key.bin" }
+          # Encryption (binary)
+          - { name: e_bin, args: "-m e -v -i ./GaloisFieldHillCipher/Examples/Samples/example_plaintext.bin -o ./encrypted_bin.bin -k ./GaloisFieldHillCipher/Examples/Samples/encryption_key.bin" }
+
+          # Decryption (text)
+          - { name: d_text, args: "-m d -v -i ./GaloisFieldHillCipher/Examples/Samples/encrypted_text.bin -o ./decrypted_text.txt -k ./GaloisFieldHillCipher/Examples/Samples/decryption_key.bin" }
+          # Decryption (binary)
+          - { name: d_bin, args: "-m d -v -i ./GaloisFieldHillCipher/Examples/Samples/encrypted_bin.bin -o ./decrypted_bin.bin -k ./GaloisFieldHillCipher/Examples/Samples/decryption_key.bin" }
+
+          - { name: kge, args: "-m kge -v -i ./GaloisFieldHillCipher/Examples/Samples/example_plaintext.txt -o ./kge_encrypted.bin -k ./encryption_key.bin -d 3" }
+          - { name: kgd, args: "-m kgd -v -i ./GaloisFieldHillCipher/Examples/Samples/encrypted.bin -o ./kgd_decrypted.txt -k ./GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -y ./decryption_key.bin -d 3" }
+
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
+
       - run: sudo apt-get update && sudo apt-get install -y valgrind
+
       - uses: actions/download-artifact@v4
         with:
           name: build-release
           path: ./GaloisFieldHillCipher/build
+
       - run: chmod +x ./GaloisFieldHillCipher/build/GaloisFieldHillCipher
 
       - name: Valgrind - Run mode ${{ matrix.test.name }}
@@ -75,6 +87,7 @@ jobs:
         run: |
           grep "definitely lost:" valgrind-${{ matrix.test.name }}.txt | grep -vq " 0 bytes" \
             && (echo "Leaks found!" && exit 1) || echo "No leaks"
+
       - name: Print Valgrind log on failure - ${{ matrix.test.name }}
         if: failure()
         run: cat valgrind-${{ matrix.test.name }}.txt
