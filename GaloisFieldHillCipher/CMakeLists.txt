@@ -35,6 +35,7 @@ target_link_libraries(GaloisFieldHillCipher PRIVATE sodium)
 
 add_subdirectory(thirdparty/argparse)
 target_link_libraries(GaloisFieldHillCipher PRIVATE argparse_static)
+target_link_libraries(GaloisFieldHillCipher PRIVATE m) 
 
 add_subdirectory(thirdparty/Unity)
 
@@ -62,6 +63,7 @@ target_link_libraries(UnitTests PRIVATE
         unity
         sodium
         argparse_static
+        m
 )
 
 enable_testing()
