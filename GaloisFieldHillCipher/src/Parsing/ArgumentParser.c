@@ -227,7 +227,8 @@ STATUS_CODE parse_mode_arguments(void** out_mode_arguments, OPERATION_MODE mode,
     if (!out_mode_arguments)
     {
         log_error("[!] Invalid argument: out_mode_arguments is NULL in parse_mode_arguments.");
-        return STATUS_CODE_INVALID_ARGUMENT;
+        return_code = STATUS_CODE_INVALID_ARGUMENT;
+        goto cleanup;
     }
 
     switch (mode)
@@ -321,9 +322,9 @@ STATUS_CODE filter_relevant_flags(char*** out_filtered_argv, int* out_filtered_a
                 }
 
                 if (strlen(*flag) == 1)
-                    sprintf(flag_to_compare, "-%s", *flag);
+                    sprintf_s(flag_to_compare, strlen(*flag) + MEMORY_FOR_FLAG_PREFIX, "-%s", *flag);
                 else
-                    sprintf(flag_to_compare, "--%s", *flag);
+                    sprintf_s(flag_to_compare, strlen(*flag) + MEMORY_FOR_FLAG_PREFIX, "--%s", *flag);
 
                 if (strncmp(argv[argument_index], flag_to_compare, strlen(flag_to_compare)) == 0)
                 {

@@ -108,7 +108,7 @@ void print_matrix(int64_t** matrix, uint32_t dimension, const char* prefix, bool
 
         for (size_t column = 0; column < dimension; ++column)
         {
-            offset += snprintf(buffer + offset, buffer_size - offset, "%6ld ", matrix[row][column]);
+            offset += snprintf(buffer + offset, buffer_size - offset, "%I64d ", matrix[row][column]);
         }
         offset += snprintf(buffer + offset, buffer_size - offset, "\n");
     }

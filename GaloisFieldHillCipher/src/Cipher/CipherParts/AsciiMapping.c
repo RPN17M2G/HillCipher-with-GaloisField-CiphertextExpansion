@@ -1,5 +1,7 @@
 #include "Cipher/CipherParts/AsciiMapping.h"
 
+#include "Parsing/ArgumentParser.h"
+
 STATUS_CODE ascii_char_to_digit(uint8_t* out_digit, uint8_t input, uint8_t** digit_to_ascii, uint32_t number_of_letters)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
@@ -112,7 +114,8 @@ STATUS_CODE map_from_ascii_to_int64(int64_t** out_numbers, uint32_t* out_size, u
     uint32_t buffer_size = 0;
     uint32_t number_index = 0, digit_index = 0;
     uint8_t digit = 0;
-    char number_string[number_of_digits_per_field_element + 1];
+    char* endptr = NULL;
+    char* number_string = NULL;
 
     if (!out_numbers || !out_size || !data || (data_size == 0) || !digit_to_ascii ||
         (data_size % number_of_digits_per_field_element != 0))
@@ -130,6 +133,14 @@ STATUS_CODE map_from_ascii_to_int64(int64_t** out_numbers, uint32_t* out_size, u
     if (!buffer)
     {
         log_error("[!] Memory allocation failed for number buffer (size: %u)", buffer_size);
+        return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
+        goto cleanup;
+    }
+
+    number_string = (char*)malloc(number_of_digits_per_field_element + 1);
+    if (!number_string)
+    {
+        log_error("[!] Memory allocation failed for number string (size: %u)", number_of_digits_per_field_element + 1);
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
         goto cleanup;
     }
@@ -153,7 +164,13 @@ STATUS_CODE map_from_ascii_to_int64(int64_t** out_numbers, uint32_t* out_size, u
         }
         number_string[number_of_digits_per_field_element] = '\0';
 
-        buffer[number_index] = atoll(number_string);
+        buffer[number_index] = strtol(number_string, &endptr, DECIMAL_BASE);
+        if (endptr == number_string || *endptr != '\0')
+        {
+            log_error("[!] Failed to convert string '%s' to int64_t", number_string);
+            return_code = STATUS_CODE_CONVERSION_FAILED;
+            goto cleanup;
+        }
         log_debug("Mapped ASCII sequence to number %ld", buffer[number_index]);
     }
 
@@ -165,5 +182,6 @@ STATUS_CODE map_from_ascii_to_int64(int64_t** out_numbers, uint32_t* out_size, u
 
 cleanup:
     free(buffer);
+    free(number_string);
     return return_code;
 }
