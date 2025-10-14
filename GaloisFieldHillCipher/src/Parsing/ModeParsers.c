@@ -327,7 +327,7 @@ STATUS_CODE parse_generate_and_encrypt_arguments(GenerateAndEncryptArguments** o
     parsed_arguments->encrypt_arguments->input_file = input_file;
     parsed_arguments->encrypt_arguments->output_file = output_file;
     parsed_arguments->encrypt_arguments->key = key_file;
-    parsed_arguments->key_generation_arguments->output_file = _strdup(key_file);
+    parsed_arguments->key_generation_arguments->output_file = strdup(key_file);
     parsed_arguments->key_generation_arguments->dimension = dimension;
     parsed_arguments->key_generation_arguments->number_of_error_vectors = number_of_error_vectors;
     parsed_arguments->key_generation_arguments->prime_field = prime_field;
@@ -421,7 +421,7 @@ STATUS_CODE parse_generate_and_decrypt_arguments(GenerateAndDecryptArguments** o
 
     parsed_arguments->decrypt_arguments->input_file = input_file;
     parsed_arguments->decrypt_arguments->output_file = output_file;
-    parsed_arguments->decrypt_arguments->key = _strdup(decryption_key_output_file);
+    parsed_arguments->decrypt_arguments->key = strdup(decryption_key_output_file);
     parsed_arguments->key_generation_arguments->key = encryption_key_file;
     parsed_arguments->key_generation_arguments->output_file = decryption_key_output_file;
 
