@@ -53,7 +53,7 @@ jobs:
           # Encryption (text)
           - { name: e_text, args: "-m e -l ./GaloisFieldHillCipher/Examples/Samples/log.txt  -i ./GaloisFieldHillCipher/Examples/Samples/example_plaintext.txt -o ./encrypted_text.txt -k ./GaloisFieldHillCipher/Examples/Samples/encryption_key.bin" }
           # Encryption (binary)
-          - { name: e_bin, args: "-m e -l ./GaloisFieldHillCipher/Examples/Samples/log.txt -i ./GaloisFieldHillCipher/Examples/Samples/example_plaintext.bin -o ./encrypted_bin.bin -k ./GaloisFieldHillCipher/Examples/Samples/encryption_key.bin" }
+          - { name: e_bin, args: "-m e -l ./GaloisFieldHillCipher/Examples/Samples/log.txt -i ./GaloisFieldHillCipher/Examples/Samples/example_plaintext.txt -o ./encrypted_bin.bin -k ./GaloisFieldHillCipher/Examples/Samples/encryption_key.bin" }
 
           # Decryption (text)
           - { name: d_text, args: "-m d -l ./GaloisFieldHillCipher/Examples/Samples/log.txt -i ./GaloisFieldHillCipher/Examples/Samples/encrypted_text.txt -o ./decrypted_text.txt -k ./GaloisFieldHillCipher/Examples/Samples/decryption_key.bin" }
