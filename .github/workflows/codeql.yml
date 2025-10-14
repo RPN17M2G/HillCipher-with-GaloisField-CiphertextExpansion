@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [ "main" ]
   schedule:
-    - cron: '30 12 * * 1' # At 12:30 on Monday
+    - cron: '40 12 * * 1' # At 12:40 on Monday
 
 jobs:
   analyze:
@@ -27,6 +27,12 @@ jobs:
       uses: github/codeql-action/init@v3
       with:
         languages: cpp
+
+    - name: Configure with CMake
+      run: cmake -S GaloisFieldHillCipher -B GaloisFieldHillCipher/build -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build with CMake
+      run: cmake --build GaloisFieldHillCipher/build --config Release --parallel
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
