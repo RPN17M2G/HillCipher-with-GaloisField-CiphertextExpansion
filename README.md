@@ -32,7 +32,7 @@
 | `-f`, `--prime-field`           | Specify the prime field (optional, default: `16777619`).                                                         |
 | `-r`, `--random-bits`           | Specify the number of random bits to add between bytes (optional, default: `2`).                                 |
 | `-a`, `--ascii-mapping-letters` | Specify the number of letters mapped for each digit in the ASCII mapping (optional).                                                      |
-| `-l`, `--log`                   | Specify the log file (optional).                                                                                 |
+| `-l`, `--log`                   | Specify the log file.                                                                                 |
 | `-m`, `--mode`                  | Specify the mode of operation (`kg`, `dkg`, `e`, `d`, `kge`, `kgd`).                                                |
 | `-v`, `--verbose`               | Enable verbose output (optional).                                                                                |
 
@@ -170,7 +170,7 @@ When storing encrypted data in binary format, the program calculates the minimum
 ###### ASCII Mapping
 
 For text storage, there is mapping between the digits of the ciphertext, each number of the GF fits inside 8 digits.
-The mapping has a variant(Same digit maps to few different letters) of 5 which helps reduce the entropy of the ciphertext.
+The mapping has a chosen variant(Same digit maps to few different letters) of 1 to 6 which helps reduce the entropy of the ciphertext.
 
 ### Thanks and Credit
 

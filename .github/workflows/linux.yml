@@ -47,21 +47,21 @@ jobs:
     strategy:
       matrix:
         test:
-          - { name: kg,  args: "-m kg -v -o ./encryption_key.bin -d 3" }
-          - { name: dkg, args: "-m dkg -v -k ./GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -o ./decryption_key.bin -d 3" }
+          - { name: kg,  args: "-m kg -l ./GaloisFieldHillCipher/Examples/Samples/log.txt -o ./encryption_key.bin -d 3" }
+          - { name: dkg, args: "-m dkg -l ./GaloisFieldHillCipher/Examples/Samples/log.txt -k ./GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -o ./decryption_key.bin -d 3" }
 
           # Encryption (text)
-          - { name: e_text, args: "-m e -v -i ./GaloisFieldHillCipher/Examples/Samples/example_plaintext.txt -o ./encrypted_text.bin -k ./GaloisFieldHillCipher/Examples/Samples/encryption_key.bin" }
+          - { name: e_text, args: "-m e -l ./GaloisFieldHillCipher/Examples/Samples/log.txt  -i ./GaloisFieldHillCipher/Examples/Samples/example_plaintext.txt -o ./encrypted_text.bin -k ./GaloisFieldHillCipher/Examples/Samples/encryption_key.bin" }
           # Encryption (binary)
-          - { name: e_bin, args: "-m e -v -i ./GaloisFieldHillCipher/Examples/Samples/example_plaintext.bin -o ./encrypted_bin.bin -k ./GaloisFieldHillCipher/Examples/Samples/encryption_key.bin" }
+          - { name: e_bin, args: "-m e -l ./GaloisFieldHillCipher/Examples/Samples/log.txt -i ./GaloisFieldHillCipher/Examples/Samples/example_plaintext.bin -o ./encrypted_bin.bin -k ./GaloisFieldHillCipher/Examples/Samples/encryption_key.bin" }
 
           # Decryption (text)
-          - { name: d_text, args: "-m d -v -i ./GaloisFieldHillCipher/Examples/Samples/encrypted_text.bin -o ./decrypted_text.txt -k ./GaloisFieldHillCipher/Examples/Samples/decryption_key.bin" }
+          - { name: d_text, args: "-m d -l ./GaloisFieldHillCipher/Examples/Samples/log.txt -i ./GaloisFieldHillCipher/Examples/Samples/encrypted_text.bin -o ./decrypted_text.txt -k ./GaloisFieldHillCipher/Examples/Samples/decryption_key.bin" }
           # Decryption (binary)
-          - { name: d_bin, args: "-m d -v -i ./GaloisFieldHillCipher/Examples/Samples/encrypted_bin.bin -o ./decrypted_bin.bin -k ./GaloisFieldHillCipher/Examples/Samples/decryption_key.bin" }
+          - { name: d_bin, args: "-m d -l ./GaloisFieldHillCipher/Examples/Samples/log.txt -i ./GaloisFieldHillCipher/Examples/Samples/encrypted_bin.bin -o ./decrypted_bin.bin -k ./GaloisFieldHillCipher/Examples/Samples/decryption_key.bin" }
 
-          - { name: kge, args: "-m kge -v -i ./GaloisFieldHillCipher/Examples/Samples/example_plaintext.txt -o ./kge_encrypted.bin -k ./encryption_key.bin -d 3" }
-          - { name: kgd, args: "-m kgd -v -i ./GaloisFieldHillCipher/Examples/Samples/encrypted.bin -o ./kgd_decrypted.txt -k ./GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -y ./decryption_key.bin -d 3" }
+          - { name: kge, args: "-m kge -l ./GaloisFieldHillCipher/Examples/Samples/log.txt -i ./GaloisFieldHillCipher/Examples/Samples/example_plaintext.txt -o ./kge_encrypted.bin -k ./encryption_key.bin -d 3" }
+          - { name: kgd, args: "-m kgd -l ./GaloisFieldHillCipher/Examples/Samples/log.txt -i ./GaloisFieldHillCipher/Examples/Samples/encrypted.bin -o ./kgd_decrypted.txt -k ./GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -y ./decryption_key.bin -d 3" }
 
     steps:
       - uses: actions/checkout@v4
