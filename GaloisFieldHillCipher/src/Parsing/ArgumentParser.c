@@ -339,7 +339,6 @@ STATUS_CODE filter_relevant_flags(char*** out_filtered_argv, int* out_filtered_a
                 if (!filtered_argv_tmp)
                 {
                     log_error("[!] Memory reallocation failed for filtered_argv.");
-                    free(flag_to_compare);
                     return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
                     goto cleanup;
                 }

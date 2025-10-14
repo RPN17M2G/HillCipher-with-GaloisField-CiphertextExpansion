@@ -10,10 +10,11 @@
 #include "IO/VerbosityControl.h"
 #include "IO/PrintUtils.h"
 
-#define UINT8_HEX_CHARS_PER_ELEMENT 4
-#define INT64_HEX_CHARS_PER_ELEMENT 24
-#define MATRIX_HEX_CHARS_PER_ELEMENT 24
-#define log_BUFFER_EXTRA 128
+#define UINT8_HEX_CHARS_PER_ELEMENT (4)
+#define INT64_HEX_CHARS_PER_ELEMENT (24)
+#define MATRIX_HEX_CHARS_PER_ELEMENT (24)
+#define NUMBERS_LINE_SIZE (8)
+#define BYTES_LINE_SIZE (16)
 
 /**
  * @brief Log a uint8_t vector to the console with optional verbose output
