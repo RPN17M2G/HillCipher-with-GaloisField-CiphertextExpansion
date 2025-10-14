@@ -1,36 +1,33 @@
-name: CodeQL Workflow
+name: "CodeQL Analysis"
 
 on:
   push:
-    branches: [main]
+    branches: [ "main" ]
   pull_request:
-    branches: [main]
+    branches: [ "main" ]
+  schedule:
+    - cron: '30 12 * * 1' # At 12:30 on Monday
 
 jobs:
-  codeql:
-    name: CodeQL Analysis
-    runs-on: windows-latest
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
     permissions:
       actions: read
       contents: read
       security-events: write
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          submodules: 'recursive'
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
 
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
-        with:
-          languages: cpp
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v3
+      with:
+        languages: cpp
 
-      - name: Configure with CMake
-        run: cmake -S GaloisFieldHillCipher -B GaloisFieldHillCipher/build -DCMAKE_BUILD_TYPE=Release
-
-      - name: Build with CMake
-        run: cmake --build GaloisFieldHillCipher/build --config Release --parallel
-
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v3
+      
