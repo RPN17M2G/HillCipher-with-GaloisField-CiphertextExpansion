@@ -279,7 +279,6 @@ cleanup:
     return return_code;
 }
 
-// TODO: Fix memory issues, also handle flags that don't have values (e.g. -v, --verbose) do it by checking if the next argument is a flag or not(Starts with - or --).
 STATUS_CODE filter_relevant_flags(char*** out_filtered_argv, int* out_filtered_argc, int argc, char** argv, const char** relevant_flags)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;

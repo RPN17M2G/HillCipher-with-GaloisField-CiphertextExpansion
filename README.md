@@ -31,7 +31,8 @@
 | `-d`, `--dimension`             | Specify the key matrix dimension.                       |
 | `-f`, `--prime-field`           | Specify the prime field (optional, default: `16777619`).                                                         |
 | `-r`, `--random-bits`           | Specify the number of random bits to add between bytes (optional, default: `2`).                                 |
-| `-a`, `--ascii-mapping-letters` | Specify the number of letters mapped for each digit in the ASCII mapping (optional).                                                      |
+| `-a`, `--ascii-mapping-letters` | Specify the number of letters mapped for each digit in the ASCII mapping (optional, default: `5`).                                                      |
+| `-e`, `--error-vectors` | Specify the number of letters mapped for each digit in the ASCII mapping (optional, default: `5`).                                                      |
 | `-l`, `--log`                   | Specify the log file.                                                                                 |
 | `-m`, `--mode`                  | Specify the mode of operation (`kg`, `dkg`, `e`, `d`, `kge`, `kgd`).                                                |
 | `-v`, `--verbose`               | Enable verbose output (optional).                                                                                |

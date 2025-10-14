@@ -273,9 +273,6 @@ void test_divide_int64_t_into_blocks_UnevenSize()
     TEST_ASSERT_NOT_EQUAL(STATUS_CODE_SUCCESS, status);
 }
 
-
-
-// TODO: Refactor test
 void test_permutation_vector_with_numbers_and_larger_group()
 {
     // Arrange
@@ -287,7 +284,7 @@ void test_permutation_vector_with_numbers_and_larger_group()
     uint8_t* output = NULL;
 
     // Act
-    STATUS_CODE rc = permutate_uint8_vector(
+    STATUS_CODE return_code = permutate_uint8_vector(
         &output,
         (uint8_t*)input,
         vector_size,
@@ -296,7 +293,7 @@ void test_permutation_vector_with_numbers_and_larger_group()
     );
 
     // Assert
-    TEST_ASSERT_EQUAL(STATUS_CODE_SUCCESS, rc);
+    TEST_ASSERT_EQUAL(STATUS_CODE_SUCCESS, return_code);
     TEST_ASSERT_NOT_NULL(output);
     TEST_ASSERT_EQUAL_UINT8_ARRAY(expected, output, vector_size);
 
@@ -304,7 +301,6 @@ void test_permutation_vector_with_numbers_and_larger_group()
     free(output);
 }
 
-// TODO: Refactor test
 void test_permutation_vector_ascii_sanity()
 {
     // Arrange
@@ -316,7 +312,7 @@ void test_permutation_vector_ascii_sanity()
     uint8_t* output = NULL;
 
     // Act
-    STATUS_CODE rc = permutate_uint8_vector(
+    STATUS_CODE return_code = permutate_uint8_vector(
         &output,
         (uint8_t*)input,
         vector_size,
@@ -325,7 +321,7 @@ void test_permutation_vector_ascii_sanity()
     );
 
     // Assert
-    TEST_ASSERT_EQUAL(STATUS_CODE_SUCCESS, rc);
+    TEST_ASSERT_EQUAL(STATUS_CODE_SUCCESS, return_code);
     TEST_ASSERT_NOT_NULL(output);
     TEST_ASSERT_EQUAL_UINT8_ARRAY(expected, output, vector_size);
 
@@ -333,11 +329,12 @@ void test_permutation_vector_ascii_sanity()
     free(output);
 }
 
-// TODO: Refactor test
-void test_ascii_mapping_sanity() {
+void test_ascii_mapping_sanity()
+{
     // Arrange
     uint8_t** digitToAsciiTable = malloc(10  * sizeof(uint8_t*));
-    for (uint8_t d = 0; d < 10; ++d) {
+    for (uint8_t d = 0; d < 10; ++d)
+    {
         digitToAsciiTable[d] = malloc(1);
         digitToAsciiTable[d][0] = (uint8_t)('0' + d);
     }
@@ -350,7 +347,7 @@ void test_ascii_mapping_sanity() {
     uint32_t decoded_len = 0;
 
     // Act
-    STATUS_CODE rc1 = map_from_int64_to_ascii(
+    STATUS_CODE return_code1 = map_from_int64_to_ascii(
         &ascii,
         &ascii_len,
         &value,
@@ -359,7 +356,7 @@ void test_ascii_mapping_sanity() {
         1,
         digits
     );
-    STATUS_CODE rc2 = map_from_ascii_to_int64(
+    STATUS_CODE return_code2 = map_from_ascii_to_int64(
         &decoded,
         &decoded_len,
         ascii,
@@ -370,12 +367,13 @@ void test_ascii_mapping_sanity() {
     );
 
     // Assert
-    TEST_ASSERT_EQUAL(STATUS_CODE_SUCCESS, rc1);
+    TEST_ASSERT_EQUAL(STATUS_CODE_SUCCESS, return_code1);
     TEST_ASSERT_EQUAL(0, memcmp(ascii, expected, digits));
-    TEST_ASSERT_EQUAL(STATUS_CODE_SUCCESS, rc2);
+    TEST_ASSERT_EQUAL(STATUS_CODE_SUCCESS, return_code2);
     TEST_ASSERT_EQUAL_INT64(value, decoded[0]);
 
-    for (uint8_t d = 0; d < 10; ++d) {
+    for (uint8_t d = 0; d < 10; ++d)
+    {
         free(digitToAsciiTable[d]);
     }
     free(digitToAsciiTable);

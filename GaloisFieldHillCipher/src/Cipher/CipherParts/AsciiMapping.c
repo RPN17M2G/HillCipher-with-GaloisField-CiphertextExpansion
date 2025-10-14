@@ -81,7 +81,7 @@ STATUS_CODE map_from_int64_to_ascii(uint8_t** out_ascii, uint32_t* out_ascii_siz
 
     for (number_index = 0; number_index < data_size; ++number_index)
     {
-        snprintf(number_string, sizeof(number_string), "%0*lld",
+        snprintf(number_string, number_of_digits_per_field_element + 1, "%0*lld",
                  number_of_digits_per_field_element, data[number_index]);
         log_debug("Processing number %u: %s", number_index, number_string);
 

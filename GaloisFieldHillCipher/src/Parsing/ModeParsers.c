@@ -5,10 +5,10 @@ STATUS_CODE parse_key_generation_arguments(KeyGenerationArguments** out_argument
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
     const char* output_file = NULL;
     uint32_t dimension = 0;
-    uint32_t number_of_error_vectors = 0;
+    uint32_t number_of_error_vectors = DEFAULT_VALUE_OF_NUMBER_OF_ERROR_VECTORS_TO_ADD;
     uint32_t prime_field = DEFAULT_VALUE_OF_GALOIS_FIELD;
     uint32_t number_of_random_bits_to_add = DEFAULT_VALUE_OF_NUMBER_OF_RANDOM_BITS_TO_ADD;
-    uint32_t number_of_letters_for_each_digit_ascii_mapping = 0;
+    uint32_t number_of_letters_for_each_digit_ascii_mapping = DEFAULT_VALUE_OF_NUMBER_OF_ASCII_CHARACTERS_MAPPED_TO_EACH_DIGIT;
     KeyGenerationArguments* parsed_arguments = NULL;
 
     struct argparse_option options[] = {
@@ -139,9 +139,7 @@ STATUS_CODE parse_decrypt_arguments(DecryptArguments** out_arguments, int argc, 
         OPT_END(),
     };
 
-    if (!out_arguments || !argv || STATUS_FAILED(validate_file_is_writeable(output_file)) ||
-        STATUS_FAILED(validate_file_is_readable(key)) || STATUS_FAILED(validate_file_is_binary(key)) ||
-        STATUS_FAILED(validate_file_is_readable(input_file)))
+    if (!out_arguments || !argv)
     {
         log_error("[!] Invalid argument: out_arguments or argv is NULL in parse_decrypt_arguments.");
         return_code = STATUS_CODE_INVALID_ARGUMENT;
@@ -156,7 +154,9 @@ STATUS_CODE parse_decrypt_arguments(DecryptArguments** out_arguments, int argc, 
         goto cleanup;
     }
 
-    if (!input_file || !output_file || !key) 
+    if (!input_file || !output_file || !key || STATUS_FAILED(validate_file_is_writeable(output_file)) ||
+        STATUS_FAILED(validate_file_is_readable(key)) || STATUS_FAILED(validate_file_is_binary(key)) ||
+        STATUS_FAILED(validate_file_is_readable(input_file)))
     {
         log_error("[!] Invalid arguments for DECRYPT_MODE.");
         fprintf(stderr, "%s", USAGE_DECRYPT_MODE);
@@ -199,9 +199,7 @@ STATUS_CODE parse_encrypt_arguments(EncryptArguments** out_arguments, int argc, 
         OPT_END(),
     };
 
-    if (!out_arguments || !argv || STATUS_FAILED(validate_file_is_writeable(output_file)) ||
-        STATUS_FAILED(validate_file_is_readable(key)) || STATUS_FAILED(validate_file_is_binary(key)) ||
-        STATUS_FAILED(validate_file_is_readable(input_file)))
+    if (!out_arguments || !argv)
     {
         log_error("[!] Invalid argument: out_arguments or argv is NULL in parse_encrypt_arguments.");
         return_code = STATUS_CODE_INVALID_ARGUMENT;
@@ -216,7 +214,9 @@ STATUS_CODE parse_encrypt_arguments(EncryptArguments** out_arguments, int argc, 
         goto cleanup;
     }
 
-    if (!input_file || !output_file || !key) 
+    if (!input_file || !output_file || !key || STATUS_FAILED(validate_file_is_writeable(output_file)) ||
+        STATUS_FAILED(validate_file_is_readable(key)) || STATUS_FAILED(validate_file_is_binary(key)) ||
+        STATUS_FAILED(validate_file_is_readable(input_file)))
     {
         log_error("[!] Invalid arguments for ENCRYPT_MODE.");
         fprintf(stderr, "%s", USAGE_ENCRYPT_MODE);
@@ -251,10 +251,10 @@ STATUS_CODE parse_generate_and_encrypt_arguments(GenerateAndEncryptArguments** o
     const char* output_file = NULL;
     const char* key_file = NULL;
     uint32_t dimension = 0;
-    uint32_t number_of_error_vectors = 0;
+    uint32_t number_of_error_vectors = DEFAULT_VALUE_OF_NUMBER_OF_ERROR_VECTORS_TO_ADD;
     uint32_t prime_field = DEFAULT_VALUE_OF_GALOIS_FIELD;
     uint32_t number_of_random_bits_to_add = DEFAULT_VALUE_OF_NUMBER_OF_RANDOM_BITS_TO_ADD;
-    uint32_t number_of_letters_for_each_digit_ascii_mapping = 0;
+    uint32_t number_of_letters_for_each_digit_ascii_mapping = DEFAULT_VALUE_OF_NUMBER_OF_ASCII_CHARACTERS_MAPPED_TO_EACH_DIGIT;
     GenerateAndEncryptArguments* parsed_arguments = NULL;
     EncryptArguments* encrypt_arguments = NULL;
     KeyGenerationArguments* key_arguments = NULL;
