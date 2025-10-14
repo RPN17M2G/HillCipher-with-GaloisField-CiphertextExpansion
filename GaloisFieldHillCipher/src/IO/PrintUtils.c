@@ -7,7 +7,7 @@ void print_uint8_vector(const uint8_t* data, size_t size, const char* prefix, bo
     size_t partly_offset_temp = 0;
     if (!data || !prefix)
     {
-        log_error("[!] Invalid argument in log_uint8_vector: %s", !data ? "data is NULL" : "prefix is NULL");
+        log_error("[!] Invalid argument in print_uint8_vector: %s", !data ? "data is NULL" : "prefix is NULL");
         goto cleanup;
     }
 
@@ -25,7 +25,7 @@ void print_uint8_vector(const uint8_t* data, size_t size, const char* prefix, bo
     partly_offset_temp = snprintf(buffer + offset, buffer_size - offset, "%s\n", prefix);
     if ((partly_offset_temp < 0) || (partly_offset_temp >= (buffer_size - offset)))
     {
-        log_error("[!] Buffer overflow detected while logging matrix at end of row %zu.", row);
+        log_error("[!] Buffer overflow detected while printing uint8 vector.");
         goto cleanup;
     }
     offset += partly_offset_temp;
@@ -72,7 +72,7 @@ void print_int64_vector(const int64_t* data, size_t size, const char* prefix, bo
     partly_offset_temp = snprintf(buffer + offset, buffer_size - offset, "%s\n", prefix);
     if ((partly_offset_temp < 0) || (partly_offset_temp >= (buffer_size - offset)))
     {
-        log_error("[!] Buffer overflow detected while logging matrix at end of row %zu.", row);
+        log_error("[!] Buffer overflow detected while printing int64 vector.");
         goto cleanup;
     }
     offset += partly_offset_temp;
@@ -121,7 +121,7 @@ void print_matrix(int64_t** matrix, uint32_t dimension, const char* prefix, bool
     partly_offset_temp = snprintf(buffer + offset, buffer_size - offset, "%s\n", prefix);
     if ((partly_offset_temp < 0) || (partly_offset_temp >= (buffer_size - offset)))
     {
-        log_error("[!] Buffer overflow detected while logging matrix at end of row %zu.", row);
+        log_error("[!] Buffer overflow detected while printing matrix.");
         goto cleanup;
     }
     offset += partly_offset_temp;
@@ -130,7 +130,6 @@ void print_matrix(int64_t** matrix, uint32_t dimension, const char* prefix, bool
         if (!matrix[row])
         {
             log_error("[!] Invalid matrix: row %zu is NULL", row);
-            free(buffer);
             goto cleanup;
         }
 
@@ -139,7 +138,7 @@ void print_matrix(int64_t** matrix, uint32_t dimension, const char* prefix, bool
             partly_offset_temp = snprintf(buffer + offset, buffer_size - offset, "%I64d ", matrix[row][column]);
             if ((partly_offset_temp < 0) || (partly_offset_temp >= (buffer_size - offset)))
             {
-                log_error("[!] Buffer overflow detected while logging matrix at end of row %zu.", row);
+                log_error("[!] Buffer overflow detected while printing matrix at row %zu.", row);
                 goto cleanup;
             }
             offset += partly_offset_temp;
@@ -147,7 +146,7 @@ void print_matrix(int64_t** matrix, uint32_t dimension, const char* prefix, bool
         partly_offset_temp = snprintf(buffer + offset, buffer_size - offset, "\n");
         if ((partly_offset_temp < 0) || (partly_offset_temp >= (buffer_size - offset)))
         {
-            log_error("[!] Buffer overflow detected while logging matrix at end of row %zu.", row);
+            log_error("[!] Buffer overflow detected while printing matrix at row %zu.", row);
             goto cleanup;
         }
         offset += partly_offset_temp;
