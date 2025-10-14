@@ -106,7 +106,7 @@ STATUS_CODE serialize_secrets(uint8_t** out_data, uint32_t* out_size, Secrets se
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
         goto cleanup;
     }
-    memcpy_s(permutation_vector_data, permutation_vector_size, secrets.permutation_vector, permutation_vector_size);
+    memcpy(permutation_vector_data, secrets.permutation_vector, permutation_vector_size);
     log_debug("Copied permutation vector: size=%u", permutation_vector_size);
 
     if (permutation_vector_size > (UINT32_MAX - key_matrix_size - error_vectors_size - ascii_mapping_size - (sizeof(uint32_t) * NUMBER_OF_UINT32_SECRETS)))
@@ -131,7 +131,7 @@ STATUS_CODE serialize_secrets(uint8_t** out_data, uint32_t* out_size, Secrets se
         return_code = STATUS_CODE_ERROR_INVALID_SIZE;
         goto cleanup;
     }
-    memcpy_s(buffer + offset, buffer_size - offset, &secrets.dimension, sizeof(uint32_t));
+    memcpy(buffer + offset, &secrets.dimension, sizeof(uint32_t));
     offset += sizeof(uint32_t);
     log_debug("Wrote dimension to buffer: %u", secrets.dimension);
 
@@ -140,7 +140,7 @@ STATUS_CODE serialize_secrets(uint8_t** out_data, uint32_t* out_size, Secrets se
         return_code = STATUS_CODE_ERROR_INVALID_SIZE;
         goto cleanup;
     }
-    memcpy_s(buffer + offset, buffer_size - offset, &secrets.number_of_error_vectors, sizeof(uint32_t));
+    memcpy(buffer + offset, &secrets.number_of_error_vectors, sizeof(uint32_t));
     offset += sizeof(uint32_t);
     log_debug("Wrote number of error vectors to buffer: %u", secrets.number_of_error_vectors);
 
@@ -149,7 +149,7 @@ STATUS_CODE serialize_secrets(uint8_t** out_data, uint32_t* out_size, Secrets se
         return_code = STATUS_CODE_ERROR_INVALID_SIZE;
         goto cleanup;
     }
-    memcpy_s(buffer + offset, buffer_size - offset, &secrets.prime_field, sizeof(uint32_t));
+    memcpy(buffer + offset, &secrets.prime_field, sizeof(uint32_t));
     offset += sizeof(uint32_t);
     log_debug("Wrote prime field to buffer: %u", secrets.prime_field);
 
@@ -158,7 +158,7 @@ STATUS_CODE serialize_secrets(uint8_t** out_data, uint32_t* out_size, Secrets se
         return_code = STATUS_CODE_ERROR_INVALID_SIZE;
         goto cleanup;
     }
-    memcpy_s(buffer + offset, buffer_size - offset, &secrets.number_of_letters_for_each_digit_ascii_mapping, sizeof(uint32_t));
+    memcpy(buffer + offset, &secrets.number_of_letters_for_each_digit_ascii_mapping, sizeof(uint32_t));
     offset += sizeof(uint32_t);
     log_debug("Wrote number of letters for each digit ASCII mapping to buffer: %u", secrets.number_of_letters_for_each_digit_ascii_mapping);
 
@@ -167,7 +167,7 @@ STATUS_CODE serialize_secrets(uint8_t** out_data, uint32_t* out_size, Secrets se
         return_code = STATUS_CODE_ERROR_INVALID_SIZE;
         goto cleanup;
     }
-    memcpy_s(buffer + offset, buffer_size - offset, key_matrix_data, key_matrix_size);
+    memcpy(buffer + offset, key_matrix_data, key_matrix_size);
     offset += key_matrix_size;
     log_debug("Wrote key matrix data to buffer");
 
@@ -176,7 +176,7 @@ STATUS_CODE serialize_secrets(uint8_t** out_data, uint32_t* out_size, Secrets se
         return_code = STATUS_CODE_ERROR_INVALID_SIZE;
         goto cleanup;
     }
-    memcpy_s(buffer + offset, buffer_size - offset, error_vectors_data, error_vectors_size);
+    memcpy(buffer + offset, error_vectors_data, error_vectors_size);
     offset += error_vectors_size;
     log_debug("Wrote error vectors data to buffer");
 
@@ -185,7 +185,7 @@ STATUS_CODE serialize_secrets(uint8_t** out_data, uint32_t* out_size, Secrets se
         return_code = STATUS_CODE_ERROR_INVALID_SIZE;
         goto cleanup;
     }
-    memcpy_s(buffer + offset, buffer_size - offset, ascii_mapping_data, ascii_mapping_size);
+    memcpy(buffer + offset, ascii_mapping_data, ascii_mapping_size);
     offset += ascii_mapping_size;
     log_debug("Wrote ASCII mapping data to buffer");
 
@@ -194,7 +194,7 @@ STATUS_CODE serialize_secrets(uint8_t** out_data, uint32_t* out_size, Secrets se
         return_code = STATUS_CODE_ERROR_INVALID_SIZE;
         goto cleanup;
     }
-    memcpy_s(buffer + offset, buffer_size - offset, permutation_vector_data, permutation_vector_size);
+    memcpy(buffer + offset, permutation_vector_data, permutation_vector_size);
     log_debug("Wrote permutation vector data to buffer");
 
     *out_data = buffer;
@@ -238,7 +238,7 @@ STATUS_CODE deserialize_secrets(Secrets* out_secrets, uint8_t* data, uint32_t si
         return_code = STATUS_CODE_ERROR_INVALID_SIZE;
         goto cleanup;
     }
-    memcpy_s(&dimension, sizeof(uint32_t), data + offset, sizeof(uint32_t));
+    memcpy(&dimension, data + offset, sizeof(uint32_t));
     offset += sizeof(uint32_t);
 
     if (offset + sizeof(uint32_t) > size)
@@ -246,7 +246,7 @@ STATUS_CODE deserialize_secrets(Secrets* out_secrets, uint8_t* data, uint32_t si
         return_code = STATUS_CODE_ERROR_INVALID_SIZE;
         goto cleanup;
     }
-    memcpy_s(&number_of_error_vectors, sizeof(uint32_t), data + offset, sizeof(uint32_t));
+    memcpy(&number_of_error_vectors, data + offset, sizeof(uint32_t));
     offset += sizeof(uint32_t);
 
     if (offset + sizeof(uint32_t) > size)
@@ -254,7 +254,7 @@ STATUS_CODE deserialize_secrets(Secrets* out_secrets, uint8_t* data, uint32_t si
         return_code = STATUS_CODE_ERROR_INVALID_SIZE;
         goto cleanup;
     }
-    memcpy_s(&prime_field, sizeof(uint32_t), data + offset, sizeof(uint32_t));
+    memcpy(&prime_field, data + offset, sizeof(uint32_t));
     offset += sizeof(uint32_t);
 
     if (offset + sizeof(uint32_t) > size)
@@ -262,7 +262,7 @@ STATUS_CODE deserialize_secrets(Secrets* out_secrets, uint8_t* data, uint32_t si
         return_code = STATUS_CODE_ERROR_INVALID_SIZE;
         goto cleanup;
     }
-    memcpy_s(&number_of_letters_for_each_digit_ascii_mapping, sizeof(uint32_t), data + offset, sizeof(uint32_t));
+    memcpy(&number_of_letters_for_each_digit_ascii_mapping, data + offset, sizeof(uint32_t));
     offset += sizeof(uint32_t);
 
     bytes_per_element = calculate_bytes_per_element(prime_field);
@@ -330,7 +330,7 @@ STATUS_CODE deserialize_secrets(Secrets* out_secrets, uint8_t* data, uint32_t si
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
         goto cleanup;
     }
-    memcpy_s(permutation_vector_buffer, digits_per_element * dimension, data + offset, digits_per_element * dimension);
+    memcpy(permutation_vector_buffer, data + offset, digits_per_element * dimension);
     log_debug("Copied permutation vector: size=%u", digits_per_element * dimension);
 
     secrets.dimension = dimension;
@@ -433,7 +433,7 @@ STATUS_CODE serialize_matrix(uint8_t** out_data, uint32_t* out_size, int64_t** m
             return_code = STATUS_CODE_ERROR_INVALID_SIZE;
             goto cleanup;
         }
-        memcpy_s(buffer + offset, total_size - offset, row_buffers[row], row_sizes[row]);
+        memcpy(buffer + offset, row_buffers[row], row_sizes[row]);
         offset += row_sizes[row];
     }
 

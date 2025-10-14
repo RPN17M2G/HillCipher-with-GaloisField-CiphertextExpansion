@@ -322,9 +322,9 @@ STATUS_CODE filter_relevant_flags(char*** out_filtered_argv, int* out_filtered_a
                 }
 
                 if (strlen(*flag) == 1)
-                    sprintf_s(flag_to_compare, strlen(*flag) + MEMORY_FOR_FLAG_PREFIX, "-%s", *flag);
+                    snprintf(flag_to_compare, strlen(*flag) + MEMORY_FOR_FLAG_PREFIX, "-%s", *flag);
                 else
-                    sprintf_s(flag_to_compare, strlen(*flag) + MEMORY_FOR_FLAG_PREFIX, "--%s", *flag);
+                    snprintf(flag_to_compare, strlen(*flag) + MEMORY_FOR_FLAG_PREFIX, "--%s", *flag);
 
                 if (strncmp(argv[argument_index], flag_to_compare, strlen(flag_to_compare)) == 0)
                 {
