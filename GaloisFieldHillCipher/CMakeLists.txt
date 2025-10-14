@@ -35,7 +35,6 @@ target_link_libraries(GaloisFieldHillCipher PRIVATE sodium)
 
 add_subdirectory(thirdparty/argparse)
 target_link_libraries(GaloisFieldHillCipher PRIVATE argparse_static)
-target_link_libraries(GaloisFieldHillCipher PRIVATE m) 
 
 add_subdirectory(thirdparty/Unity)
 
@@ -63,8 +62,14 @@ target_link_libraries(UnitTests PRIVATE
         unity
         sodium
         argparse_static
-        m
 )
+
+# Link the math library 'm' on non-Windows platforms.
+# MSVC on Windows includes this in its default C runtime.
+if(NOT MSVC)
+  target_link_libraries(UnitTests PRIVATE m)
+  target_link_libraries(GaloisFieldHillCipher PRIVATE m)
+endif()
 
 enable_testing()
 add_test(NAME AllUnitTests COMMAND UnitTests)
