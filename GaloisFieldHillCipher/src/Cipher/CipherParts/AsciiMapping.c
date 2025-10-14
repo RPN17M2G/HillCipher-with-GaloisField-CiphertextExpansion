@@ -48,7 +48,7 @@ STATUS_CODE map_from_int64_to_ascii(uint8_t** out_ascii, uint32_t* out_ascii_siz
     uint32_t number_index = 0, digit_index = 0, buffer_index = 0;
     char digit_char = 0;
     uint8_t digit = 0;
-    char number_string[number_of_digits_per_field_element + 1];
+    char* number_string = NULL;
     uint32_t random_number = 0;
 
     if (!out_ascii || !out_ascii_size || !data || (data_size == 0) ||
@@ -67,6 +67,14 @@ STATUS_CODE map_from_int64_to_ascii(uint8_t** out_ascii, uint32_t* out_ascii_siz
     if (!buffer)
     {
         log_error("[!] Memory allocation failed for ASCII buffer (size: %u)", buffer_size);
+        return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
+        goto cleanup;
+    }
+
+    number_string = (char*)malloc(number_of_digits_per_field_element + 1);
+    if (!number_string)
+    {
+        log_error("[!] Memory allocation failed for number string (size: %u)", number_of_digits_per_field_element + 1);
         return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
         goto cleanup;
     }
@@ -102,6 +110,7 @@ STATUS_CODE map_from_int64_to_ascii(uint8_t** out_ascii, uint32_t* out_ascii_siz
 
 cleanup:
     free(buffer);
+    free(number_string);
     return return_code;
 }
 
