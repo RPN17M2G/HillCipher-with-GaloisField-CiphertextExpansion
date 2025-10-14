@@ -61,7 +61,7 @@ jobs:
           - { name: d_bin, args: "-m d -l ./GaloisFieldHillCipher/Examples/Samples/log.txt -i ./GaloisFieldHillCipher/Examples/Samples/encrypted_bin.bin -o ./decrypted_bin.bin -k ./GaloisFieldHillCipher/Examples/Samples/decryption_key.bin" }
 
           - { name: kge, args: "-m kge -l ./GaloisFieldHillCipher/Examples/Samples/log.txt -i ./GaloisFieldHillCipher/Examples/Samples/example_plaintext.txt -o ./kge_encrypted.bin -k ./encryption_key.bin -d 3" }
-          - { name: kgd, args: "-m kgd -l ./GaloisFieldHillCipher/Examples/Samples/log.txt -i ./GaloisFieldHillCipher/Examples/Samples/encrypted.bin -o ./kgd_decrypted.txt -k ./GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -y ./decryption_key.bin -d 3" }
+          - { name: kgd, args: "-m kgd -l ./GaloisFieldHillCipher/Examples/Samples/log.txt -i ./GaloisFieldHillCipher/Examples/Samples/encrypted_bin.bin -o ./kgd_decrypted.txt -k ./GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -y ./decryption_key.bin -d 3" }
 
     steps:
       - uses: actions/checkout@v4
