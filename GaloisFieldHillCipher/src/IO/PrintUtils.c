@@ -1,7 +1,5 @@
 #include "IO/PrintUtils.h"
 
-#include "IO/LoggerUtils.h"
-
 void print_uint8_vector(const uint8_t* data, size_t size, const char* prefix, bool is_verbose_only)
 {
     size_t i = 0;
