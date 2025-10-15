@@ -12,14 +12,12 @@ jobs:
     with:
       config: Debug
       artifact-name: build-debug
-      timeout-minutes: 10
 
   build-release:
     uses: ./.github/workflows/linux-build-template.yml
     with:
       config: Release
       artifact-name: build-release
-      timeout-minutes: 10
 
   test-linux-debug:
     needs: build-debug
