@@ -28,17 +28,17 @@ jobs:
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           name: build-debug
-          path: ./build
+          path: GaloisFieldHillCipher/build
 
       - name: Verify Artifact Checksums
         shell: pwsh
         run: |
-          $checksumFile = "./build/checksums.sha256"
+          $checksumFile = "GaloisFieldHillCipher/build/checksums.sha256"
           Get-Content $checksumFile | ForEach-Object {
             $expectedHash, $fileName = $_ -split '\s+' | Where-Object { $_ }
             
             Write-Host "Verifying file: $fileName"
-            $actualHash = (Get-FileHash -Algorithm SHA256 "./build/$fileName").Hash
+            $actualHash = (Get-FileHash -Algorithm SHA256 "GaloisFieldHillCipher/build/$fileName").Hash
             
             if ($actualHash -ne $expectedHash) {
               Write-Error "CHECKSUM MISMATCH for $fileName! Expected '$expectedHash' but got '$actualHash'."
@@ -50,7 +50,7 @@ jobs:
           Write-Host "All checksums verified successfully."
 
       - name: Run tests
-        run: .\\build\\Debug\\UnitTests.exe
+        run: GaloisFieldHillCipher/build/Debug/UnitTests.exe
 
   test-release:
     needs: build-release
@@ -61,17 +61,17 @@ jobs:
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           name: build-release
-          path: ./build
+          path: GaloisFieldHillCipher/build
 
       - name: Verify Artifact Checksums
         shell: pwsh
         run: |
-          $checksumFile = "./build/checksums.sha256"
+          $checksumFile = "GaloisFieldHillCipher/build/checksums.sha256"
           Get-Content $checksumFile | ForEach-Object {
             $expectedHash, $fileName = $_ -split '\s+' | Where-Object { $_ }
             
             Write-Host "Verifying file: $fileName"
-            $actualHash = (Get-FileHash -Algorithm SHA256 "./build/$fileName").Hash
+            $actualHash = (Get-FileHash -Algorithm SHA256 "GaloisFieldHillCipher/build/$fileName").Hash
             
             if ($actualHash -ne $expectedHash) {
               Write-Error "CHECKSUM MISMATCH for $fileName! Expected '$expectedHash' but got '$actualHash'."
@@ -83,4 +83,4 @@ jobs:
           Write-Host "All checksums verified successfully."
 
       - name: Run tests
-        run: .\\build\\Release\\UnitTests.exe
+        run: GaloisFieldHillCipher/build/Release/UnitTests.exe
