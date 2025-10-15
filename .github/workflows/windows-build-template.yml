@@ -1,4 +1,5 @@
 name: windows-build-template
+
 on:
   workflow_call:
     inputs:
@@ -11,14 +12,43 @@ on:
 
 jobs:
   build-windows:
-    runs-on: windows-latest
+    runs-on: windows-2022
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
         with:
           submodules: recursive
-      - run: cmake -S GaloisFieldHillCipher -B GaloisFieldHillCipher/build -DCMAKE_BUILD_TYPE=${{ inputs.config }}
-      - run: cmake --build GaloisFieldHillCipher/build --config ${{ inputs.config }}
-      - uses: actions/upload-artifact@v4
+
+      - name: Configure with CMake
+        run: cmake -S GaloisFieldHillCipher -B GaloisFieldHillCipher/build -DCMAKE_BUILD_TYPE=${{ inputs.config }}
+
+      - name: Build with CMake
+        run: cmake --build GaloisFieldHillCipher/build --config ${{ inputs.config }}
+
+      - name: Calculate build checksums
+        shell: pwsh
+        run: |
+          $buildPath = "GaloisFieldHillCipher/build/${{ inputs.config }}"
+          cd $buildPath
+
+          $filesToHash = "UnitTests.exe", "GaloisFieldHillCipher.exe"
+
+          $checksums = foreach ($file in $filesToHash) {
+              if (Test-Path $file) {
+                  $hash = (Get-FileHash -Algorithm SHA256 $file).Hash
+                  # Format output to match sha256sum (HASH  FILENAME) for consistency
+                  "$hash  $file"
+              } else {
+                  Write-Warning "File not found, skipping checksum: $file"
+              }
+          }
+          $checksums | Out-File -FilePath checksums.sha256 -Encoding ascii
+
+      - name: Upload build results
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: ${{ inputs.artifact-name }}
-          path: GaloisFieldHillCipher/build/**
+          path: |
+            GaloisFieldHillCipher/build/${{ inputs.config }}/UnitTests.exe
+            GaloisFieldHillCipher/build/${{ inputs.config }}/GaloisFieldHillCipher.exe
+            GaloisFieldHillCipher/build/${{ inputs.config }}/checksums.sha256

@@ -12,15 +12,33 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
         with:
           submodules: recursive
-      - run: sudo apt-get update && sudo apt-get install -y cmake build-essential
-      - run: cmake -S GaloisFieldHillCipher -B GaloisFieldHillCipher/build -DCMAKE_BUILD_TYPE=${{ inputs.config }}
-      - run: cmake --build GaloisFieldHillCipher/build --config ${{ inputs.config }} -- -j$(nproc)
-      - uses: actions/upload-artifact@v4
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y cmake build-essential
+
+      - name: Configure with CMake
+        run: cmake -S GaloisFieldHillCipher -B GaloisFieldHillCipher/build -DCMAKE_BUILD_TYPE=${{ inputs.config }}
+
+      - name: Build with CMake
+        run: cmake --build GaloisFieldHillCipher/build --config ${{ inputs.config }} -- -j$(nproc)
+
+      - name: Calculate build checksums
+        run: |
+          cd GaloisFieldHillCipher/build
+          sha256sum GaloisFieldHillCipher GaloisFieldHillCipher > checksums.sha256
+          sha256sum UnitTests GaloisFieldHillCipher > checksums.sha256
+
+      - name: Upload build results
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: ${{ inputs.artifact-name }}
-          path: GaloisFieldHillCipher/build/**
+          path: |
+            GaloisFieldHillCipher/build/UnitTests
+            GaloisFieldHillCipher/build/GaloisFieldHillCipher
+            GaloisFieldHillCipher/build/checksums.sha256
