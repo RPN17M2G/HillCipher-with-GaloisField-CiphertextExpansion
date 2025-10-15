@@ -19,7 +19,7 @@ jobs:
       config: Release
       artifact-name: build-release
 
-  test-windows-debug:
+  test-debug:
     needs: build-debug
     runs-on: windows-2022
     timeout-minutes: 10
@@ -50,7 +50,7 @@ jobs:
           Write-Host "All checksums verified successfully."
 
       - name: Run tests
-        run: ./build/Debug/UnitTests.exe
+        run: .\\build\\Debug\\UnitTests.exe
 
   test-release:
     needs: build-release
@@ -83,4 +83,4 @@ jobs:
           Write-Host "All checksums verified successfully."
 
       - name: Run tests
-        run: ./build/Release/UnitTests.exe
+        run: .\\build\\Release\\UnitTests.exe
