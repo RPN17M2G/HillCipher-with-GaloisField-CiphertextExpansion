@@ -31,13 +31,13 @@ jobs:
       
       - name: Verify Artifact Checksums
         run: |
-          cd ./build
+          cd ./GaloisFieldHillCipher/build
           sha256sum -c checksums.sha256
 
       - name: Run tests
         run: |
-          chmod +x ./build/UnitTests
-          ./build/UnitTests
+          chmod +x ./GaloisFieldHillCipher/build/UnitTests
+          ./GaloisFieldHillCipher/build/UnitTests
     timeout-minutes: 10
 
   test-linux-release:
@@ -52,13 +52,13 @@ jobs:
       
       - name: Verify Artifact Checksums
         run: |
-          cd ./build
+          cd ./GaloisFieldHillCipher/build
           sha256sum -c checksums.sha256
 
       - name: Run tests
         run: |
-          chmod +x ./build/UnitTests
-          ./build/UnitTests
+          chmod +x ./GaloisFieldHillCipher/build/UnitTests
+          ./GaloisFieldHillCipher/build/UnitTests
     timeout-minutes: 10
 
   valgrind-memory-test-release:
@@ -97,7 +97,7 @@ jobs:
      
       - name: Verify Artifact Checksums
         run: |
-          cd ./build
+          cd ./GaloisFieldHillCipher/build
           sha256sum -c checksums.sha256
 
       - run: chmod +x ./GaloisFieldHillCipher/build/GaloisFieldHillCipher
