@@ -50,7 +50,7 @@ jobs:
           Write-Host "All checksums verified successfully."
 
       - name: Run tests
-        run: GaloisFieldHillCipher/build/Debug/UnitTests.exe
+        run: GaloisFieldHillCipher/build/UnitTests.exe
 
   test-release:
     needs: build-release
@@ -83,4 +83,4 @@ jobs:
           Write-Host "All checksums verified successfully."
 
       - name: Run tests
-        run: GaloisFieldHillCipher/build/Release/UnitTests.exe
+        run: GaloisFieldHillCipher/build/UnitTests.exe
