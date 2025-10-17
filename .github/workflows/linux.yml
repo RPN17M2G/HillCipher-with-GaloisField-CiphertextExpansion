@@ -32,7 +32,7 @@ jobs:
       - name: Verify Artifact Checksums
         run: |
           cd ./GaloisFieldHillCipher/build
-          sha256sum -c checksums.sha256
+          echo "${{ needs.build-debug.outputs.unittest_checksum }}  UnitTests" | sha256sum -c -
 
       - name: Run tests
         run: |

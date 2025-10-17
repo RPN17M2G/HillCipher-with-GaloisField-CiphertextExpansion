@@ -33,21 +33,7 @@ jobs:
       - name: Verify Artifact Checksums
         shell: pwsh
         run: |
-          $checksumFile = "GaloisFieldHillCipher/build/checksums.sha256"
-          Get-Content $checksumFile | ForEach-Object {
-            $expectedHash, $fileName = $_ -split '\s+' | Where-Object { $_ }
-            
-            Write-Host "Verifying file: $fileName"
-            $actualHash = (Get-FileHash -Algorithm SHA256 "GaloisFieldHillCipher/build/$fileName").Hash
-            
-            if ($actualHash -ne $expectedHash) {
-              Write-Error "CHECKSUM MISMATCH for $fileName! Expected '$expectedHash' but got '$actualHash'."
-              exit 1
-            } else {
-              Write-Host "Checksum for $fileName is valid."
-            }
-          }
-          Write-Host "All checksums verified successfully."
+          echo "${{ needs.build-debug.outputs.unittest_checksum }}  UnitTests.exe" | sha256sum -c -
 
       - name: Run tests
         run: GaloisFieldHillCipher/build/UnitTests.exe
@@ -66,21 +52,7 @@ jobs:
       - name: Verify Artifact Checksums
         shell: pwsh
         run: |
-          $checksumFile = "GaloisFieldHillCipher/build/checksums.sha256"
-          Get-Content $checksumFile | ForEach-Object {
-            $expectedHash, $fileName = $_ -split '\s+' | Where-Object { $_ }
-            
-            Write-Host "Verifying file: $fileName"
-            $actualHash = (Get-FileHash -Algorithm SHA256 "GaloisFieldHillCipher/build/$fileName").Hash
-            
-            if ($actualHash -ne $expectedHash) {
-              Write-Error "CHECKSUM MISMATCH for $fileName! Expected '$expectedHash' but got '$actualHash'."
-              exit 1
-            } else {
-              Write-Host "Checksum for $fileName is valid."
-            }
-          }
-          Write-Host "All checksums verified successfully."
+          echo "${{ needs.build-release.outputs.executable_checksum }}  GaloisFieldHillCipher.exe" | sha256sum -c -
 
       - name: Run tests
         run: GaloisFieldHillCipher/build/UnitTests.exe
