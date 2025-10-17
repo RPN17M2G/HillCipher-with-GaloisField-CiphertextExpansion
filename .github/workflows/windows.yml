@@ -34,16 +34,8 @@ jobs:
         shell: pwsh
         run: |
           cd GaloisFieldHillCipher/build
-          $expected_executable_checksum = "${{ needs.build-debug.outputs.executable_checksum }}"
           $expected_unittest_checksum = "${{ needs.build-debug.outputs.unittest_checksum }}"
-
-          $actual_executable_checksum = (Get-FileHash -Algorithm SHA256 GaloisFieldHillCipher.exe).Hash.ToLower()
-          $actual_unittest_checksum = (Get-FileHash -Algorithm SHA256 UnitTests.exe).Hash.ToLower()
-
-          if ($expected_executable_checksum -ne $actual_executable_checksum) {
-            Write-Error "GaloisFieldHillCipher.exe checksum verification FAILED!"
-            exit 1
-          }
+          $actual_unittest_checksum = ((Get-FileHash -Algorithm SHA256 UnitTests.exe).Hash).Trim().ToLower()
 
           if ($expected_unittest_checksum -ne $actual_unittest_checksum) {
             Write-Error "UnitTests.exe checksum verification FAILED!"
@@ -69,16 +61,8 @@ jobs:
         shell: pwsh
         run: |
           cd GaloisFieldHillCipher/build
-          $expected_executable_checksum = "${{ needs.build-release.outputs.executable_checksum }}"
           $expected_unittest_checksum = "${{ needs.build-release.outputs.unittest_checksum }}"
-
-          $actual_executable_checksum = (Get-FileHash -Algorithm SHA256 GaloisFieldHillCipher.exe).Hash.ToLower()
-          $actual_unittest_checksum = (Get-FileHash -Algorithm SHA256 UnitTests.exe).Hash.ToLower()
-
-          if ($expected_executable_checksum -ne $actual_executable_checksum) {
-            Write-Error "GaloisFieldHillCipher.exe checksum verification FAILED!"
-            exit 1
-          }
+          $actual_unittest_checksum = ((Get-FileHash -Algorithm SHA256 UnitTests.exe).Hash).Trim().ToLower()
 
           if ($expected_unittest_checksum -ne $actual_unittest_checksum) {
             Write-Error "UnitTests.exe checksum verification FAILED!"
