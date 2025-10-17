@@ -33,8 +33,24 @@ jobs:
       - name: Verify Artifact Checksums
         shell: pwsh
         run: |
-          echo "${{ needs.build-release.outputs.unittest_checksum }}  UnitTests.exe" | sha256sum --strict -c -
+          cd GaloisFieldHillCipher/build
+          $expected_executable_checksum = "${{ needs.build-debug.outputs.executable_checksum }}"
+          $expected_unittest_checksum = "${{ needs.build-debug.outputs.unittest_checksum }}"
 
+          $actual_executable_checksum = (Get-FileHash -Algorithm SHA256 GaloisFieldHillCipher.exe).Hash.ToLower()
+          $actual_unittest_checksum = (Get-FileHash -Algorithm SHA256 UnitTests.exe).Hash.ToLower()
+
+          if ($expected_executable_checksum -ne $actual_executable_checksum) {
+            Write-Error "GaloisFieldHillCipher.exe checksum verification FAILED!"
+            exit 1
+          }
+
+          if ($expected_unittest_checksum -ne $actual_unittest_checksum) {
+            Write-Error "UnitTests.exe checksum verification FAILED!"
+            exit 1
+          }
+
+          Write-Host "All artifact checksums verified successfully!"
       - name: Run tests
         run: GaloisFieldHillCipher/build/UnitTests.exe
 
@@ -52,7 +68,24 @@ jobs:
       - name: Verify Artifact Checksums
         shell: pwsh
         run: |
-          echo "${{ needs.build-release.outputs.executable_checksum }}  GaloisFieldHillCipher.exe" | sha256sum --strict -c -
+          cd GaloisFieldHillCipher/build
+          $expected_executable_checksum = "${{ needs.build-release.outputs.executable_checksum }}"
+          $expected_unittest_checksum = "${{ needs.build-release.outputs.unittest_checksum }}"
 
+          $actual_executable_checksum = (Get-FileHash -Algorithm SHA256 GaloisFieldHillCipher.exe).Hash.ToLower()
+          $actual_unittest_checksum = (Get-FileHash -Algorithm SHA256 UnitTests.exe).Hash.ToLower()
+
+          if ($expected_executable_checksum -ne $actual_executable_checksum) {
+            Write-Error "GaloisFieldHillCipher.exe checksum verification FAILED!"
+            exit 1
+          }
+
+          if ($expected_unittest_checksum -ne $actual_unittest_checksum) {
+            Write-Error "UnitTests.exe checksum verification FAILED!"
+            exit 1
+          }
+
+          Write-Host "All artifact checksums verified successfully!"
+      
       - name: Run tests
         run: GaloisFieldHillCipher/build/UnitTests.exe
