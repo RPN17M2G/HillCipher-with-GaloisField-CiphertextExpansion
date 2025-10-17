@@ -53,7 +53,7 @@ jobs:
       - name: Verify Artifact Checksums
         run: |
           cd ./GaloisFieldHillCipher/build
-          sha256sum -c checksums.sha256
+          echo "${{ needs.build-release.outputs.unittest_checksum }}  UnitTests" | sha256sum -c -
 
       - name: Run tests
         run: |
@@ -98,7 +98,7 @@ jobs:
       - name: Verify Artifact Checksums
         run: |
           cd ./GaloisFieldHillCipher/build
-          sha256sum -c checksums.sha256
+          echo "${{ needs.build-release.outputs.executable_checksum }}  GaloisFieldHillCipher" | sha256sum -c -
 
       - run: chmod +x ./GaloisFieldHillCipher/build/GaloisFieldHillCipher
 
