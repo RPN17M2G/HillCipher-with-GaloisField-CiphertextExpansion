@@ -37,8 +37,8 @@ jobs:
         run: |
           $buildPath = "GaloisFieldHillCipher/build/${{ inputs.config }}"
           cd $buildPath
-          $executable_checksum = (Get-FileHash -Algorithm SHA256 GaloisFieldHillCipher.exe).Hash.ToLower()
-          $unittest_hash = (Get-FileHash -Algorithm SHA256 UnitTests.exe).Hash.ToLower()
+          $executable_checksum = ((Get-FileHash -Algorithm SHA256 GaloisFieldHillCipher.exe).Hash).Trim().ToLower()
+          $unittest_hash = ((Get-FileHash -Algorithm SHA256 UnitTests.exe).Hash).Trim().ToLower()
           echo "executable_checksum=$executable_checksum" >> $env:GITHUB_OUTPUT
           echo "unittest_checksum=$unittest_hash" >> $env:GITHUB_OUTPUT
 
