@@ -36,16 +36,15 @@ jobs:
         run: cmake --build GaloisFieldHillCipher/build --config ${{ inputs.config }}
 
       - name: Calculate build checksums
+        id: checksums 
         shell: pwsh
         run: |
           $buildPath = "GaloisFieldHillCipher/build/${{ inputs.config }}"
           cd $buildPath
-          $executable_raw_hash = (Get-FileHash -Algorithm SHA256 GaloisFieldHillCipher.exe).Hash
-          $unittest_raw_hash = (Get-FileHash -Algorithm SHA256 UnitTests.exe).Hash
-          $executable_clean_hash = ($executable_raw_hash | Out-String).Trim().ToLower()
-          $unittest_clean_hash = ($unittest_raw_hash | Out-String).Trim().ToLower()
-          echo "executable_checksum=$executable_clean_hash" >> $env:GITHUB_OUTPUT
-          echo "unittest_checksum=$unittest_clean_hash" >> $env:GITHUB_OUTPUT
+          $executable_checksum = (Get-FileHash -Algorithm SHA256 GaloisFieldHillCipher.exe).Hash.ToLower()
+          $unittest_checksum = (Get-FileHash -Algorithm SHA256 UnitTests.exe).Hash.ToLower()
+          echo "executable_checksum=$executable_checksum" >> $env:GITHUB_OUTPUT
+          echo "unittest_checksum=$unittest_checksum" >> $env:GITHUB_OUTPUT
 
       - name: Upload build results
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

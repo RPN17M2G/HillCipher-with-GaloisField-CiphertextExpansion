@@ -35,7 +35,7 @@ jobs:
         run: |
           cd GaloisFieldHillCipher/build
           $expected_unittest_checksum = "${{ needs.build-debug.outputs.unittest_checksum }}"
-          $actual_unittest_checksum = ((Get-FileHash -Algorithm SHA256 UnitTests.exe).Hash).Trim().ToLower()
+          $actual_unittest_checksum = (Get-FileHash -Algorithm SHA256 UnitTests.exe).Hash.ToLower()
 
           if ($expected_unittest_checksum -ne $actual_unittest_checksum) {
             Write-Error "UnitTests.exe checksum verification FAILED!"
@@ -43,6 +43,7 @@ jobs:
           }
 
           Write-Host "All artifact checksums verified successfully!"
+
       - name: Run tests
         run: GaloisFieldHillCipher/build/UnitTests.exe
 
@@ -62,7 +63,7 @@ jobs:
         run: |
           cd GaloisFieldHillCipher/build
           $expected_unittest_checksum = "${{ needs.build-release.outputs.unittest_checksum }}"
-          $actual_unittest_checksum = ((Get-FileHash -Algorithm SHA256 UnitTests.exe).Hash).Trim().ToLower()
+          $actual_unittest_checksum = (Get-FileHash -Algorithm SHA256 UnitTests.exe).Hash.ToLower()
 
           if ($expected_unittest_checksum -ne $actual_unittest_checksum) {
             Write-Error "UnitTests.exe checksum verification FAILED!"
