@@ -20,6 +20,9 @@ on:
 jobs:
   build-windows:
     runs-on: windows-2022
+    outputs:
+      executable_checksum: ${{ steps.checksums.outputs.executable_checksum }}
+      unittest_checksum: ${{ steps.checksums.outputs.unittest_checksum }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
