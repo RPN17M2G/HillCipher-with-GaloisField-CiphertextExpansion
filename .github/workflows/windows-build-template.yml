@@ -12,10 +12,10 @@ on:
     outputs:
       executable_checksum:
         description: "SHA256 checksum for the GaloisFieldHillCipher binary"
-        value: ${{ jobs.build.outputs.executable_checksum }}
+        value: ${{ jobs.build-windows.outputs.executable_checksum }}
       unittest_checksum:
         description: "SHA256 checksum for the UnitTests binary"
-        value: ${{ jobs.build.outputs.unittest_checksum }}
+        value: ${{ jobs.build-windows.outputs.unittest_checksum }}
 
 jobs:
   build-windows:
