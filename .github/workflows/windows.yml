@@ -33,7 +33,7 @@ jobs:
       - name: Verify Artifact Checksums
         shell: pwsh
         run: |
-          echo "${{ needs.build-debug.outputs.unittest_checksum }}  UnitTests.exe" | sha256sum -c -
+          echo "${{ needs.build-release.outputs.unittest_checksum }}  UnitTests.exe" | sha256sum --strict -c -
 
       - name: Run tests
         run: GaloisFieldHillCipher/build/UnitTests.exe
@@ -52,7 +52,7 @@ jobs:
       - name: Verify Artifact Checksums
         shell: pwsh
         run: |
-          echo "${{ needs.build-release.outputs.executable_checksum }}  GaloisFieldHillCipher.exe" | sha256sum -c -
+          echo "${{ needs.build-release.outputs.executable_checksum }}  GaloisFieldHillCipher.exe" | sha256sum --strict -c -
 
       - name: Run tests
         run: GaloisFieldHillCipher/build/UnitTests.exe
