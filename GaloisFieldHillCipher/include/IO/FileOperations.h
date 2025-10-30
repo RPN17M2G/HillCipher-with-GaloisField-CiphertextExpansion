@@ -8,7 +8,7 @@
 
 #include "FileValidation.h"
 #include "StatusCodes.h"
-#include "Cipher/BlockDividing.h"
+#include "Cipher/CipherParts/BlockDividing.h"
 #include "log.h"
 
 /**

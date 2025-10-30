@@ -1,356 +1,230 @@
 #include "Cipher/CipherModeHandlers.h"
 
-STATUS_CODE handle_generate_and_encrypt_mode(const ParsedArguments* args)
+STATUS_CODE handle_generate_and_encrypt_mode(const GenerateAndEncryptArguments* args)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
-    int64_t** encryption_matrix = NULL;
-    uint8_t* serialized_data = NULL;
-    uint32_t serialized_size = 0;
-    uint8_t* plaintext = NULL;
-    uint8_t* key_data = NULL;
-    int64_t* ciphertext = NULL;
-    uint32_t plaintext_size = 0, ciphertext_size = 0;
-    uint8_t* serialized_ciphertext = NULL;
-    uint32_t serialized_ciphertext_size = 0;
+    bool reached_encryption = false;
 
-    if (!args || !args->output_file || (0 == args->dimension) || !args->input_file || !args->key)
+    if (!args || !args->encrypt_arguments || !args->key_generation_arguments)
     {
-        return STATUS_CODE_INVALID_ARGUMENT;
-    }
-
-    log_info("[*] Generating encryption matrix...\n");
-
-    return_code = generate_encryption_matrix(&encryption_matrix, args->dimension, DEFAULT_PRIME_GALOIS_FIELD, 3);
-    if (STATUS_FAILED(return_code))
-    {
+        log_error("[!] Invalid arguments in generate_and_encrypt_mode");
+        return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
     }
 
-    log_info("[*] Encryption matrix generated.\n");
-    if (args->verbose)
-    {
-        print_matrix(encryption_matrix, args->dimension);
-    }
+    printf("[*] Starting generate and encrypt operation...");
+    printf("[*] Parameters: dimension=%u, prime_field=%u, error_vectors=%u",
+        args->key_generation_arguments->dimension,
+        args->key_generation_arguments->prime_field,
+        args->key_generation_arguments->number_of_error_vectors);
+    log_info("Starting generate and encrypt operation...");
+    log_info("Parameters: dimension=%u, prime_field=%u, error_vectors=%u",
+        args->key_generation_arguments->dimension,
+        args->key_generation_arguments->prime_field,
+        args->key_generation_arguments->number_of_error_vectors);
 
-    return_code = serialize_matrix(&serialized_data, &serialized_size, encryption_matrix, args->dimension);
+    return_code = handle_key_generation_mode(args->key_generation_arguments);
     if (STATUS_FAILED(return_code))
     {
+        log_error("[!] Failed to generate encryption key");
         goto cleanup;
     }
 
-    if (args->verbose)
-    {
-        print_uint8_vector(serialized_data, serialized_size, "[*] Serialized matrix data:");
-        log_info("[*] Writing to key file: %s\n", args->key);
-    }
+    reached_encryption = true;
 
-    return_code = write_uint8_to_file(args->key, serialized_data, serialized_size);
+    return_code = handle_encrypt_mode(args->encrypt_arguments);
     if (STATUS_FAILED(return_code))
     {
+        log_error("[!] Failed to encrypt data");
+        printf("Failed to encrypt data");
         goto cleanup;
     }
 
-    if (args->verbose)
-    {
-        log_info("[*] Reading plaintext from: %s\n", args->input_file);
-    }
-
-    return_code = read_uint8_from_file(&plaintext, &plaintext_size, args->input_file);
-    if (STATUS_FAILED(return_code))
-    {
-        goto cleanup;
-    }
-
-    if (args->verbose)
-    {
-        print_uint8_vector(plaintext, plaintext_size / BYTE_SIZE, "[*] Plaintext data:");
-    }
-
-    log_info("[*] Encrypting data...\n");
-
-    return_code = encrypt(&ciphertext, &ciphertext_size, encryption_matrix, args->dimension, DEFAULT_PRIME_GALOIS_FIELD, plaintext, plaintext_size, args->number_of_random_bits_between_bytes);
-    if (STATUS_FAILED(return_code))
-    {
-        goto cleanup;
-    }
-    ciphertext_size = (ciphertext_size / (BYTE_SIZE * sizeof(int64_t))); // Size is returned as bits
-
-    log_info("[*] Encryption completed, ciphertext size: %ld\n", ciphertext_size);
-
-    if (args->verbose)
-    {
-        print_int64_vector(ciphertext, ciphertext_size, "[*] Ciphertext data:");
-        log_info("[*] Writing ciphertext to: %s\n", args->output_file);
-    }
-
-    if (args->output_format == OUTPUT_FORMAT_BINARY)
-    {
-        if (args->verbose)
-        {
-            log_info("[*] Serializing ciphertext to binary...\n");
-        }
-        return_code = serialize_vector(&serialized_ciphertext, &serialized_ciphertext_size, ciphertext, ciphertext_size);
-    }
-    else // Text format
-    {
-        if (args->verbose)
-        {
-            log_info("[*] Mapping int64 ciphertext to text...\n");
-        }
-        return_code = map_from_int64_to_ascii(&serialized_ciphertext, &serialized_ciphertext_size, ciphertext, ciphertext_size);
-    }
-    if (STATUS_FAILED(return_code))
-    {
-        goto cleanup;
-    }
-    if (args->verbose)
-    {
-        print_uint8_vector(serialized_ciphertext, serialized_ciphertext_size, "[*] Serialized ciphertext data:");
-    }
-
-    return_code = write_uint8_to_file(args->output_file, serialized_ciphertext, serialized_ciphertext_size);
-
-    if (args->verbose && STATUS_SUCCESS(return_code))
-    {
-        log_info("[*] Ciphertext written successfully.\n");
-    }
+    log_info("Generate and encrypt operation completed successfully");
+    printf("[*] Generate and encrypt operation completed successfully");
 
 cleanup:
-    free(serialized_data);
-    free(serialized_ciphertext);
-    free(plaintext);
-    free(key_data);
-    free(ciphertext);
-    (void)free_int64_matrix(encryption_matrix, args->dimension);
+    if (STATUS_FAILED(return_code))
+    {
+        if (reached_encryption)
+            free((void*)args->encrypt_arguments);
+        free((void*)args->key_generation_arguments);
+    }
+    free((void*)args);
     return return_code;
 }
 
-STATUS_CODE handle_key_generation_mode(const ParsedArguments* args)
+STATUS_CODE handle_key_generation_mode(const KeyGenerationArguments* args)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
-    int64_t** encryption_matrix = NULL;
+    bool* used_indexes = NULL;
+    bool* used_ascii_characters = NULL;
     uint8_t* serialized_data = NULL;
     uint32_t serialized_size = 0;
+    Secrets* secrets = NULL;
 
     if (!args || !args->output_file || (0 == args->dimension))
     {
+        log_error("[!] Invalid arguments in key_generation_mode: %s",
+            !args ? "args is NULL" :
+            !args->output_file ? "output_file is NULL" :
+            "dimension is 0");
         return STATUS_CODE_INVALID_ARGUMENT;
     }
 
-    log_info("[*] Generating encryption matrix...\n");
+    log_info("Generating encryption key...");
+    printf("[*] Generating encryption key...");
 
-    return_code = generate_encryption_matrix(&encryption_matrix, args->dimension, DEFAULT_PRIME_GALOIS_FIELD, 3);
+    return_code = build_encryption_secrets(&secrets, args);
+    if (STATUS_FAILED(return_code))
+    {
+        log_error("[!] Failed to build encryption secrets");
+        goto cleanup;
+    }
+
+    return_code = serialize_secrets(&serialized_data, &serialized_size, *secrets);
     if (STATUS_FAILED(return_code))
     {
         goto cleanup;
     }
 
-    log_info("[*] Encryption matrix generated.\n");
-    if (args->verbose)
-    {
-        print_matrix(encryption_matrix, args->dimension);
-    }
+    log_info("Key generation completed successfully.");
+    printf("Key generation completed successfully.\n");
 
-    return_code = serialize_matrix(&serialized_data, &serialized_size, encryption_matrix, args->dimension);
-    if (STATUS_FAILED(return_code))
-    {
-        goto cleanup;
-    }
-
-    if (args->verbose)
-    {
-        print_uint8_vector(serialized_data, serialized_size, "[*] Serialized matrix data:");
-        log_info("[*] Writing to key file: %s\n", args->output_file);
-    }
+    log_uint8_vector(serialized_data, serialized_size, "Serialized secrets data:", true);
+    log_info("Writing key to file: %s", args->output_file);
+    printf("[*] Writing key to file: %s\n", args->output_file);
 
     return_code = write_uint8_to_file(args->output_file, serialized_data, serialized_size);
+
+    if (STATUS_SUCCESS(return_code))
+    {
+        log_info("Key file written successfully.");
+    }
+    else
+    {
+        log_error("[!] Failed to write key file: %s", args->output_file);
+    }
 
 cleanup:
     free(serialized_data);
-    (void)free_int64_matrix(encryption_matrix, args->dimension);
+    free(used_indexes);
+    free(used_ascii_characters);
+    free_secrets(secrets);
+    free(secrets);
     return return_code;
 }
 
-STATUS_CODE handle_decryption_key_generation_mode(const ParsedArguments* args)
-{
-    STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
-    uint8_t* key_data = NULL;
-    int64_t** encryption_matrix = NULL;
-    int64_t** decryption_matrix = NULL;
-    uint32_t key_size = 0;
-    uint8_t* serialized_data = NULL;
-    uint32_t serialized_size = 0;
-
-    if (!args || !args->key || !args->output_file || (0 == args->dimension))
-    {
-        return STATUS_CODE_INVALID_ARGUMENT;
-    }
-
-    if (args->verbose)
-    {
-        log_info("[*] Reading encryption key from: %s\n", args->key);
-    }
-
-    return_code = read_uint8_from_file(&key_data, &key_size, args->key);
-    if (STATUS_FAILED(return_code))
-    {
-        goto cleanup;
-    }
-
-    if (args->verbose)
-    {
-        print_uint8_vector(key_data, key_size / BYTE_SIZE, "[*] Key data:");
-    }
-
-    return_code = deserialize_matrix(&encryption_matrix, args->dimension, key_data, key_size);
-    if (STATUS_FAILED(return_code))
-    {
-        goto cleanup;
-    }
-
-    log_info("[*] Generating decryption matrix...\n");
-
-    return_code = generate_decryption_matrix(&decryption_matrix, args->dimension,
-                                           encryption_matrix, DEFAULT_PRIME_GALOIS_FIELD);
-    if (STATUS_FAILED(return_code))
-    {
-        goto cleanup;
-    }
-
-    log_info("[*] Decryption matrix generated.\n");
-
-    if (args->verbose)
-    {
-        print_matrix(decryption_matrix, args->dimension);
-    }
-
-    return_code = serialize_matrix(&serialized_data, &serialized_size, decryption_matrix, args->dimension);
-    if (STATUS_FAILED(return_code))
-    {
-        goto cleanup;
-    }
-
-    if (args->verbose)
-    {
-        print_uint8_vector(serialized_data, serialized_size, "[*] Serialized matrix data:");
-        log_info("[*] Writing to key file: %s\n", args->output_file);
-    }
-
-    return_code = write_uint8_to_file(args->output_file, serialized_data, serialized_size);
-
-cleanup:
-    (void)free_int64_matrix(encryption_matrix, args->dimension);
-    (void)free_int64_matrix(decryption_matrix, args->dimension);
-    free(key_data);
-    return return_code;
-}
-
-STATUS_CODE handle_encrypt_mode(const ParsedArguments* args)
+STATUS_CODE handle_encrypt_mode(const EncryptArguments* args)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
     uint8_t* plaintext = NULL;
     uint8_t* key_data = NULL;
-    int64_t** encryption_matrix = NULL;
     int64_t* ciphertext = NULL;
+    uint8_t* mapped_ciphertext = NULL;
     uint32_t plaintext_size = 0, ciphertext_size = 0, key_size = 0;
     uint8_t* serialized_ciphertext = NULL;
     uint32_t serialized_ciphertext_size = 0;
+    Secrets secrets = {0};
 
-    if (!args || !args->input_file || !args->key || !args->output_file || (0 == args->dimension))
+    if (!args || !args->input_file || !args->key || !args->output_file)
     {
+        log_error("[!] Invalid arguments in encrypt_mode");
         return STATUS_CODE_INVALID_ARGUMENT;
     }
 
-    if (args->verbose)
-    {
-        log_info("[*] Reading plaintext from: %s\n", args->input_file);
-    }
+    printf("[*] Starting encryption operation...");
+    log_info("Starting encryption operation...");
+
+    log_info("Reading plaintext from: %s", args->input_file);
 
     return_code = read_uint8_from_file(&plaintext, &plaintext_size, args->input_file);
     if (STATUS_FAILED(return_code))
     {
+        log_error("[!] Failed to read plaintext file");
         goto cleanup;
     }
 
-    if (args->verbose)
-    {
-        print_uint8_vector(plaintext, plaintext_size / BYTE_SIZE, "[*] Plaintext data:");
-    }
+    log_uint8_vector(plaintext, plaintext_size, "[*] Plaintext data:", false);
 
-    if (args->verbose)
-    {
-        log_info("[*] Reading key from: %s\n", args->key);
-    }
+    log_info("Reading key from: %s", args->key);
 
     return_code = read_uint8_from_file(&key_data, &key_size, args->key);
     if (STATUS_FAILED(return_code))
     {
+        log_error("[!] Failed to read key file");
         goto cleanup;
     }
 
-    if (args->verbose)
-    {
-        print_uint8_vector(key_data, key_size / BYTE_SIZE, "[*] Key data:");
-    }
+    log_uint8_vector(key_data, key_size, "Key data:", true);
 
-    return_code = deserialize_matrix(&encryption_matrix, args->dimension, key_data, key_size);
+    return_code = deserialize_secrets(&secrets, key_data, key_size);
     if (STATUS_FAILED(return_code))
     {
+        log_error("Failed to deserialize secrets");
         goto cleanup;
     }
 
-    if (args->verbose)
-    {
-        print_matrix(encryption_matrix, args->dimension);
-    }
+    log_info("Deserialized secrets.");
 
-    log_info("[*] Encrypting data...\n");
-
-    return_code = encrypt(&ciphertext, &ciphertext_size, encryption_matrix, args->dimension, DEFAULT_PRIME_GALOIS_FIELD, plaintext, plaintext_size, args->number_of_random_bits_between_bytes);
+    return_code = encrypt(&ciphertext, &ciphertext_size, plaintext, plaintext_size * BYTE_SIZE, secrets);
     if (STATUS_FAILED(return_code))
     {
+        log_error("Encryption process failed");
         goto cleanup;
     }
     ciphertext_size = (ciphertext_size / (BYTE_SIZE * sizeof(int64_t))); // Size is returned as bits
 
-    log_info("[*] Encryption completed, ciphertext size: %ld\n", ciphertext_size);
+    log_info("Encryption completed, ciphertext size: %ld", ciphertext_size);
 
-    if (args->verbose)
-    {
-        print_int64_vector(ciphertext, ciphertext_size, "[*] Ciphertext data:");
-        log_info("[*] Writing ciphertext to: %s\n", args->output_file);
-    }
+    log_int64_vector(ciphertext, ciphertext_size, "Ciphertext data:", false);
 
-    if (args->output_format == OUTPUT_FORMAT_BINARY)
+    if (STATUS_SUCCESS(validate_file_is_binary(args->output_file))) // Binary format
     {
-        if (args->verbose)
+        log_info("Serializing ciphertext to binary...");
+        return_code = serialize_vector(&serialized_ciphertext, &serialized_ciphertext_size, ciphertext, ciphertext_size, secrets.prime_field);
+        if (STATUS_FAILED(return_code))
         {
-            log_info("[*] Serializing ciphertext to binary...\n");
+            log_error("[!] Failed to serialize ciphertext to compact binary.");
+            goto cleanup;
         }
-        return_code = serialize_vector(&serialized_ciphertext, &serialized_ciphertext_size, ciphertext, ciphertext_size);
+
     }
     else // Text format
     {
-        if (args->verbose)
+        log_info("Mapping int64 ciphertext to text...");
+        return_code = map_from_int64_to_ascii(&mapped_ciphertext, &serialized_ciphertext_size, ciphertext, ciphertext_size, secrets.ascii_mapping, secrets.number_of_letters_for_each_digit_ascii_mapping, calculate_digits_per_element(secrets.prime_field));
+        if (STATUS_FAILED(return_code))
         {
-            log_info("[*] Mapping int64 ciphertext to text...\n");
+            log_error("[!] Failed to map int64 ciphertext to ASCII.");
+            goto cleanup;
         }
-        return_code = map_from_int64_to_ascii(&serialized_ciphertext, &serialized_ciphertext_size, ciphertext, ciphertext_size);
-    }
-    if (STATUS_FAILED(return_code))
-    {
-        goto cleanup;
-    }
-    if (args->verbose)
-    {
-        print_uint8_vector(serialized_ciphertext, serialized_ciphertext_size, "[*] Serialized ciphertext data:");
+        log_info("Successfully mapped int64 ciphertext to ASCII.");
+
+        log_info("Permutating ASCII ciphertext...");
+        return_code = permutate_uint8_vector(&serialized_ciphertext, mapped_ciphertext, serialized_ciphertext_size, secrets.permutation_vector, calculate_digits_per_element(secrets.prime_field));
+        if (STATUS_FAILED(return_code))
+        {
+            log_error("[!] Failed to permutate ASCII ciphertext.");
+            goto cleanup;
+        }
+        log_info("Successfully permutated ASCII ciphertext");
+
+        serialized_ciphertext_size++; // Add one for the null terminator
     }
 
+    log_uint8_vector(serialized_ciphertext, serialized_ciphertext_size, "Serialized ciphertext data:", true);
+
+    log_info("Encryption completed successfully.");
+    printf("[*] Encryption completed successfully.\n");
+
+    log_info("Writing ciphertext to: %s", args->output_file);
+    printf("[*] Writing ciphertext to: %s\n", args->output_file);
     return_code = write_uint8_to_file(args->output_file, serialized_ciphertext, serialized_ciphertext_size);
 
-    if (args->verbose)
+    if (STATUS_SUCCESS(return_code))
     {
-        log_info("[*] Ciphertext written successfully.\n");
+        log_info("Ciphertext written successfully.");
     }
 
 cleanup:
@@ -358,111 +232,205 @@ cleanup:
     free(serialized_ciphertext);
     free(key_data);
     free(ciphertext);
-    (void)free_int64_matrix(encryption_matrix, args->dimension);
+    free(mapped_ciphertext);
+    free_secrets(&secrets);
+    free((void*)args);
     return return_code;
 }
 
-STATUS_CODE handle_decrypt_mode(const ParsedArguments* args)
+STATUS_CODE handle_decryption_key_generation_mode(const DecryptionKeyGenerationArguments* args)
+{
+    STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
+    uint8_t* key_data = NULL;
+    uint32_t key_size = 0;
+    uint8_t* serialized_data = NULL;
+    uint32_t serialized_size = 0;
+    Secrets encryption_secrets = {0};
+    Secrets* decryption_secrets = NULL;
+
+    if (!args || !args->key || !args->output_file)
+    {
+        log_error("Invalid arguments in decryption_key_generation_mode");
+        return STATUS_CODE_INVALID_ARGUMENT;
+    }
+
+    printf("[*] Starting decryption key generation operation...");
+    log_info("Starting decryption key generation operation...");
+
+    log_info("Reading encryption key from: %s", args->key);
+
+    return_code = read_uint8_from_file(&key_data, &key_size, args->key);
+    if (STATUS_FAILED(return_code))
+    {
+        log_error("Failed to read encryption key file");
+        goto cleanup;
+    }
+
+    log_uint8_vector(key_data, key_size, "Key data:", true);
+
+    log_info("Deserializing encryption secrets...");
+
+    return_code = deserialize_secrets(&encryption_secrets, key_data, key_size);
+    if (STATUS_FAILED(return_code))
+    {
+        log_error("Failed to deserialize encryption secrets");
+        goto cleanup;
+    }
+    log_info("Successfully deserialized encryption secrets.");
+
+    return_code = build_decryption_secrets(&decryption_secrets, &encryption_secrets);
+    if (STATUS_FAILED(return_code))
+    {
+        log_error("Failed to build decryption secrets");
+        goto cleanup;
+    }
+    log_info("Successfully built decryption secrets.");
+
+    return_code = serialize_secrets(&serialized_data, &serialized_size, *decryption_secrets);
+    if (STATUS_FAILED(return_code))
+    {
+        goto cleanup;
+    }
+
+    printf("[*] Decryption key generation completed successfully.\n");
+    log_info("Decryption key generation completed successfully.");
+
+    log_uint8_vector(serialized_data, serialized_size, "[*] Serialized matrix data:", true);
+    log_info("Writing to key file: %s", args->output_file);
+    printf("[*] Writing to key file: %s\n", args->output_file);
+
+    return_code = write_uint8_to_file(args->output_file, serialized_data, serialized_size);
+
+    if (STATUS_SUCCESS(return_code))
+    {
+        log_info("Key file written successfully.");
+    }
+    else
+    {
+        log_error("[!] Failed to write key file: %s", args->output_file);
+    }
+
+cleanup:
+    free(serialized_data);
+    free(key_data);
+    free_secrets(&encryption_secrets);
+    free_secrets(decryption_secrets);
+    free(decryption_secrets);
+    return return_code;
+}
+
+STATUS_CODE handle_decrypt_mode(const DecryptArguments* args)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
     uint8_t* key_data = NULL;
     uint8_t* decrypted_text = NULL;
     int64_t* ciphertext = NULL;
     uint32_t serialized_ciphertext_size = 0;
+    uint8_t* ciphertext_permutated = NULL;
     uint8_t* serialized_ciphertext = NULL;
-    int64_t** decryption_matrix = NULL;
     uint32_t ciphertext_size = 0, decrypted_size = 0, key_size = 0;
+    Secrets secrets = {0};
 
-    if (!args || !args->input_file || !args->key || !args->output_file || (0 == args->dimension))
+    if (!args || !args->input_file || !args->key || !args->output_file)
     {
-        return STATUS_CODE_INVALID_ARGUMENT;
-    }
-
-    if (args->verbose)
-    {
-        log_info("Reading ciphertext from: %s\n", args->input_file);
-    }
-
-    return_code = read_uint8_from_file(&serialized_ciphertext, &serialized_ciphertext_size, args->input_file);
-    if (STATUS_FAILED(return_code))
-    {
-        goto cleanup;
-    }
-    return_code = deserialize_vector(&ciphertext, &ciphertext_size, serialized_ciphertext, serialized_ciphertext_size);
-    if (STATUS_FAILED(return_code))
-    {
+        log_error("Invalid arguments in decrypt_mode");
+        return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
     }
 
-    if (args->verbose)
-    {
-        print_int64_vector(ciphertext, ciphertext_size / (sizeof(int64_t) * BYTE_SIZE), "[*] Ciphertext data:");
-    }
+    printf("[*] Starting decryption operation...");
+    log_info("Starting decryption operation...");
 
-    if (args->verbose)
-    {
-        log_info("[*] Reading key from: %s\n", args->key);
-    }
+    log_info("Reading key from: %s", args->key);
 
     return_code = read_uint8_from_file(&key_data, &key_size, args->key);
     if (STATUS_FAILED(return_code))
     {
+        log_error("Failed to read key file");
         goto cleanup;
     }
 
-    if (args->verbose)
+    log_uint8_vector(key_data, key_size, "[*] Key data:", true);
+
+    log_info("Deserializing secrets...");
+
+    return_code = deserialize_secrets(&secrets, key_data, key_size);
+    if (STATUS_FAILED(return_code))
     {
-        print_uint8_vector(key_data, key_size / BYTE_SIZE, "[*] Key data:");
+        log_error("[!] Failed to deserialize secrets.");
+        goto cleanup;
     }
 
-    if (args->input_format == OUTPUT_FORMAT_BINARY)
+    log_info("Successfully deserialized secrets.");
+
+    log_info("Reading ciphertext from: %s", args->input_file);
+
+    return_code = read_uint8_from_file(&serialized_ciphertext, &serialized_ciphertext_size, args->input_file);
+    if (STATUS_FAILED(return_code))
     {
-        if (args->verbose)
+        log_error("Failed to read ciphertext file");
+        goto cleanup;
+    }
+
+    if (STATUS_SUCCESS(validate_file_is_binary(args->input_file))) // Binary format
+    {
+        log_info("Deserializing ciphertext from binary...");
+        return_code = deserialize_vector(&ciphertext, &ciphertext_size, serialized_ciphertext, serialized_ciphertext_size, secrets.prime_field);
+        if (STATUS_FAILED(return_code))
         {
-            log_info("[*] Deserializing binary ciphertext...\n");
+            log_error("[!] Failed to deserialize ciphertext from binary.");
+            goto cleanup;
         }
-        return_code = deserialize_vector(&ciphertext, &ciphertext_size, serialized_ciphertext, serialized_ciphertext_size);
     }
     else // Text format
     {
-        if (args->verbose)
+        log_info("Permutating ASCII ciphertext...");
+
+        serialized_ciphertext_size -= 1; // Remove NULL terminator
+
+        return_code = permutate_uint8_vector(&ciphertext_permutated, serialized_ciphertext, serialized_ciphertext_size, secrets.permutation_vector, calculate_digits_per_element(secrets.prime_field));
+        if (STATUS_FAILED(return_code))
         {
-            log_info("[*] Mapping text ciphertext to int64_t vector...\n");
+            log_error("[!] Failed to permutate ASCII ciphertext.");
+            goto cleanup;
         }
-        return_code = map_from_ascii_to_int64(&ciphertext, &ciphertext_size, serialized_ciphertext, serialized_ciphertext_size);
+
+        log_info("Successfully permutated ASCII ciphertext.");
+
+        log_info("Mapping ASCII ciphertext to int64...");
+
+        return_code = map_from_ascii_to_int64(&ciphertext, &ciphertext_size, ciphertext_permutated, serialized_ciphertext_size, secrets.ascii_mapping, secrets.number_of_letters_for_each_digit_ascii_mapping, calculate_digits_per_element(secrets.prime_field));
+        if (STATUS_FAILED(return_code))
+        {
+            log_error("[!] Failed to map ASCII ciphertext to int64.");
+            goto cleanup;
+        }
+
+        log_info("Successfully mapped ASCII ciphertext to int64.");
     }
+
+    log_int64_vector(ciphertext, ciphertext_size / sizeof(int64_t), "[*] Ciphertext data:", false);
+
+    return_code = decrypt(&decrypted_text, &decrypted_size, ciphertext, ciphertext_size * BYTE_SIZE, secrets);
     if (STATUS_FAILED(return_code))
     {
-        goto cleanup;
-    }
-
-    if (args->verbose)
-    {
-        print_matrix(decryption_matrix, args->dimension);
-    }
-
-    log_info("[*] Decrypting data...\n");
-
-    return_code = decrypt(&decrypted_text, &decrypted_size, decryption_matrix, args->dimension, DEFAULT_PRIME_GALOIS_FIELD, ciphertext, ciphertext_size, args->number_of_random_bits_between_bytes);
-    if (STATUS_FAILED(return_code))
-    {
+        log_error("Decryption process failed");
         goto cleanup;
     }
     decrypted_size = (decrypted_size / BYTE_SIZE); // Size is returned as bits
 
-    log_info("Decryption completed, plaintext size: %ld\n", decrypted_size);
+    log_info("Decryption completed, plaintext size: %ld", decrypted_size);
+    printf("[*] Decryption completed successfully, plaintext size: %ld\n", decrypted_size);
 
-    if (args->verbose)
-    {
-        print_uint8_vector(decrypted_text, decrypted_size, "[*] Decrypted data:");
-        log_info("[*] Writing plaintext to: %s\n", args->output_file);
-    }
+    log_uint8_vector(decrypted_text, decrypted_size, "[*] Decrypted data:", false);
+    log_info("Writing plaintext to: %s", args->output_file);
+    printf("[*] Writing plaintext to: %s\n", args->output_file);
 
     return_code = write_uint8_to_file(args->output_file, decrypted_text, decrypted_size);
 
-    if (args->verbose && STATUS_SUCCESS(return_code))
+    if (STATUS_SUCCESS(return_code))
     {
-        log_info("[*] Plaintext written successfully.\n");
+        log_info("Plaintext written successfully.");
     }
 
 cleanup:
@@ -470,143 +438,51 @@ cleanup:
     free(serialized_ciphertext);
     free(ciphertext);
     free(decrypted_text);
-    (void)free_int64_matrix(decryption_matrix, args->dimension);
+    free(ciphertext_permutated);
+    free_secrets(&secrets);
+    free((void*)args);
     return return_code;
 }
 
-STATUS_CODE handle_generate_and_decrypt_mode(const ParsedArguments* args)
+STATUS_CODE handle_generate_and_decrypt_mode(const GenerateAndDecryptArguments* args)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
-    uint8_t* key_data = NULL;
-    uint8_t* decrypted_text = NULL;
-    int64_t* ciphertext = NULL;
-    int64_t** encryption_matrix = NULL;
-    int64_t** decryption_matrix = NULL;
-    uint32_t ciphertext_size = 0, decrypted_size = 0, key_size = 0;
-    uint8_t* serialized_ciphertext = NULL;
-    uint32_t serialized_ciphertext_size = 0;
+    DecryptionKeyGenerationArguments* key_generation_arguments = args->key_generation_arguments;
+    DecryptArguments* decrypt_arguments = args->decrypt_arguments;
 
-    if (!args || !args->input_file || !args->key || !args->output_file || (0 == args->dimension))
+    if (!args || !args->decrypt_arguments || !args->key_generation_arguments)
     {
-        return STATUS_CODE_INVALID_ARGUMENT;
-    }
-
-    if (args->verbose)
-    {
-        log_info("[*] Reading ciphertext from: %s\n", args->input_file);
-    }
-
-    return_code = read_uint8_from_file(&serialized_ciphertext, &serialized_ciphertext_size, args->input_file);
-    if (STATUS_FAILED(return_code))
-    {
+        log_error("Invalid arguments in generate_and_decrypt_mode");
+        return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
     }
 
-    serialized_ciphertext_size = serialized_ciphertext_size / BYTE_SIZE; // Convert to bytes
+    printf("[*] Starting generate and decrypt operation...");
+    log_info("Starting generate and decrypt operation...");
 
-    if (args->verbose)
-    {
-        print_uint8_vector(serialized_ciphertext, serialized_ciphertext_size, "[*] Serialized ciphertext data:");
-    }
-
-    if (args->input_format == OUTPUT_FORMAT_BINARY)
-    {
-        if (args->verbose)
-        {
-            log_info("[*] Deserializing binary ciphertext...\n");
-        }
-        return_code = deserialize_vector(&ciphertext, &ciphertext_size, serialized_ciphertext, serialized_ciphertext_size);
-    }
-    else // Text format
-    {
-        if (args->verbose)
-        {
-            log_info("[*] Mapping text ciphertext to int64_t vector...\n");
-        }
-        return_code = map_from_ascii_to_int64(&ciphertext, &ciphertext_size, serialized_ciphertext, serialized_ciphertext_size);
-    }
+    return_code = handle_decryption_key_generation_mode(key_generation_arguments);
     if (STATUS_FAILED(return_code))
     {
-        goto cleanup;
-    }
-    ciphertext_size = ciphertext_size * BYTE_SIZE; // Convert to bits
-
-    if (args->verbose)
-    {
-        print_int64_vector(ciphertext, ciphertext_size / (sizeof(int64_t) * BYTE_SIZE), "[*] Ciphertext data:");
-    }
-
-    if (args->verbose)
-    {
-        log_info("[*] Reading key from: %s\n", args->key);
-    }
-
-    return_code = read_uint8_from_file(&key_data, &key_size, args->key);
-    if (STATUS_FAILED(return_code))
-    {
+        log_error("Failed to generate decryption key");
         goto cleanup;
     }
 
-    if (args->verbose)
-    {
-        print_uint8_vector(key_data, key_size / BYTE_SIZE, "[*] Key data:");
-    }
-
-    return_code = deserialize_matrix(&encryption_matrix, args->dimension, key_data, key_size);
+    return_code = handle_decrypt_mode(decrypt_arguments);
     if (STATUS_FAILED(return_code))
     {
+        log_error("Failed to decrypt data");
         goto cleanup;
     }
 
-    if (args->verbose)
-    {
-        print_matrix(encryption_matrix, args->dimension);
-    }
-
-    log_info("[*] Generating decryption matrix...\n");
-
-    return_code = generate_decryption_matrix(&decryption_matrix, args->dimension, encryption_matrix, DEFAULT_PRIME_GALOIS_FIELD);
-    if (STATUS_FAILED(return_code))
-    {
-        goto cleanup;
-    }
-
-    log_info("[*] Decryption matrix generated.\n");
-    if (args->verbose)
-    {
-        print_matrix(decryption_matrix, args->dimension);
-    }
-
-    log_info("[*] Decrypting data...\n");
-
-    return_code = decrypt(&decrypted_text, &decrypted_size, decryption_matrix, args->dimension, DEFAULT_PRIME_GALOIS_FIELD, ciphertext, ciphertext_size, args->number_of_random_bits_between_bytes);
-    if (STATUS_FAILED(return_code))
-    {
-        goto cleanup;
-    }
-    decrypted_size = (decrypted_size / BYTE_SIZE); // Size is returned as bits
-
-    log_info("[*] Decryption completed, plaintext size: %ld\n", decrypted_size);
-
-    if (args->verbose)
-    {
-        print_uint8_vector(decrypted_text, decrypted_size, "[*] Decrypted data:");
-        log_info("[*] Writing plaintext to: %s\n", args->output_file);
-    }
-
-    return_code = write_uint8_to_file(args->output_file, decrypted_text, decrypted_size);
-
-    if (args->verbose && STATUS_SUCCESS(return_code))
-    {
-        log_info("[*] Plaintext written successfully.\n");
-    }
+    printf("[*] Generate and decrypt operation completed successfully");
+    log_info("Generate and decrypt operation completed successfully");
 
 cleanup:
-    free(key_data);
-    free(ciphertext);
-    free(decrypted_text);
-    free(serialized_ciphertext);
-    (void)free_int64_matrix(encryption_matrix, args->dimension);
-    (void)free_int64_matrix(decryption_matrix, args->dimension);
+    if (STATUS_FAILED(return_code))
+    {
+        free(args->decrypt_arguments);
+        free(args->key_generation_arguments);
+    }
+    free((void*)args);
     return return_code;
 }

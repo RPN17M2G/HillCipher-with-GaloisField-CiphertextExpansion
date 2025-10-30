@@ -21,7 +21,6 @@ file(GLOB_RECURSE TESTS_INCLUDES tests/*.h)
 
 add_executable(GaloisFieldHillCipher
         ${SOURCES}
-        ${INCLUDES}
 )
 
 include(FetchContent)
@@ -48,9 +47,7 @@ target_include_directories(GaloisFieldHillCipher PRIVATE
 
 add_executable(UnitTests
         ${TESTS_SOURCES}
-        ${TESTS_INCLUDES}
         ${SOURCES_WITHOUT_MAIN}
-        ${INCLUDES}
 )
 
 target_include_directories(UnitTests PRIVATE
@@ -66,6 +63,13 @@ target_link_libraries(UnitTests PRIVATE
         sodium
         argparse_static
 )
+
+# Link the math library 'm' on non-Windows platforms.
+# MSVC on Windows includes this in its default C runtime.
+if(NOT MSVC)
+  target_link_libraries(UnitTests PRIVATE m)
+  target_link_libraries(GaloisFieldHillCipher PRIVATE m)
+endif()
 
 enable_testing()
 add_test(NAME AllUnitTests COMMAND UnitTests)

@@ -10,135 +10,200 @@
 #include <math.h>
 
 #include "log.h"
-#include "OutputFormat.h"
 #include "Modes.h"
 #include "StatusCodes.h"
 #include "IO/FileValidation.h"
+#include "Parsing/ModeParsers.h"
 
 #define MAX_ERROR_MSG_LEN (256)
 #define DECIMAL_BASE (10)
 #define DEFAULT_VALUE_OF_NUMBER_OF_RANDOM_BITS_TO_ADD (2)
+#define DEFAULT_VALUE_OF_NUMBER_OF_ERROR_VECTORS_TO_ADD (5)
+#define DEFAULT_VALUE_OF_NUMBER_OF_ASCII_CHARACTERS_MAPPED_TO_EACH_DIGIT (5)
+#define DEFAULT_VALUE_OF_GALOIS_FIELD (16777619)
+#define NUMBER_OF_FLAGS_FOR_EACH_OPTION (2)
+#define MEMORY_FOR_FLAG_PREFIX (3)
 
-#define MODE_KEY_KEY_GENERATION_SHORT "ek"
-#define MODE_KEY_DECRYPTION_KEY_GENERATION_SHORT "dk"
-#define MODE_KEY_DECRYPT_SHORT "d"
-#define MODE_KEY_ENCRYPT_SHORT "e"
-#define MODE_KEY_GENERATE_AND_ENCRYPT_SHORT "ge"
-#define MODE_KEY_GENERATE_AND_DECRYPT_SHORT "gd"
+#define MODE_KEY_GENERATION "kg"
+#define MODE_DECRYPTION_KEY_GENERATION "dkg"
+#define MODE_ENCRYPT "e"
+#define MODE_DECRYPT "d"
+#define MODE_GENERATE_AND_ENCRYPT "kge"
+#define MODE_GENERATE_AND_DECRYPT "kgd"
 
-#define ARGUMENT_RANDOM_BITS_SHORT "r"
-#define ARGUMENT_INPUT_SHORT "i"
-#define ARGUMENT_OUTPUT_SHORT "o"
-#define ARGUMENT_DIMENSION_SHORT "d"
-#define ARGUMENT_VERBOSE_SHORT "v"
-#define ARGUMENT_MODE_SHORT "m"
-#define ARGUMENT_KEY_SHORT "k"
-#define ARGUMENT_LOG_SHORT "l"
+#define FLAG_INPUT_FILE "input"
+#define FLAG_INPUT_FILE_SHORT "i"
+#define FLAG_INPUT_FILE_TYPE "<FILE>"
+#define FLAG_INPUT_FILE_DESCRIPTION "Specify the input file (required for encrypt, decrypt, generate_and_encrypt, and generate_and_decrypt modes)."
 
+#define FLAG_OUTPUT_FILE "output"
+#define FLAG_OUTPUT_FILE_SHORT "o"
+#define FLAG_OUTPUT_FILE_TYPE "<FILE>"
+#define FLAG_OUTPUT_FILE_DESCRIPTION "Specify the output file (required for all modes)."
 
-#define ARGUMENT_RANDOM_BITS_LONG "number_of_random_bits"
-#define ARGUMENT_INPUT_LONG "input_file"
-#define ARGUMENT_OUTPUT_LONG "output_file"
-#define ARGUMENT_DIMENSION_LONG "dimension"
-#define ARGUMENT_VERBOSE_LONG "verbose"
-#define ARGUMENT_MODE_LONG "mode"
-#define ARGUMENT_KEY_LONG "key"
-#define ARGUMENT_LOG_LONG "log_file"
+#define FLAG_KEY_FILE "key"
+#define FLAG_KEY_FILE_SHORT "k"
+#define FLAG_KEY_FILE_TYPE "<FILE>"
+#define FLAG_KEY_FILE_DESCRIPTION "Specify the key file (required for encrypt, decrypt, decryption_key_generation, and generate_and_encrypt modes)."
 
-#define ARGUMENT_RANDOM_BITS_DOCUMENTATION "Number of random bits to add between bytes"
-#define ARGUMENT_INPUT_DOCUMENTATION "Path to input file"
-#define ARGUMENT_OUTPUT_DOCUMENTATION "Path to output file(Binary file for compact storage, text file for entropy hardened ciphertext)"
-#define ARGUMENT_DIMENSION_DOCUMENTATION "Dimension (uint32_t)"
-#define ARGUMENT_VERBOSE_DOCUMENTATION "Enable verbose output"
-#define ARGUMENT_MODE_DOCUMENTATION "Cipher mode of operation(encrypt/decrypt/key generation)"
-#define ARGUMENT_KEY_DOCUMENTATION "Path to key file"
-#define ARGUMENT_LOG_DOCUMENTATION "Path to log file (must be a text file)"
+#define FLAG_LOG_FILE "log"
+#define FLAG_LOG_FILE_SHORT "l"
+#define FLAG_LOG_FILE_TYPE "<FILE>"
+#define FLAG_LOG_FILE_DESCRIPTION "Specify the log file (optional)."
 
-#define USAGE_HEADER "[!] Invalid usage.\n[*] Modes:\n"
-#define USAGE_RANDOM_BITS_FLAG "[*]   -" ARGUMENT_RANDOM_BITS_SHORT ", --" ARGUMENT_RANDOM_BITS_LONG "           : " ARGUMENT_RANDOM_BITS_DOCUMENTATION "\n"
-#define USAGE_KEY_GENERATION_MODE "[*]   " MODE_KEY_KEY_GENERATION_SHORT " : Key generation. Requires -" ARGUMENT_OUTPUT_SHORT " <" ARGUMENT_OUTPUT_LONG "> -" ARGUMENT_DIMENSION_SHORT " <" ARGUMENT_DIMENSION_LONG "> [-" ARGUMENT_VERBOSE_SHORT "]\n"
-#define USAGE_DECRYPTION_KEY_GENERATION_MODE "[*]   " MODE_KEY_DECRYPTION_KEY_GENERATION_SHORT " : Decryption key generation. Requires -" ARGUMENT_KEY_SHORT " <" ARGUMENT_KEY_LONG "> -" ARGUMENT_OUTPUT_SHORT " <" ARGUMENT_OUTPUT_LONG "> -" ARGUMENT_DIMENSION_SHORT " <" ARGUMENT_DIMENSION_LONG "> [-" ARGUMENT_VERBOSE_SHORT "]\n"
-#define USAGE_DECRYPT_MODE "[*]   " MODE_KEY_DECRYPT_SHORT " : Decrypt. Requires -" ARGUMENT_INPUT_SHORT " <" ARGUMENT_INPUT_LONG "> -" ARGUMENT_OUTPUT_SHORT " <" ARGUMENT_OUTPUT_LONG "> -" ARGUMENT_KEY_SHORT " <" ARGUMENT_KEY_LONG "> -" ARGUMENT_DIMENSION_SHORT " <" ARGUMENT_DIMENSION_LONG "> [-" ARGUMENT_VERBOSE_SHORT "]\n"
-#define USAGE_ENCRYPT_MODE "[*]   " MODE_KEY_ENCRYPT_SHORT " : Encrypt. Requires -" ARGUMENT_INPUT_SHORT " <" ARGUMENT_INPUT_LONG "> -" ARGUMENT_OUTPUT_SHORT " <" ARGUMENT_OUTPUT_LONG "> -" ARGUMENT_KEY_SHORT " <" ARGUMENT_KEY_LONG "> -" ARGUMENT_DIMENSION_SHORT " <" ARGUMENT_DIMENSION_LONG "> [-" ARGUMENT_VERBOSE_SHORT "]\n"
-#define USAGE_KEY_GENERATE_AND_ENCRYPT_MODE "[*]   " MODE_KEY_GENERATE_AND_ENCRYPT_SHORT " : Generate key and encrypt. Requires -" ARGUMENT_INPUT_SHORT " <" ARGUMENT_INPUT_LONG "> -" ARGUMENT_OUTPUT_SHORT " <" ARGUMENT_OUTPUT_LONG "> -" ARGUMENT_KEY_SHORT " <" ARGUMENT_KEY_LONG "> -" ARGUMENT_DIMENSION_SHORT " <" ARGUMENT_DIMENSION_LONG "> [-" ARGUMENT_VERBOSE_SHORT "]\n"
-#define USAGE_KEY_GENERATE_AND_DECRYPT_MODE "[*]   " MODE_KEY_GENERATE_AND_DECRYPT_SHORT " : Generate key and decrypt. Requires -" ARGUMENT_INPUT_SHORT " <" ARGUMENT_INPUT_LONG "> -" ARGUMENT_OUTPUT_SHORT " <" ARGUMENT_OUTPUT_LONG "> -" ARGUMENT_KEY_SHORT " <" ARGUMENT_KEY_LONG "> -" ARGUMENT_DIMENSION_SHORT " <" ARGUMENT_DIMENSION_LONG "> [-" ARGUMENT_VERBOSE_SHORT "]\n"
-#define USAGE_FLAGS_HEADER "\n[*] Flags:\n"
-#define USAGE_INPUT_FLAG "[*]   -" ARGUMENT_INPUT_SHORT ", --" ARGUMENT_INPUT_LONG "       : " ARGUMENT_INPUT_DOCUMENTATION "\n"
-#define USAGE_OUTPUT_FLAG "[*]   -" ARGUMENT_OUTPUT_SHORT ", --" ARGUMENT_OUTPUT_LONG "      : " ARGUMENT_OUTPUT_DOCUMENTATION "\n"
-#define USAGE_DIMENSION_FLAG "[*]   -" ARGUMENT_DIMENSION_SHORT ", --" ARGUMENT_DIMENSION_LONG "        : " ARGUMENT_DIMENSION_DOCUMENTATION "\n"
-#define USAGE_VERBOSE_FLAG "[*]   -" ARGUMENT_VERBOSE_SHORT ", --" ARGUMENT_VERBOSE_LONG "          : " ARGUMENT_VERBOSE_DOCUMENTATION "\n"
-#define USAGE_MODE_FLAG "[*]   -" ARGUMENT_MODE_SHORT ", --" ARGUMENT_MODE_LONG "             : " ARGUMENT_MODE_DOCUMENTATION "\n"
-#define USAGE_KEY_FLAG "[*]   -" ARGUMENT_KEY_SHORT ", --" ARGUMENT_KEY_LONG "              : " ARGUMENT_KEY_DOCUMENTATION "\n"
-#define USAGE_LOG_FLAG "[*]   -" ARGUMENT_LOG_SHORT ", --" ARGUMENT_LOG_LONG "              : " ARGUMENT_LOG_DOCUMENTATION "\n"
+#define FLAG_DIMENSION "dimension"
+#define FLAG_DIMENSION_SHORT "d"
+#define FLAG_DIMENSION_TYPE "<NUMBER>"
+#define FLAG_DIMENSION_DESCRIPTION "Specify the matrix dimension (required for key_generation and generate_and_encrypt modes)."
 
-#define USAGE (USAGE_HEADER \
-    USAGE_KEY_GENERATION_MODE \
-    USAGE_DECRYPTION_KEY_GENERATION_MODE \
-    USAGE_DECRYPT_MODE \
-    USAGE_ENCRYPT_MODE \
-    USAGE_KEY_GENERATE_AND_ENCRYPT_MODE \
-    USAGE_KEY_GENERATE_AND_DECRYPT_MODE \
-    USAGE_FLAGS_HEADER \
-    USAGE_INPUT_FLAG \
-    USAGE_OUTPUT_FLAG \
-    USAGE_DIMENSION_FLAG \
-    USAGE_VERBOSE_FLAG \
-    USAGE_MODE_FLAG \
-    USAGE_KEY_FLAG \
-    USAGE_RANDOM_BITS_FLAG \
-    USAGE_LOG_FLAG)
+#define FLAG_RANDOM_BITS "random-bits"
+#define FLAG_RANDOM_BITS_SHORT "r"
+#define FLAG_RANDOM_BITS_TYPE "<NUMBER>"
+#define FLAG_RANDOM_BITS_DESCRIPTION "Specify the number of random bits to add between bytes (optional, default: 2)."
 
-typedef struct {
-    const char* input_file;
-    const char* output_file;
-    const char* key;
-    uint32_t dimension;
+#define FLAG_ERROR_VECTORS "error-vectors"
+#define FLAG_ERROR_VECTORS_SHORT "e"
+#define FLAG_ERROR_VECTORS_TYPE "<NUMBER>"
+#define FLAG_ERROR_VECTORS_DESCRIPTION "Specify the number of error vectors (optional)."
+
+#define FLAG_VERBOSE "verbose"
+#define FLAG_VERBOSE_SHORT "v"
+#define FLAG_VERBOSE_TYPE ""
+#define FLAG_VERBOSE_DESCRIPTION "Enable verbose output (optional)."
+
+#define FLAG_MODE "mode"
+#define FLAG_MODE_SHORT "m"
+#define FLAG_MODE_TYPE "<MODE>"
+#define FLAG_MODE_DESCRIPTION "Specify the operation mode. Available modes: " \
+    MODE_KEY_GENERATION " (key generation), " \
+    MODE_DECRYPTION_KEY_GENERATION " (decryption key generation), " \
+    MODE_ENCRYPT " (encrypt), " \
+    MODE_DECRYPT " (decrypt), " \
+    MODE_GENERATE_AND_ENCRYPT " (generate and encrypt), " \
+    MODE_GENERATE_AND_DECRYPT " (generate and decrypt)."
+
+#define FLAG_PRIME_FIELD "prime-field"
+#define FLAG_PRIME_FIELD_SHORT "f"
+#define FLAG_PRIME_FIELD_TYPE "<NUMBER>"
+#define FLAG_PRIME_FIELD_DESCRIPTION "Specify the prime field (optional, default: 16777619)."
+
+#define FLAG_ASCII_MAPPING_LETTERS "ascii-mapping-letters"
+#define FLAG_ASCII_MAPPING_LETTERS_SHORT "a"
+#define FLAG_ASCII_MAPPING_LETTERS_TYPE "<NUMBER>"
+#define FLAG_ASCII_MAPPING_LETTERS_DESCRIPTION "Specify the number of letters for ASCII mapping (optional)."
+
+#define FLAG_DECRYPTION_KEY_OUTPUT_FILE "decryption-key-output"
+#define FLAG_DECRYPTION_KEY_OUTPUT_FILE_SHORT "y"
+#define FLAG_DECRYPTION_KEY_OUTPUT_FILE_TYPE "<FILE>"
+#define FLAG_DECRYPTION_KEY_OUTPUT_FILE_DESCRIPTION "Specify the decryption key output file (required for generate_and_decrypt mode)."
+
+#define USAGE_STRING \
+"Usage: GaloisFieldHillCipher [OPTIONS]\n" \
+"\n" \
+"Modes:\n" \
+"  --" FLAG_MODE ", -" FLAG_MODE_SHORT " " FLAG_MODE_TYPE "               " FLAG_MODE_DESCRIPTION "\n" \
+"    Available modes:\n" \
+"      " MODE_KEY_GENERATION " - Key generation\n" \
+"      " MODE_DECRYPTION_KEY_GENERATION " - Decryption key generation\n" \
+"      " MODE_ENCRYPT " - Encrypt\n" \
+"      " MODE_DECRYPT " - Decrypt\n" \
+"      " MODE_GENERATE_AND_ENCRYPT " - Generate and encrypt\n" \
+"      " MODE_GENERATE_AND_DECRYPT " - Generate and decrypt\n" \
+"\n" \
+"General Options:\n" \
+"  --" FLAG_INPUT_FILE ", -" FLAG_INPUT_FILE_SHORT " " FLAG_INPUT_FILE_TYPE "          " FLAG_INPUT_FILE_DESCRIPTION "\n" \
+"  --" FLAG_OUTPUT_FILE ", -" FLAG_OUTPUT_FILE_SHORT " " FLAG_OUTPUT_FILE_TYPE "         " FLAG_OUTPUT_FILE_DESCRIPTION "\n" \
+"  --" FLAG_KEY_FILE ", -" FLAG_KEY_FILE_SHORT " " FLAG_KEY_FILE_TYPE "            " FLAG_KEY_FILE_DESCRIPTION "\n" \
+"  --" FLAG_LOG_FILE ", -" FLAG_LOG_FILE_SHORT " " FLAG_LOG_FILE_TYPE "            " FLAG_LOG_FILE_DESCRIPTION "\n" \
+"  --" FLAG_DIMENSION ", -" FLAG_DIMENSION_SHORT " " FLAG_DIMENSION_TYPE "        " FLAG_DIMENSION_DESCRIPTION "\n" \
+"  --" FLAG_RANDOM_BITS ", -" FLAG_RANDOM_BITS_SHORT " " FLAG_RANDOM_BITS_TYPE "      " FLAG_RANDOM_BITS_DESCRIPTION "\n" \
+"  --" FLAG_ERROR_VECTORS ", -" FLAG_ERROR_VECTORS_SHORT " " FLAG_ERROR_VECTORS_TYPE "    " FLAG_ERROR_VECTORS_DESCRIPTION "\n" \
+"  --" FLAG_PRIME_FIELD ", -" FLAG_PRIME_FIELD_SHORT " " FLAG_PRIME_FIELD_TYPE "      " FLAG_PRIME_FIELD_DESCRIPTION "\n" \
+"  --" FLAG_ASCII_MAPPING_LETTERS ", -" FLAG_ASCII_MAPPING_LETTERS_SHORT " " FLAG_ASCII_MAPPING_LETTERS_TYPE " " FLAG_ASCII_MAPPING_LETTERS_DESCRIPTION "\n" \
+"  --" FLAG_DECRYPTION_KEY_OUTPUT_FILE ", -" FLAG_DECRYPTION_KEY_OUTPUT_FILE_SHORT " " FLAG_DECRYPTION_KEY_OUTPUT_FILE_TYPE " " FLAG_DECRYPTION_KEY_OUTPUT_FILE_DESCRIPTION "\n" \
+"  --" FLAG_VERBOSE ", -" FLAG_VERBOSE_SHORT "                   " FLAG_VERBOSE_DESCRIPTION "\n" \
+"\n" \
+"Examples:\n" \
+"  GaloisFieldHillCipher --" FLAG_MODE " " MODE_KEY_GENERATION " --" FLAG_OUTPUT_FILE " key.txt --" FLAG_DIMENSION " 4\n" \
+"  GaloisFieldHillCipher --" FLAG_MODE " " MODE_ENCRYPT " --" FLAG_INPUT_FILE " plaintext.txt --" FLAG_OUTPUT_FILE " ciphertext.txt\n" \
+"             --" FLAG_KEY_FILE " key.txt\n" \
+"  GaloisFieldHillCipher --" FLAG_MODE " " MODE_DECRYPT " --" FLAG_INPUT_FILE " ciphertext.txt --" FLAG_OUTPUT_FILE " plaintext.txt\n" \
+"             --" FLAG_KEY_FILE " key.txt\n" \
+"  GaloisFieldHillCipher --" FLAG_MODE " " MODE_GENERATE_AND_ENCRYPT " --" FLAG_INPUT_FILE " plaintext.txt\n" \
+"             --" FLAG_OUTPUT_FILE " ciphertext.txt --" FLAG_KEY_FILE " key.txt --" FLAG_DIMENSION " 4\n" \
+"  GaloisFieldHillCipher --" FLAG_MODE " " MODE_GENERATE_AND_DECRYPT " --" FLAG_INPUT_FILE " ciphertext.txt\n" \
+"             --" FLAG_OUTPUT_FILE " plaintext.txt --" FLAG_KEY_FILE " encryption_key.txt --" FLAG_DECRYPTION_KEY_OUTPUT_FILE " decryption_key.txt\n" \
+"\n" \
+"Notes:\n" \
+"  - The input and output files must be readable and writable, respectively.\n" \
+"  - The key file must be a valid binary file.\n" \
+"  - The log file must be a text file.\n"
+
+typedef struct GlobalArguments {
     bool verbose;
-    OPERATION_MODE mode;
-    FILE_FORMAT output_format;
-    uint32_t number_of_random_bits_between_bytes;
-    FILE_FORMAT input_format; // Not a main argument but is inferred from input file extension
-    const char* log_file;     // Optional log file (must be text)
-} ParsedArguments;
+    const char* log_file;
+} GlobalArguments;
 
 /**
- * @brief Parses command-line arguments into a structured format.
+ * @brief Parses the mode of operation from command-line arguments.
  *
- * @param out_args - Pointer to the structure where parsed arguments will be stored.
- * @param argc - The number of command-line arguments.
- * @param argv - The command-line arguments array.
- * @return STATUS_CODE - Status of the operation.
- */
-STATUS_CODE parse_arguments(ParsedArguments* out_args, int argc, char** argv);
-
-/**
- * @brief Parses the mode string and outputs the corresponding OPERATION_MODE.
- *
- * @param out_mode Pointer to OPERATION_MODE to receive the result.
- * @param mode_string The mode string to parse.
+ * @param argc The number of command-line arguments.
+ * @param argv The command-line arguments array.
+ * @param out_mode Pointer to store the parsed mode.
  * @return STATUS_CODE Status of the operation.
  */
-STATUS_CODE parse_mode(OPERATION_MODE* out_mode, const char* mode_string);
+STATUS_CODE parse_mode(OPERATION_MODE* out_mode, int argc, char** argv);
 
 /**
- * @brief Validates arguments for the selected mode.
+ * @brief Parses verbose from command-line arguments.
+ *
+ * @param argc The number of command-line arguments.
+ * @param argv The command-line arguments array.
+ * @param out_arguments Pointer to store the parsed verbose flag.
+ * @return STATUS_CODE Status of the operation.
+ */
+STATUS_CODE parse_global_arguments(GlobalArguments** out_arguments, int argc, char** argv);
+
+/**
+ * @brief Parses arguments for the specific mode.
  *
  * @param mode The operation mode.
- * @param input_file Path to input file.
- * @param output_file Path to output file.
- * @param key Path to key file.
- * @param dimension Matrix dimension.
+ * @param argc The number of command-line arguments.
+ * @param argv The command-line arguments array.
+ * @param out_mode_arguments Pointer to store the mode-specific arguments' struct.
  * @return STATUS_CODE Status of the operation.
  */
-STATUS_CODE validate_mode_args(OPERATION_MODE mode, const char* input_file, const char* output_file, const char* key, uint32_t dimension);
+STATUS_CODE parse_mode_arguments(void** out_mode_arguments, OPERATION_MODE mode, int argc, char** argv);
 
 /**
- * @brief Determines the file format (binary or text) for a given file.
+ * @brief Parses command-line options using argparse.
  *
- * @param out_format Pointer to FILE_FORMAT to receive the result.
- * @param file Path to the file.
+ * @param options Array of argparse options.
+ * @param argc The number of command-line arguments.
+ * @param argv The command-line arguments array.
  * @return STATUS_CODE Status of the operation.
  */
-STATUS_CODE get_file_format(FILE_FORMAT* out_format, const char* file);
+STATUS_CODE parse_generic_options(struct argparse_option* options, int argc, char** argv);
+
+/**
+ * @brief Filters argv to include only relevant flags for parsing.
+ *
+ * @param out_filtered_argv Pointer to store the filtered argv array.
+ * @param out_filtered_argc Pointer to store the count of filtered arguments.
+ * @param argc The number of command-line arguments.
+ * @param argv The command-line arguments array.
+ * @param relevant_flags Array of relevant flags to include (NULL-terminated).
+ * @return STATUS_CODE Status of the operation.
+ */
+STATUS_CODE filter_relevant_flags(char*** out_filtered_argv, int* out_filtered_argc, int argc, char** argv, const char** relevant_flags);
+
+/**
+ * @brief Extracts relevant flags from the argparse options.
+ *
+ * @param out_relevant_flags Pointer to store the extracted relevant flags (NULL-terminated array).
+ * @param options Array of argparse options.
+ * @return STATUS_CODE Status of the operation.
+ */
+STATUS_CODE extract_relevant_flags(const char*** out_relevant_flags, struct argparse_option* options);
 
 #endif

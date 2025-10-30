@@ -1,0 +1,40 @@
+name: "CodeQL Analysis"
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  schedule:
+    - cron: '40 12 * * 1' # At 12:40 on Monday
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
+      with:
+        submodules: 'recursive'
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v3
+      with:
+        languages: cpp
+
+    - name: Configure with CMake
+      run: cmake -S GaloisFieldHillCipher -B GaloisFieldHillCipher/build -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build with CMake
+      run: cmake --build GaloisFieldHillCipher/build --config Release --parallel
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v3
+      

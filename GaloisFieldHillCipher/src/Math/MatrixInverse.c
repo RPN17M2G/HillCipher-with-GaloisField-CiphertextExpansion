@@ -12,28 +12,33 @@ STATUS_CODE inverse_square_matrix_adjugate_method(int64_t*** out_inverse_matrix,
 	size_t row = 0, column = 0;
 	int64_t** inverse_matrix_buffer = NULL;
 
+	log_debug("Starting matrix inversion (dimension=%u, prime_field=%u)", dimension, prime_field);
+
 	return_code = is_matrix_invertible(&is_invertible, matrix, dimension, prime_field);
 	if (STATUS_FAILED(return_code))
 	{
-		log_error("[!] Failed to check if matrix is invertible in inverse_square_matrix_adjugate_method.");
+		log_error("[!] Failed to check if matrix is invertible");
 		goto cleanup;
 	}
 
 	if (!is_invertible)
 	{
-		log_error("[!] Matrix is not invertible in inverse_square_matrix_adjugate_method.");
+		log_error("[!] Matrix is not invertible");
 		return_code = STATUS_CODE_MATRIX_NOT_INVERTIBLE;
 		goto cleanup;
 	}
 
-
+	log_debug("Computing matrix determinant");
 	return_code = matrix_determinant_over_galois_field_laplace_expansion(&determinant, matrix, dimension, prime_field);
 	if (STATUS_FAILED(return_code))
 	{
-		log_error("[!] Failed to compute determinant in inverse_square_matrix_adjugate_method.");
+		log_error("[!] Failed to compute determinant");
 		goto cleanup;
 	}
+	log_debug("Matrix determinant: %ld", determinant);
+
 	inverse_determinant = raise_power_over_galois_field(determinant, prime_field - 2, prime_field);
+	log_debug("Inverse determinant computed: %ld", inverse_determinant);
 
 	// Calculate the adjugate matrix
 	adjugate_matrix = (int64_t**)malloc(dimension * sizeof(int64_t*));
@@ -84,7 +89,10 @@ STATUS_CODE inverse_square_matrix_adjugate_method(int64_t*** out_inverse_matrix,
 			(void)free_int64_matrix(minor_matrix, dimension - 1);
 			minor_matrix = NULL;
 		}
+		log_debug("Completed row %zu of adjugate matrix", row);
 	}
+
+	log_debug("Successfully computed inverse matrix");
 
 	// Calculate the inverse matrix
 	inverse_matrix_buffer = (int64_t**)malloc(dimension * sizeof(int64_t*));
@@ -175,7 +183,8 @@ STATUS_CODE inverse_square_matrix_gauss_jordan(int64_t*** out_inverse_matrix, in
     }
 
     // Perform Gauss-Jordan elimination
-    for (row_iteration = 0; row_iteration < dimension; row_iteration++) {
+    for (row_iteration = 0; row_iteration < dimension; row_iteration++)
+    {
         // Find pivot
         pivot_row = row_iteration;
         for (row = row_iteration + 1; row < dimension; row++)
@@ -206,7 +215,8 @@ STATUS_CODE inverse_square_matrix_gauss_jordan(int64_t*** out_inverse_matrix, in
         pivot_element = augmented_matrix[row_iteration][row_iteration];
         pivot_inverse = raise_power_over_galois_field(pivot_element, prime_field - 2, prime_field);
 
-        for (column = 0; column < 2 * dimension; column++) {
+        for (column = 0; column < 2 * dimension; column++)
+    {
             augmented_matrix[row_iteration][column] = multiply_over_galois_field(augmented_matrix[row_iteration][column], pivot_inverse, prime_field);
         }
         // Eliminate other rows
@@ -260,4 +270,3 @@ cleanup:
 	(void)free_int64_matrix(out_inverse_matrix_buffer, dimension);
     return return_code;
 }
-

@@ -9,18 +9,46 @@ on:
       artifact-name:
         required: true
         type: string
+    outputs:
+      executable_checksum:
+        description: "SHA256 checksum for the GaloisFieldHillCipher binary"
+        value: ${{ jobs.build.outputs.executable_checksum }}
+      unittest_checksum:
+        description: "SHA256 checksum for the UnitTests binary"
+        value: ${{ jobs.build.outputs.unittest_checksum }}
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    outputs:
+      executable_checksum: ${{ steps.checksums.outputs.executable_checksum }}
+      unittest_checksum: ${{ steps.checksums.outputs.unittest_checksum }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
         with:
           submodules: recursive
-      - run: sudo apt-get update && sudo apt-get install -y cmake build-essential
-      - run: cmake -S GaloisFieldHillCipher -B GaloisFieldHillCipher/build -DCMAKE_BUILD_TYPE=${{ inputs.config }}
-      - run: cmake --build GaloisFieldHillCipher/build --config ${{ inputs.config }} -- -j$(nproc)
-      - uses: actions/upload-artifact@v4
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y cmake build-essential
+
+      - name: Configure with CMake
+        run: cmake -S GaloisFieldHillCipher -B GaloisFieldHillCipher/build -DCMAKE_BUILD_TYPE=${{ inputs.config }}
+
+      - name: Build with CMake
+        run: cmake --build GaloisFieldHillCipher/build --config ${{ inputs.config }} -- -j$(nproc)
+
+      - name: Calculate build checksums
+        id: checksums
+        run: |
+          cd GaloisFieldHillCipher/build
+          echo "executable_checksum=$(sha256sum GaloisFieldHillCipher | awk '{ print $1 }')" >> $GITHUB_OUTPUT
+          echo "unittest_checksum=$(sha256sum UnitTests | awk '{ print $1 }')" >> $GITHUB_OUTPUT
+
+      - name: Upload build results
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: ${{ inputs.artifact-name }}
-          path: GaloisFieldHillCipher/build/**
+          path: |
+            GaloisFieldHillCipher/build/UnitTests
+            GaloisFieldHillCipher/build/GaloisFieldHillCipher

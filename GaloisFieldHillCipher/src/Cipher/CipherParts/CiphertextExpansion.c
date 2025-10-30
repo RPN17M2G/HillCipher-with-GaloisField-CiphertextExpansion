@@ -1,4 +1,4 @@
-#include "Cipher/CiphertextExpansion.h"
+#include "Cipher/CipherParts/CiphertextExpansion.h"
 
 STATUS_CODE add_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_size, uint8_t* value, uint32_t value_bit_length, uint32_t number_of_random_bits_to_add)
 {
@@ -15,7 +15,7 @@ STATUS_CODE add_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_size,
 
     uint8_t* out_buffer = NULL;
 
-    if ((NULL == out) || (NULL == out_bit_size))
+    if ((NULL == out) || (value_bit_length < BYTE_SIZE) || (NULL == out_bit_size) || (number_of_random_bits_to_add > ((UINT32_MAX / (value_bit_length / BYTE_SIZE)) + value_bit_length)))
     {
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;
@@ -94,7 +94,7 @@ STATUS_CODE remove_random_bits_between_bytes(uint8_t** out, uint32_t* out_bit_si
     uint32_t out_bit_size_buffer = 0;
     uint8_t* out_buffer = NULL;
 
-    if ((NULL == out) || (NULL == out_bit_size) || (NULL == value))
+    if ((NULL == out) || (NULL == out_bit_size) || (NULL == value) || ((value_bit_length / (BYTE_SIZE + number_of_random_bits_to_remove)) > (UINT32_MAX / BYTE_SIZE)))
     {
         return_code = STATUS_CODE_INVALID_ARGUMENT;
         goto cleanup;

@@ -9,6 +9,7 @@
 
 #include "StatusCodes.h"
 #include "Math/MathUtils.h"
+#include "log.h"
 
 #define PADDING_MAGIC (0x17)
 #define BYTE_SIZE (8)

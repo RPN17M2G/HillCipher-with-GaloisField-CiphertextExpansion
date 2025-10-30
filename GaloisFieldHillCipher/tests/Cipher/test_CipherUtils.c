@@ -41,8 +41,7 @@ void test_add_random_bits_between_bytes_EmptyInput()
     STATUS_CODE status = add_random_bits_between_bytes(&output, &output_bit_size, input, input_bit_length, number_of_random_bits_between_bytes);
 
     // Assert
-    TEST_ASSERT_EQUAL(STATUS_CODE_SUCCESS, status);
-    TEST_ASSERT_EQUAL(0, output_bit_size);
+    TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGUMENT, status);
 
     free(output);
 }
@@ -274,6 +273,114 @@ void test_divide_int64_t_into_blocks_UnevenSize()
     TEST_ASSERT_NOT_EQUAL(STATUS_CODE_SUCCESS, status);
 }
 
+void test_permutation_vector_with_numbers_and_larger_group()
+{
+    // Arrange
+    const uint8_t input[] = { 10, 20, 30, 40, 50, 60, 70, 80 };
+    const uint8_t expected[] = { 40, 10, 30, 20, 80, 50, 70, 60 };
+    const uint8_t permutation[] = { 3, 0, 2, 1 };
+    const uint32_t group_size = 4;
+    const uint32_t vector_size = sizeof(input);
+    uint8_t* output = NULL;
+
+    // Act
+    STATUS_CODE return_code = permutate_uint8_vector(
+        &output,
+        (uint8_t*)input,
+        vector_size,
+        (uint8_t*)permutation,
+        group_size
+    );
+
+    // Assert
+    TEST_ASSERT_EQUAL(STATUS_CODE_SUCCESS, return_code);
+    TEST_ASSERT_NOT_NULL(output);
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(expected, output, vector_size);
+
+    // Cleanup
+    free(output);
+}
+
+void test_permutation_vector_ascii_sanity()
+{
+    // Arrange
+    const uint8_t input[] = { 'A', 'B', 'C', 'D', 'E', 'F' };
+    const uint8_t expected[] = { 'B', 'A', 'C', 'E', 'D', 'F' };
+    const uint8_t permutation[] = { 1, 0, 2 };
+    const uint32_t group_size = 3;
+    const uint32_t vector_size = sizeof(input);
+    uint8_t* output = NULL;
+
+    // Act
+    STATUS_CODE return_code = permutate_uint8_vector(
+        &output,
+        (uint8_t*)input,
+        vector_size,
+        (uint8_t*)permutation,
+        group_size
+    );
+
+    // Assert
+    TEST_ASSERT_EQUAL(STATUS_CODE_SUCCESS, return_code);
+    TEST_ASSERT_NOT_NULL(output);
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(expected, output, vector_size);
+
+    // Cleanup
+    free(output);
+}
+
+void test_ascii_mapping_sanity()
+{
+    // Arrange
+    uint8_t** digitToAsciiTable = malloc(10  * sizeof(uint8_t*));
+    for (uint8_t d = 0; d < 10; ++d)
+    {
+        digitToAsciiTable[d] = malloc(1);
+        digitToAsciiTable[d][0] = (uint8_t)('0' + d);
+    }
+    int64_t value = 7;
+    const uint32_t digits = 3;
+    const char expected[] = "007";
+    uint8_t* ascii = NULL;
+    uint32_t ascii_len = 0;
+    int64_t* decoded = NULL;
+    uint32_t decoded_len = 0;
+
+    // Act
+    STATUS_CODE return_code1 = map_from_int64_to_ascii(
+        &ascii,
+        &ascii_len,
+        &value,
+        1,
+        digitToAsciiTable,
+        1,
+        digits
+    );
+    STATUS_CODE return_code2 = map_from_ascii_to_int64(
+        &decoded,
+        &decoded_len,
+        ascii,
+        ascii_len,
+        (uint8_t**)digitToAsciiTable,
+        1,
+        digits
+    );
+
+    // Assert
+    TEST_ASSERT_EQUAL(STATUS_CODE_SUCCESS, return_code1);
+    TEST_ASSERT_EQUAL(0, memcmp(ascii, expected, digits));
+    TEST_ASSERT_EQUAL(STATUS_CODE_SUCCESS, return_code2);
+    TEST_ASSERT_EQUAL_INT64(value, decoded[0]);
+
+    for (uint8_t d = 0; d < 10; ++d)
+    {
+        free(digitToAsciiTable[d]);
+    }
+    free(digitToAsciiTable);
+    free(ascii);
+    free(decoded);
+}
+
 void run_all_CipherUtils_tests()
 {
     #ifdef NDEBUG
@@ -296,4 +403,8 @@ void run_all_CipherUtils_tests()
     RUN_TEST(test_divide_uint8_t_into_blocks_UnevenSize);
     RUN_TEST(test_divide_int64_t_into_blocks_sanity);
     RUN_TEST(test_divide_int64_t_into_blocks_UnevenSize);
+
+    RUN_TEST(test_ascii_mapping_sanity);
+    RUN_TEST(test_permutation_vector_with_numbers_and_larger_group);
+    RUN_TEST(test_permutation_vector_ascii_sanity);
 }

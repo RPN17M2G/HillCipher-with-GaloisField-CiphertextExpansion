@@ -1,9 +1,9 @@
-#include "Cipher/BlockDividing.h"
+#include "Cipher/CipherParts/BlockDividing.h"
 
 STATUS_CODE divide_uint8_t_into_blocks(uint8_t*** out_blocks, uint32_t* num_blocks, uint8_t* value, uint32_t value_bit_length, uint32_t block_bit_size)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
-    size_t block_number = 0, free_index = 0;
+    size_t block_number = 0;
     uint8_t** out_blocks_buffer = NULL;
     uint32_t num_blocks_buffer = 0;
 
@@ -53,7 +53,7 @@ cleanup:
 STATUS_CODE divide_int64_t_into_blocks(int64_t*** out_blocks, uint32_t* num_blocks, int64_t* value, uint32_t value_bit_length, uint32_t block_bit_size)
 {
     STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
-    size_t block_number = 0, free_index = 0, element_index_in_block = 0, index = 0;
+    size_t block_number = 0, element_index_in_block = 0, index = 0;
     int64_t** out_blocks_buffer = NULL;
     uint32_t num_blocks_buffer = 0;
 

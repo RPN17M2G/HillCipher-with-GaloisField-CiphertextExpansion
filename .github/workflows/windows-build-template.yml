@@ -1,4 +1,5 @@
 name: windows-build-template
+
 on:
   workflow_call:
     inputs:
@@ -8,17 +9,47 @@ on:
       artifact-name:
         required: true
         type: string
+    outputs:
+      executable_checksum:
+        description: "SHA256 checksum for the GaloisFieldHillCipher binary"
+        value: ${{ jobs.build-windows.outputs.executable_checksum }}
+      unittest_checksum:
+        description: "SHA256 checksum for the UnitTests binary"
+        value: ${{ jobs.build-windows.outputs.unittest_checksum }}
 
 jobs:
   build-windows:
-    runs-on: windows-latest
+    runs-on: windows-2022
+    outputs:
+      executable_checksum: ${{ steps.checksums.outputs.executable_checksum }}
+      unittest_checksum: ${{ steps.checksums.outputs.unittest_checksum }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
         with:
           submodules: recursive
-      - run: cmake -S GaloisFieldHillCipher -B GaloisFieldHillCipher/build -DCMAKE_BUILD_TYPE=${{ inputs.config }}
-      - run: cmake --build GaloisFieldHillCipher/build --config ${{ inputs.config }}
-      - uses: actions/upload-artifact@v4
+
+      - name: Configure with CMake
+        run: cmake -S GaloisFieldHillCipher -B GaloisFieldHillCipher/build -DCMAKE_BUILD_TYPE=${{ inputs.config }}
+
+      - name: Build with CMake
+        run: cmake --build GaloisFieldHillCipher/build --config ${{ inputs.config }}
+
+      - name: Calculate build checksums
+        id: checksums 
+        shell: pwsh
+        run: |
+          $buildPath = "GaloisFieldHillCipher/build/${{ inputs.config }}"
+          cd $buildPath
+          $executable_checksum = (Get-FileHash -Algorithm SHA256 GaloisFieldHillCipher.exe).Hash.ToLower()
+          $unittest_checksum = (Get-FileHash -Algorithm SHA256 UnitTests.exe).Hash.ToLower()
+          echo "executable_checksum=$executable_checksum" >> $env:GITHUB_OUTPUT
+          echo "unittest_checksum=$unittest_checksum" >> $env:GITHUB_OUTPUT
+
+      - name: Upload build results
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: ${{ inputs.artifact-name }}
-          path: GaloisFieldHillCipher/build/**
+          path: |
+            GaloisFieldHillCipher/build/${{ inputs.config }}/UnitTests.exe
+            GaloisFieldHillCipher/build/${{ inputs.config }}/GaloisFieldHillCipher.exe

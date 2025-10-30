@@ -2,169 +2,153 @@
 
 STATUS_CODE gcd(int64_t* out_gcd, int64_t first_element, int64_t second_element)
 {
-	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
-	int64_t temp = 0;
+    STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
+    int64_t temp = 0;
 
-	if ((0 == first_element) && (0 == second_element))
-	{
-		log_error("[!] Invalid argument: both elements are zero in gcd.");
-		return_code = STATUS_CODE_INVALID_ARGUMENT;
-		goto cleanup;
-	}
+    if ((0 == first_element) && (0 == second_element))
+    {
+        log_error("[!] Invalid argument: both elements are zero in GCD computation");
+        return_code = STATUS_CODE_INVALID_ARGUMENT;
+        goto cleanup;
+    }
 
-	second_element = (second_element > 0) ? second_element : (second_element * -1);
-	first_element = (first_element > 0) ? first_element : (first_element * -1);
+    log_debug("Computing GCD of %ld and %ld", first_element, second_element);
 
-	// Euclidean algorithm
-	while (second_element != 0)
-	{
-		temp = second_element;
-		second_element = first_element % second_element;
-		first_element = temp;
-	}
+    second_element = (second_element > 0) ? second_element : (second_element * -1);
+    first_element = (first_element > 0) ? first_element : (first_element * -1);
+    log_debug("Using absolute values: |a|=%ld, |b|=%ld", first_element, second_element);
 
-	*out_gcd = first_element;
+    // Euclidean algorithm
+    while (second_element != 0)
+    {
+        temp = second_element;
+        second_element = first_element % second_element;
+        first_element = temp;
+        log_debug("Euclidean step: a=%ld, b=%ld", first_element, second_element);
+    }
 
-	return_code = STATUS_CODE_SUCCESS;
+    *out_gcd = first_element;
+    log_debug("GCD result: %ld", first_element);
+    return_code = STATUS_CODE_SUCCESS;
+
 cleanup:
-	return return_code;
+    return return_code;
 }
 
-STATUS_CODE is_matrix_invertible(bool* out_is_invertible, int64_t** matrix, uint32_t dimension, uint32_t prime_field)
+STATUS_CODE add_two_vectors_over_gf(int64_t** out_vector, int64_t* first_vector, int64_t* second_vector, uint32_t length, uint32_t prime_field)
 {
-	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
-	int64_t determinant = 0;
-	int64_t gcd_result = 0;
-	
-	return_code = matrix_determinant_over_galois_field_gauss_jordan(&determinant, matrix, dimension, prime_field);
-	if (STATUS_FAILED(return_code))
-	{
-		log_error("[!] Failed to compute determinant in is_matrix_invertible.");
-		goto cleanup;
-	}
+    STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
+    size_t index = 0;
+    int64_t* vector_buffer = NULL;
 
-	return_code = gcd(&gcd_result, (int64_t)prime_field, determinant);
-	if (STATUS_FAILED(return_code))
-	{
-		log_error("[!] Failed to compute gcd in is_matrix_invertible.");
-		goto cleanup;
-	}
+    if (!out_vector || !first_vector || !second_vector)
+    {
+        log_error("[!] Invalid arguments in vector addition: %s",
+            !out_vector ? "out_vector is NULL" :
+            !first_vector ? "first_vector is NULL" :
+            "second_vector is NULL");
+        return_code = STATUS_CODE_INVALID_ARGUMENT;
+        goto cleanup;
+    }
 
-	// No common factor between the determinant and the prime field means the matrix is invertible
-	*out_is_invertible = (1 == gcd_result);
-	
-	return_code = STATUS_CODE_SUCCESS;
+    log_debug("Adding vectors over GF(%u), length=%u", prime_field, length);
+
+    vector_buffer = (int64_t*)malloc(length * sizeof(int64_t));
+    if (NULL == vector_buffer)
+    {
+        log_error("[!] Memory allocation failed for vector addition (size: %u)", length);
+        return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
+        goto cleanup;
+    }
+
+    for (index = 0; index < length; ++index)
+    {
+        vector_buffer[index] = add_over_galois_field(first_vector[index], second_vector[index], prime_field);
+    }
+
+    log_debug("Vector addition completed successfully");
+    *out_vector = vector_buffer;
+    vector_buffer = NULL;
+    return_code = STATUS_CODE_SUCCESS;
+
 cleanup:
-	return return_code;
+    free(vector_buffer);
+    return return_code;
 }
 
-STATUS_CODE generate_square_matrix_over_field(int64_t*** out_matrix, uint32_t dimension, uint32_t prime_field)
+STATUS_CODE substruct_two_vectors_over_gf(int64_t** out_vector, int64_t* first_vector, int64_t* second_vector, uint32_t length, uint32_t prime_field)
 {
-	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
-	uint32_t secure_random_number = 0;
-	size_t row = 0, column = 0;
-	int64_t** out_matrix_buffer = NULL;
+    STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
+    size_t index = 0;
+    int64_t* vector_buffer = NULL;
 
-	if (NULL == out_matrix)
-	{
-		log_error("[!] Invalid argument: out_matrix is NULL in generate_square_matrix_over_field.");
-		return_code = STATUS_CODE_INVALID_ARGUMENT;
-		goto cleanup;
-	}
+    if (!out_vector || !first_vector || !second_vector)
+    {
+        log_error("[!] Invalid arguments in vector subtraction: %s",
+            !out_vector ? "out_vector is NULL" :
+            !first_vector ? "first_vector is NULL" :
+            "second_vector is NULL");
+        return_code = STATUS_CODE_INVALID_ARGUMENT;
+        goto cleanup;
+    }
 
-	out_matrix_buffer = (int64_t**)malloc(dimension * sizeof(int64_t*));
-	if (NULL == out_matrix_buffer)
-	{
-		log_error("[!] Memory allocation failed for out_matrix_buffer in generate_square_matrix_over_field.");
-		return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
-		goto cleanup;
-	}
+    log_debug("Subtracting vectors over GF(%u), length=%u", prime_field, length);
 
-	// Generate random numbers mod prime_field to fill the matrix
-	for (row = 0; row < dimension; ++row)
-	{
-		out_matrix_buffer[row] = (int64_t*)malloc(dimension * sizeof(int64_t));
-		if (NULL == out_matrix_buffer[row])
-		{
-			log_error("[!] Memory allocation failed for out_matrix_buffer row in generate_square_matrix_over_field.");
-			return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
-			goto cleanup;
-		}
-		for (column = 0; column < dimension; ++column)
-		{
-			secure_random_number = 0;
-			return_code = generate_secure_random_number(&secure_random_number, (uint32_t)0, prime_field - 1);
-			if (STATUS_FAILED(return_code))
-			{
-				log_error("[!] Failed to generate secure random number in generate_square_matrix_over_field.");
-				goto cleanup;
-			}
-			out_matrix_buffer[row][column] = (int64_t)(secure_random_number);
-		}
-	}
+    vector_buffer = (int64_t*)malloc(length * sizeof(int64_t));
+    if (NULL == vector_buffer)
+    {
+        log_error("[!] Memory allocation failed for vector subtraction (size: %u)", length);
+        return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
+        goto cleanup;
+    }
 
-	*out_matrix = out_matrix_buffer;
-	out_matrix_buffer = NULL;
+    for (index = 0; index < length; ++index)
+    {
+        int64_t negated = negate_over_galois_field(second_vector[index], prime_field);
+        vector_buffer[index] = add_over_galois_field(first_vector[index], negated, prime_field);
+    }
 
-	return_code = STATUS_CODE_SUCCESS;
+    log_debug("Vector subtraction completed successfully");
+    *out_vector = vector_buffer;
+    vector_buffer = NULL;
+    return_code = STATUS_CODE_SUCCESS;
+
 cleanup:
-	(void)free_int64_matrix(out_matrix_buffer, dimension);
-	return return_code;
+    free(vector_buffer);
+    return return_code;
 }
 
-STATUS_CODE build_minor_matrix(int64_t*** out_matrix, int64_t** matrix, uint32_t dimension, uint32_t row, uint32_t column)
+bool is_prime(int64_t number)
 {
-	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
-	uint32_t minor_matrix_row = 0;
-	uint32_t sub_row = 0, sub_column = 0;
-	uint32_t minor_matrix_column = 0;
+    log_debug("Testing primality of %ld", number);
 
-	int64_t** minor_matrix = (int64_t**)malloc((dimension - 1) * sizeof(int64_t*));
-	if (NULL == minor_matrix)
-	{
-		log_error("[!] Memory allocation failed for minor_matrix in build_minor_matrix.");
-		return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
-		goto cleanup;
-	}
+    if (number <= 1)
+    {
+        log_debug("Number %ld is not prime (≤ 1)", number);
+        return false;
+    }
+    if (number <= 3)
+    {
+        log_debug("Number %ld is prime (2 or 3)", number);
+        return true;
+    }
+    if (IS_EVEN(number) || (number % 3 == 0))
+    {
+        log_debug("Number %ld is not prime (divisible by 2 or 3)", number);
+        return false;
+    }
 
-	for (sub_row = 0; sub_row < dimension - 1; ++sub_row)
-	{
-		minor_matrix[sub_row] = (int64_t*)malloc((dimension - 1) * sizeof(int64_t));
-		if (NULL == minor_matrix[sub_row])
-		{
-			log_error("[!] Memory allocation failed for minor_matrix row in build_minor_matrix.");
-			return_code = STATUS_CODE_ERROR_MEMORY_ALLOCATION;
-			goto cleanup;
-		}
-	}
+    // Check divisors from 5 to sqrt(number)
+    for (int64_t divisor = 5; divisor * divisor <= number; divisor += 6)
+    {
+        if ((number % divisor == 0) || (number % (divisor + 2) == 0))
+        {
+            log_debug("Number %ld is not prime (divisible by %ld or %ld)",
+                     number, divisor, divisor + 2);
+            return false;
+        }
+    }
 
-	minor_matrix_row = 0;
-	minor_matrix_column = 0;
-	for (sub_row = 0; sub_row < dimension; ++sub_row)
-	{
-		if (sub_row == row) // Insert all rows except the current row
-		{
-			continue;
-		}
-		for (sub_column = 0; sub_column < dimension; ++sub_column)
-		{
-			if (sub_column == column) // Insert all columns except the current column
-			{
-				continue;
-			}
-			minor_matrix[minor_matrix_row][minor_matrix_column] = matrix[sub_row][sub_column];
-			++minor_matrix_column;
-		}
-		++minor_matrix_row;
-		minor_matrix_column = 0;
-	}
-
-	*out_matrix = minor_matrix;
-	minor_matrix = NULL;
-
-	return_code = STATUS_CODE_SUCCESS;
-cleanup:
-	(void)free_int64_matrix(minor_matrix, dimension - 1);
-	return return_code;
+    log_debug("Number %ld is prime", number);
+    return true;
 }
-

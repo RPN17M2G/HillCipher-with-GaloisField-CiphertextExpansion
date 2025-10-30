@@ -11,23 +11,27 @@ STATUS_CODE matrix_determinant_laplace_expansion(int64_t* out_determinant, int64
 	int64_t cofactor = 0;
 	int64_t determinant_buffer = 0;
 
-	if ((NULL == matrix) || (NULL == out_determinant))
+	if ((NULL == matrix) || (NULL == out_determinant) || (0 == dimension))
 	{
-		log_error("[!] Invalid argument: matrix or out_determinant is NULL in matrix_determinant_laplace_expansion.");
+		log_error("[!] Invalid argument!");
 		return_code = STATUS_CODE_INVALID_ARGUMENT;
 		goto cleanup;
 	}
+
+	log_debug("Computing matrix determinant using Laplace expansion: dimension=%u", dimension);
 
 	// Stopping Condition: The determinant of a 1x1 matrix is the value of the only element in the matrix.
 	if (1 == dimension)
 	{
 		determinant_buffer = matrix[0][0];
 		*out_determinant = determinant_buffer;
+		log_debug("Base case: 1x1 matrix determinant = %ld", determinant_buffer);
 		return_code = STATUS_CODE_SUCCESS;
 		goto cleanup;
 	}
 
 	determinant_buffer = 0;
+	log_debug("Computing determinant along first row");
 
 	// Expand along the first row
 	row = 0;
@@ -35,39 +39,49 @@ STATUS_CODE matrix_determinant_laplace_expansion(int64_t* out_determinant, int64
 	{
 		if (0 == matrix[row][column])
 		{
+			log_debug("Skipping zero element at column %zu", column);
 			continue;
 		}
 
 		return_code = build_minor_matrix(&minor_matrix, matrix, dimension, row, column);
 		if (STATUS_FAILED(return_code))
 		{
-			log_error("[!] Failed to build minor matrix in matrix_determinant_laplace_expansion.");
+			log_error("[!] Failed to build minor matrix for element (%u,%zu)", row, column);
 			goto cleanup;
 		}
 
 		minor_matrix_determinant = 0;
 		return_code = matrix_determinant_laplace_expansion(&minor_matrix_determinant, minor_matrix, dimension - 1, prime_field);
-
 		if (STATUS_FAILED(return_code))
 		{
-			log_error("[!] Failed to compute minor matrix determinant in matrix_determinant_laplace_expansion.");
+			log_error("[!] Failed to compute minor matrix determinant for element (%u,%zu)", row, column);
 			goto cleanup;
 		}
 
 		matrix_element = matrix[row][column];
-		if (IS_ODD(row + column)) // If (row + column) is odd, sign change
+		if (IS_ODD(column)) // If the column index is odd, the cofactor is negative
 		{
-			matrix_element = negate_over_galois_field(matrix_element, prime_field);
+			cofactor = negate_over_galois_field(minor_matrix_determinant, prime_field);
 		}
-		cofactor = multiply_over_galois_field(matrix_element, minor_matrix_determinant, prime_field);
+		else
+		{
+			cofactor = minor_matrix_determinant;
+		}
+
+		cofactor = multiply_over_galois_field(matrix_element, cofactor, prime_field);
 		determinant_buffer = add_over_galois_field(determinant_buffer, cofactor, prime_field);
+
+		log_debug("Processed element (%u,%zu): value=%ld, cofactor=%ld, running_sum=%ld",
+				 row, column, matrix_element, cofactor, determinant_buffer);
 
 		(void)free_int64_matrix(minor_matrix, dimension - 1);
 		minor_matrix = NULL;
 	}
 
 	*out_determinant = determinant_buffer;
+	log_debug("Final determinant value: %ld", determinant_buffer);
 	return_code = STATUS_CODE_SUCCESS;
+
 cleanup:
 	(void)free_int64_matrix(minor_matrix, dimension - 1);
 	return return_code;
@@ -76,25 +90,28 @@ cleanup:
 STATUS_CODE matrix_determinant_over_galois_field_laplace_expansion(int64_t* out_determinant, int64_t** matrix, uint32_t dimension, uint32_t prime_field)
 {
 	STATUS_CODE return_code = STATUS_CODE_UNINITIALIZED;
-	int64_t determinant = 0;
+	int64_t determinant_buffer = 0;
 
-	if ((NULL == matrix) || (NULL == out_determinant) || (0 == dimension) || (0 == prime_field))
+	if ((NULL == matrix) || (NULL == out_determinant))
 	{
-		log_error("[!] Invalid argument in matrix_determinant_over_galois_field_laplace_expansion.");
+		log_error("[!] Invalid argument: matrix or out_determinant is NULL");
 		return_code = STATUS_CODE_INVALID_ARGUMENT;
 		goto cleanup;
 	}
 
-	return_code = matrix_determinant_laplace_expansion(&determinant, matrix, dimension, prime_field);
+	log_debug("Computing Galois field matrix determinant: dimension=%u, prime_field=%u", dimension, prime_field);
+
+	return_code = matrix_determinant_laplace_expansion(&determinant_buffer, matrix, dimension, prime_field);
 	if (STATUS_FAILED(return_code))
 	{
-		log_error("[!] Failed to compute determinant in matrix_determinant_over_galois_field_laplace_expansion.");
+		log_error("[!] Failed to compute matrix determinant");
 		goto cleanup;
 	}
 
-	*out_determinant = align_to_galois_field(determinant, prime_field);
-
+	*out_determinant = align_to_galois_field(determinant_buffer, prime_field);
+	log_debug("Final determinant in Galois field: %ld", *out_determinant);
 	return_code = STATUS_CODE_SUCCESS;
+
 cleanup:
 	return return_code;
 }
@@ -162,7 +179,8 @@ STATUS_CODE matrix_determinant_over_galois_field_gauss_jordan(int64_t* out_deter
         }
 
         // Swap rows if needed
-        if (pivot_row != row_iteration) {
+        if (pivot_row != row_iteration)
+    {
             temp_row = matrix_copy[row_iteration];
             matrix_copy[row_iteration] = matrix_copy[pivot_row];
             matrix_copy[pivot_row] = temp_row;
@@ -180,10 +198,13 @@ STATUS_CODE matrix_determinant_over_galois_field_gauss_jordan(int64_t* out_deter
             matrix_copy[row_iteration][column] = multiply_over_galois_field(matrix_copy[row_iteration][column], inverse_pivot, prime_field);
         }
         // Eliminate other rows
-        for (row = 0; row < dimension; row++) {
-            if (row != row_iteration && matrix_copy[row][row_iteration] != 0) {
+        for (row = 0; row < dimension; row++)
+		{
+            if (row != row_iteration && matrix_copy[row][row_iteration] != 0)
+			{
                 factor = matrix_copy[row][row_iteration];
-                for (column = row_iteration; column < dimension; column++) {
+                for (column = row_iteration; column < dimension; column++)
+				{
                     product = multiply_over_galois_field(factor, matrix_copy[row_iteration][column], prime_field);
                     matrix_copy[row][column] = add_over_galois_field(matrix_copy[row][column], negate_over_galois_field(product, prime_field), prime_field);
                 }
@@ -206,4 +227,3 @@ cleanup:
 
 	return return_code;
 }
-

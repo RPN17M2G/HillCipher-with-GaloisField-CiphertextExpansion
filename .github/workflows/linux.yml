@@ -21,48 +21,85 @@ jobs:
 
   test-linux-debug:
     needs: build-debug
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/download-artifact@v4
+      - name: Download artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           name: build-debug
           path: ./GaloisFieldHillCipher/build
-      - run: chmod +x ./GaloisFieldHillCipher/build/UnitTests
-      - run: ./GaloisFieldHillCipher/build/UnitTests
-  
+      
+      - name: Verify Artifact Checksums
+        run: |
+          cd ./GaloisFieldHillCipher/build
+          echo "${{ needs.build-debug.outputs.unittest_checksum }}  UnitTests" | sha256sum -c -
+
+      - name: Run tests
+        run: |
+          chmod +x ./GaloisFieldHillCipher/build/UnitTests
+          ./GaloisFieldHillCipher/build/UnitTests
+    timeout-minutes: 10
+
   test-linux-release:
     needs: build-release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/download-artifact@v4
+      - name: Download artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           name: build-release
           path: ./GaloisFieldHillCipher/build
-      - run: chmod +x ./GaloisFieldHillCipher/build/UnitTests
-      - run: ./GaloisFieldHillCipher/build/UnitTests
-  
+      
+      - name: Verify Artifact Checksums
+        run: |
+          cd ./GaloisFieldHillCipher/build
+          echo "${{ needs.build-release.outputs.unittest_checksum }}  UnitTests" | sha256sum -c -
+
+      - name: Run tests
+        run: |
+          chmod +x ./GaloisFieldHillCipher/build/UnitTests
+          ./GaloisFieldHillCipher/build/UnitTests
+    timeout-minutes: 10
+
   valgrind-memory-test-release:
     needs: build-release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         test:
-          - { name: ek, args: "-m ek -v -o ./encryption_key.bin -d 3" }
-          - { name: dk, args: "-m dk -v -k ./GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -o ./decryption_key.bin -d 3" }
-          - { name: e,  args: "-m e -v -i ./GaloisFieldHillCipher/Examples/Samples/example_plaintext.txt -o ./encrypted.bin -k ./GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -d 3" }
-          - { name: d,  args: "-m d -v -i ./GaloisFieldHillCipher/Examples/Samples/encrypted.bin -o ./decrypted.txt -k ./GaloisFieldHillCipher/Examples/Samples/decryption_key.bin -d 3" }
-          - { name: ge, args: "-m ge -v -i ./GaloisFieldHillCipher/Examples/Samples/example_plaintext.txt -o ./ge_encrypted.bin -k ./encryption_key.bin -d 3" }
-          - { name: gd, args: "-m gd -v -i ./GaloisFieldHillCipher/Examples/Samples/encrypted.bin -o ./gd_decrypted.txt -k ./GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -d 3" }
-          
+          - { name: kg,  args: "-m kg -l ./GaloisFieldHillCipher/Examples/Samples/log.txt -o ./encryption_key.bin -d 3" }
+          - { name: dkg, args: "-m dkg -l ./GaloisFieldHillCipher/Examples/Samples/log.txt -k ./GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -o ./decryption_key.bin -d 3" }
+
+          # Encryption (text)
+          - { name: e_text, args: "-m e -l ./GaloisFieldHillCipher/Examples/Samples/log.txt  -i ./GaloisFieldHillCipher/Examples/Samples/example_plaintext.txt -o ./encrypted_text.txt -k ./GaloisFieldHillCipher/Examples/Samples/encryption_key.bin" }
+          # Encryption (binary)
+          - { name: e_bin, args: "-m e -l ./GaloisFieldHillCipher/Examples/Samples/log.txt -i ./GaloisFieldHillCipher/Examples/Samples/example_plaintext.txt -o ./encrypted_bin.bin -k ./GaloisFieldHillCipher/Examples/Samples/encryption_key.bin" }
+
+          # Decryption (text)
+          - { name: d_text, args: "-m d -l ./GaloisFieldHillCipher/Examples/Samples/log.txt -i ./GaloisFieldHillCipher/Examples/Samples/encrypted_text.txt -o ./decrypted_text.txt -k ./GaloisFieldHillCipher/Examples/Samples/decryption_key.bin" }
+          # Decryption (binary)
+          - { name: d_bin, args: "-m d -l ./GaloisFieldHillCipher/Examples/Samples/log.txt -i ./GaloisFieldHillCipher/Examples/Samples/encrypted_bin.bin -o ./decrypted_bin.bin -k ./GaloisFieldHillCipher/Examples/Samples/decryption_key.bin" }
+
+          - { name: kge, args: "-m kge -l ./GaloisFieldHillCipher/Examples/Samples/log.txt -i ./GaloisFieldHillCipher/Examples/Samples/example_plaintext.txt -o ./kge_encrypted.bin -k ./encryption_key.bin -d 3" }
+          - { name: kgd, args: "-m kgd -l ./GaloisFieldHillCipher/Examples/Samples/log.txt -i ./GaloisFieldHillCipher/Examples/Samples/encrypted_bin.bin -o ./kgd_decrypted.txt -k ./GaloisFieldHillCipher/Examples/Samples/encryption_key.bin -y ./decryption_key.bin -d 3" }
+
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
         with:
           submodules: recursive
+
       - run: sudo apt-get update && sudo apt-get install -y valgrind
-      - uses: actions/download-artifact@v4
+
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           name: build-release
           path: ./GaloisFieldHillCipher/build
+     
+      - name: Verify Artifact Checksums
+        run: |
+          cd ./GaloisFieldHillCipher/build
+          echo "${{ needs.build-release.outputs.executable_checksum }}  GaloisFieldHillCipher" | sha256sum -c -
+
       - run: chmod +x ./GaloisFieldHillCipher/build/GaloisFieldHillCipher
 
       - name: Valgrind - Run mode ${{ matrix.test.name }}
@@ -75,7 +112,8 @@ jobs:
         run: |
           grep "definitely lost:" valgrind-${{ matrix.test.name }}.txt | grep -vq " 0 bytes" \
             && (echo "Leaks found!" && exit 1) || echo "No leaks"
+
       - name: Print Valgrind log on failure - ${{ matrix.test.name }}
         if: failure()
         run: cat valgrind-${{ matrix.test.name }}.txt
-    
+    timeout-minutes: 10
