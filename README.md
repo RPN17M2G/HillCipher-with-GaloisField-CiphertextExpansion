@@ -29,10 +29,10 @@
 | `-k`, `--key`                   | Specify the key file. |
 | `-y`, `--decryption-key-output` | Specify the decryption key output file.                                 |
 | `-d`, `--dimension`             | Specify the key matrix dimension.                       |
-| `-f`, `--prime-field`           | Specify the prime field (optional, default: `16777619`).                                                         |
+| `-f`, `--prime-pield`           | Specify the prime field (optional, default: `16777619`).                                                         |
 | `-r`, `--random-bits`           | Specify the number of random bits to add between bytes (optional, default: `2`).                                 |
 | `-a`, `--ascii-mapping-letters` | Specify the number of letters mapped for each digit in the ASCII mapping (optional, default: `5`).                                                      |
-| `-e`, `--error-vectors` | Specify the number of letters mapped for each digit in the ASCII mapping (optional, default: `5`).                                                      |
+| `-e`, `--error-vectors` | Specify the number of error vectors to add to the matrix-vector multiplication (optional, default: `5`).                                                      |
 | `-l`, `--log`                   | Specify the log file.                                                                                 |
 | `-m`, `--mode`                  | Specify the mode of operation (`kg`, `dkg`, `e`, `d`, `kge`, `kgd`).                                                |
 | `-v`, `--verbose`               | Enable verbose output (optional).                                                                                |
@@ -60,12 +60,12 @@ It utilizes invertible matrixes to encrypt blocks of known length - it is a poly
 ##### The Encryption Process
 
 Each vector of blocks(of size n) is multiplied with an invertible matrix(of size n x n). 
-Afterwards, we calculate the result mod the maximum value for a block(2^n if the block is binary).
+Afterwards, we calculate the result mod the finite field.
 
 ##### The Decyription Process
 
 Each ciphertext vector is multiplied with the inverse of the encryption matrix. 
-Afterwards, we calculate the result mod the maximum value for a block.
+Afterwards, we calculate the result mod the finite field.
 
 #### Security
 
@@ -90,6 +90,7 @@ Which results in best case scenerio key space of **Log2(K^(n^2))**
 ##### Galois Field
 
 aka finite field. It's a field that contains a finite number of elements.
+A field of order n would contain the numbers {0, 1, 2, ..., n - 1}
 
 ##### Matrix Multipication With Vector
 
@@ -131,16 +132,27 @@ Resulting Vector:
 | 51  |
 
 
+##### LWE (Learning With Errors)
+
+The Learning With Errors (LWE) problem is an interesting idea for post-quantum cryptography. It's based on the idea that while solving a system of linear equations is computationally easy, it becomes very difficult when a small amount of random "noise" or "error" is introduced to each equation.
+
+The core relationship in LWE is defined by the equation:
+$$b = (A \cdot s + e) \pmod{q}$$
+
+The error vector "e" hides the linear equations and therefore makes it very hard to crack.
+
+***
 
 ### Implementation
 
 ##### Chosen Galois Field
 
-The chosen field is GF(16,777,619)
+The default field is GF(16,777,619),
+You can change it at any time using the main argument -f/--prime-field.
 
-###### Requirements
+###### Constraints
 
-- Prime Number for defined modulo P, and exactly P number of elements.
+The field must be prime and it is advisble to use a large field.
 
 ##### Encryption Matrix must be Inversible 
 
@@ -171,7 +183,50 @@ When storing encrypted data in binary format, the program calculates the minimum
 ###### ASCII Mapping
 
 For text storage, there is mapping between the digits of the ciphertext, each number of the GF fits inside 8 digits.
-The mapping has a chosen variant(Same digit maps to few different letters) of 1 to 6 which helps reduce the entropy of the ciphertext.
+The mapping has a chosen variant(Same digit maps to few different letters) ,that can be modified in the main argument -a/--ascii-mapping-letters, of 1 to 6 which helps reduce the entropy of the ciphertext.
+
+###### ASCII Permutation
+
+After the mapping, each group of letters that represent 
+a single field element is getting shuffled for adding another layer
+of security.
+
+### Codebase
+
+#### Testing
+
+There are tests covering:
+- Ciphertext Expansion
+- Block Dividing
+- Padding
+- ASCII Mapping
+- Field Operations
+- Matrix Determinant
+- Minor Matrix Crafting
+- GCD
+- Is Matrix Invertible
+- Matrix Inverse Calaculation
+- Matrix and Vector Multiplication - uint8_t vector
+- Matrix and Vector Multiplication - int64_t vector
+
+#### CI
+
+There is a CI pipeline that builds and tests linux and windows versions in Release and Debug configurations.
+
+In the linux CI there is a call to valgrind in each mode to test the program for any memory leak.
+
+There is also a call to CodeQL static analyzer to catch security vunrabilities on a weekly basis. 
+
+##### Hardening
+
+The CI is hardened by:
+- Actions are pinned to a specific SHA Commit.
+- Verifing each artifact with it's SHA256 checksum before trusting.
+- Using specific job image.
+
+#### Logging
+
+There is a logger that writes to the console if the verbose flag is on(Can be modified using the main argument -v/--verbose) and to a specified log file that can be modified using the main argument -l/--log. 
 
 ### Thanks and Credit
 
