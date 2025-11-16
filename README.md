@@ -50,7 +50,7 @@ An implimentation of the Hill cipher extended by the use of Galois fields as des
 Based on the article "An interesting example at the intersection
 of Matrix Mathematics and Cryptography" by Tony Patti.
 
-I strongly recommand reading the article, here is a link for the article in glassblower: [An interesting example at the intersection of Matrix Mathematics and Cryptography, by Tony Patti](https://www.glassblower.info/crypto/an-interesting-example-at-the-intersection-of-matrix-mathematics-and-cryptography-April-23-2024.pdf)
+I strongly recommand reading the article, here is a link for the article in glassblower: [An interesting example at the intersection of Matrix Mathematics and Cryptography, by Tony Patti](https://www.glassblower.info/crypto/an-interesting-example-at-the-intersection-of-matrix-mathematics-and-cryptography-version-2.pdf)
 
 ### The Original Hill Cipher
 
