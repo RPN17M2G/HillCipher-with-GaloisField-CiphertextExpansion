@@ -45,12 +45,14 @@
 
 ## Overview 
 
-An implimentation of the Hill cipher extended by the use of Galois fields as described by Rodney Cooper in 1980.
+An implimentation of a modern extension of the Hill cipher as described by Rodney Cooper in 1980.
 
-Based on the article "An interesting example at the intersection
+Based on the second version of the paper "An interesting example at the intersection
 of Matrix Mathematics and Cryptography" by Tony Patti.
 
 I strongly recommand reading the article, here is a link for the article in glassblower: [An interesting example at the intersection of Matrix Mathematics and Cryptography, by Tony Patti](https://www.glassblower.info/crypto/an-interesting-example-at-the-intersection-of-matrix-mathematics-and-cryptography-version-2.pdf)
+
+The modern extension makes the cryptosystem probably secure for modern cryptographic standards(NOT TESTED ENOUGH - DO NOT USE IT FOR ANY REAL-WORLD ENVIRONMENT SYSTEMS). And utilizes a post quantum encryption layer that is makes this cipher theoretically secure against quantom computer's attacks.
 
 ### The Original Hill Cipher
 
