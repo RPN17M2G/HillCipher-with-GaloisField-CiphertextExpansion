@@ -1,4 +1,4 @@
-# Galois Field Hill Cipher
+# Post Quantum Hill Cryptosystem with Affine Transformation and Large Galois Fields
 
 
 **This implementation is for EDUCATIONAL PURPOSES ONLY and should NOT be used in any real-world environment.**
